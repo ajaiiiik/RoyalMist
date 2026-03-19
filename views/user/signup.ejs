@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | Royal Mist</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { 
+            --gold: #c4a14d; 
+            --solid-black: #000000; 
+        }
+
+        body { 
+            background-color: var(--solid-black) !important; 
+            color: #fff; 
+            font-family: 'Montserrat', sans-serif; 
+            padding: 50px 0;
+        }
+
+        h2 { font-family: 'Playfair Display', serif; font-size: 2.5rem; }
+        
+        .signup-wrapper { 
+            max-width: 500px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+
+        label { 
+            color: var(--gold); 
+            font-size: 0.65rem; 
+            letter-spacing: 3px; 
+            text-transform: uppercase; 
+            margin-bottom: 10px; 
+            display: block; 
+        }
+        
+        input { 
+            background-color: var(--solid-black) !important; 
+            border: 2px solid #222 !important; 
+            color: #fff !important; 
+            border-radius: 0 !important; 
+            padding: 15px !important; 
+            margin-bottom: 25px; 
+        }
+
+        input:focus { 
+            border-color: var(--gold) !important; 
+            box-shadow: none !important; 
+        }
+        
+        .btn-create { 
+            background: linear-gradient(to right, #c4a14d, #b59242); 
+            color: #000; 
+            border: none; 
+            width: 100%; 
+            padding: 18px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-create:hover { background: #e2bd65; transform: translateY(-2px); }
+
+        /* Divider Style */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 25px 0;
+            color: #444;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #222;
+        }
+
+        .divider:not(:empty)::before { margin-right: .5em; }
+        .divider:not(:empty)::after { margin-left: .5em; }
+
+        /* Google Button Style */
+        .btn-google {
+            background-color: transparent;
+            color: #fff;
+            border: 2px solid #222;
+            width: 100%;
+            padding: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: 0.3s;
+        }
+
+        .btn-google:hover {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .google-icon {
+            font-size: 1.1rem;
+        }
+        
+        .footer-link { color: #555; font-size: 0.8rem; margin-top: 30px; text-align: center; }
+        a { color: var(--gold); text-decoration: none; }
+        .sub-text { color: #777; font-size: 0.85rem; margin-bottom: 40px; }
+    </style>
+</head>
+<body>
+
+<div class="container signup-wrapper">
+    <h2 class="text-center">Create Account</h2>
+    <p class="text-center sub-text">Enter the world of luxury fragrances</p>
+
+    <form action="/auth/signup" method = "POST">
+        <div class="row">
+            <div class="col-6">
+                <label>First Name</label>
+                <input type="text"name="firstName" class="form-control" placeholder="Julian">
+            </div>
+            <div class="col-6">
+                <label>Last Name</label>
+                <input type="text" name = "lastName" class="form-control" placeholder="Vane">
+            </div>
+        </div>
+
+        <label>Email Address</label>
+        <input type="email" name = "email" class="form-control" placeholder="vane@luxury.com">
+
+        <label>Phone Number</label>
+        <input type="tel" name = "phoneNumber" class="form-control" placeholder="+91 00000 00000">
+
+        <label>Password</label>
+        <input type="password" name= "password" class="form-control" placeholder="••••••••">
+        <p style="font-size: 0.65rem; color: #444; margin-top: -20px; margin-bottom: 25px;">Must be at least 8 characters including a symbol.</p>
+
+        <label>Confirm Password</label>
+        <input type="password" name="confirmPassword" class="form-control" placeholder="••••••••">
+
+        <label>Referral Code (Optional)</label>
+        <input type="text" name = "referralCode"class="form-control" placeholder="ROYAL-2024">
+
+        <p class="text-center" style="font-size: 0.65rem; color: #444; margin: 20px 0;">BY JOINING, YOU AGREE TO OUR <a href="#">TERMS OF SERVICE</a> AND <a href="#">PRIVACY POLICY</a>.</p>
+
+        <button type="submit" class="btn-create">CREATE ACCOUNT →</button>
+    </form>
+
+    <div class="divider">OR SIGN UP WITH</div>
+
+    <button type="button" class="btn-google">
+        <i class="fab fa-google google-icon"></i>
+        SIGN UP WITH GOOGLE
+    </button>
+
+    <p class="footer-link">Already have an account? <a href="/signin">Sign in</a></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Mist | Luxury Perfume Store</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --gold: #c5a059;
+            --dark-bg: #000000;
+            --card-bg: #0a0a0a;
+            --font-main: 'Playfair Display', serif;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #ffffff;
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- NAVBAR --- */
+        .navbar {
+            background: rgba(0,0,0,0.95);
+            border-bottom: 1px solid #222;
+            padding: 15px 0;
+        }
+        .navbar-brand {
+            color: var(--gold) !important;
+            letter-spacing: 4px;
+            font-weight: 700;
+        }
+        .nav-link {
+            color: #fff !important;
+            font-size: 12px;
+            letter-spacing: 2px;
+            font-family: 'Inter', sans-serif;
+        }
+        .search-container {
+            position: relative;
+            margin-right: 20px;
+        }
+        .search-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #444;
+            color: white;
+            font-size: 13px;
+            padding: 5px 25px 5px 5px;
+            width: 150px;
+            transition: 0.3s;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            width: 200px;
+        }
+        .search-icon {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #777;
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            height: 90vh;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=1600');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .hero-content h1 {
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            margin-bottom: 20px;
+        }
+        .hero-content p {
+            font-family: 'Inter', sans-serif;
+            color: #ccc;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+        .btn-gold {
+            background-color: var(--gold);
+            color: #000;
+            border-radius: 0;
+            padding: 12px 35px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border: none;
+            transition: 0.3s;
+        }
+        .btn-gold:hover { background-color: #b38f4d; }
+
+        /* --- FEATURE CARDS --- */
+        .feature-box {
+            position: relative;
+            overflow: hidden;
+            height: 400px;
+        }
+        .feature-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.6);
+            transition: 0.5s;
+        }
+        .feature-box:hover img { transform: scale(1.05); }
+        .feature-text {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            font-size: 24px;
+        }
+
+        /* --- PRODUCT CARDS --- */
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid #1a1a1a;
+            padding: 15px;
+            transition: 0.3s;
+        }
+        .product-card:hover { border-color: var(--gold); }
+        .img-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .offer-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--gold);
+            color: #000;
+            font-size: 10px;
+            padding: 2px 8px;
+            font-weight: bold;
+        }
+        .product-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .product-name { font-size: 18px; margin: 0; }
+        .category-label { font-size: 11px; color: #777; letter-spacing: 1px; display: block; }
+        .rating-stars { color: var(--gold); font-size: 10px; margin-bottom: 5px; }
+        .fragrance-type { font-size: 11px; color: var(--gold); text-transform: uppercase; }
+        
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .price { font-size: 18px; font-weight: 600; }
+        .ml-text { font-size: 12px; color: #555; }
+
+        .view-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 10px;
+            font-size: 12px;
+            margin-top: 15px;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+        .view-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+        /* --- FOOTER --- */
+        footer {
+            border-top: 1px solid #222;
+            padding: 80px 0 30px;
+            font-family: 'Inter', sans-serif;
+        }
+        .footer-logo { font-family: var(--font-main); color: var(--gold); font-size: 24px; margin-bottom: 20px; }
+        .footer-head { color: #fff; font-size: 14px; letter-spacing: 1px; margin-bottom: 20px; }
+        .footer-link { color: #777; text-decoration: none; font-size: 13px; display: block; margin-bottom: 10px; }
+        .social-icons i { color: #fff; margin-right: 20px; font-size: 18px; cursor: pointer; }
+
+        @media (max-width: 768px) {
+            .hero-content h1 { font-size: 2.5rem; }
+            .search-container { display: none; } /* Mobile-la search hidden (Toggle kulla varum) */
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">ROYALMIST</a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <i class="fas fa-bars text-white"></i>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="#">HOME</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">SHOP</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">ABOUT</a></li>
+                </ul>
+
+                <div class="d-flex align-items-center">
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="SEARCH...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    <div class="d-flex gap-3 align-items-center">
+                        <i class="fa-regular fa-heart"></i>
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        <i class="fa-regular fa-user d-none d-md-block"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container hero-content">
+            <h1>Discover Your <br> <span class="gold-text">Signature Scent</span></h1>
+            <p>Crafted in Grasse, bottled for eternity. Experience the world's most luxurious fragrances curated just for you.</p>
+            <button class="btn btn-gold">EXPLORE COLLECTION</button>
+        </div>
+    </section>
+
+    <section class="py-5 container">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="feature-box">
+                    <img src="https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=800" alt="Distillation">
+                    <div class="feature-text">The Art of Distillation</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="feature-box">
+                    <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=800" alt="Essence">
+                    <div class="feature-text">Nature's Finest Essence</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container py-5">
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <div style="width: 50px; height: 2px; background: var(--gold); margin-bottom: 10px;"></div>
+                <h2 class="h3 m-0" style="letter-spacing: 2px;">POPULAR PERFUMES</h2>
+            </div>
+            <a href="#" class="text-secondary small text-decoration-none letter-spacing-2">VIEW ALL</a>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-6 col-md-4">
+                <div class="product-card">
+                    <div class="img-wrapper">
+                        <div class="offer-tag">20% OFF</div>
+                        <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=600" class="w-100" style="aspect-ratio: 1/1.2; object-fit: cover;">
+                    </div>
+                    <div class="product-info-row">
+                        <div class="text-start">
+                            <span class="category-label">MEN</span>
+                            <h3 class="product-name">Desert Bloom</h3>
+                        </div>
+                        <div class="text-end">
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                            </div>
+                            <span class="fragrance-type">Citrus</span>
+                        </div>
+                    </div>
+                    <div class="price-row">
+                        <div class="price">₹2000</div>
+                        <div class="ml-text">100ML</div>
+                    </div>
+                    <button class="view-btn">VIEW PRODUCT</button>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4">
+                <div class="product-card">
+                    <div class="img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=600" class="w-100" style="aspect-ratio: 1/1.2; object-fit: cover;">
+                    </div>
+                    <div class="product-info-row">
+                        <div class="text-start">
+                            <span class="category-label">UNISEX</span>
+                            <h3 class="product-name">Velvee Oud</h3>
+                        </div>
+                        <div class="text-end">
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                            </div>
+                            <span class="fragrance-type">Woody</span>
+                        </div>
+                    </div>
+                    <div class="price-row">
+                        <div class="price">₹2500</div>
+                        <div class="ml-text">50ML</div>
+                    </div>
+                    <button class="view-btn">VIEW PRODUCT</button>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4">
+                <div class="product-card">
+                    <div class="img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=600" class="w-100" style="aspect-ratio: 1/1.2; object-fit: cover;">
+                    </div>
+                    <div class="product-info-row">
+                        <div class="text-start">
+                            <span class="category-label">WOMEN</span>
+                            <h3 class="product-name">Ocean Mist</h3>
+                        </div>
+                        <div class="text-end">
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                            </div>
+                            <span class="fragrance-type">Floral</span>
+                        </div>
+                    </div>
+                    <div class="price-row">
+                        <div class="price">₹1800</div>
+                        <div class="ml-text">100ML</div>
+                    </div>
+                    <button class="view-btn">VIEW PRODUCT</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container text-center py-5 my-5">
+        <div class="mb-4">
+            <i class="fas fa-gem gold-text fa-2x"></i>
+        </div>
+        <h2 class="display-5 mb-4 gold-text">ROYAL MIST</h2>
+        <p class="mx-auto text-light opacity-75" style="max-width: 800px; font-family: 'Inter', sans-serif; line-height: 1.8;">
+            "Founded in the heart of the French Riviera, Royal Mist has spent generations perfecting the delicate balance of rare botanicals and precious oils. Every bottle is a testament to the timeless pursuit of beauty and elegance."
+        </p>
+        <a href="#" class="gold-text text-decoration-none small letter-spacing-2 mt-3 d-inline-block">READ OUR FULL STORY</a>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-md-4">
+                    <div class="footer-logo">ROYALMIST</div>
+                    <p class="text-secondary small">Exquisite fragrances designed for those who command attention and appreciate the finer things in life.</p>
+                </div>
+                <div class="col-md-2">
+                    <div class="footer-head">CONTACT US</div>
+                    <p class="text-secondary small">Other Enquiries<br>+91 98765 43210<br>royalmist@gmail.com</p>
+                </div>
+                <div class="col-md-2">
+                    <div class="footer-head">SUPPORT</div>
+                    <a href="#" class="footer-link">Newsletter</a>
+                    <a href="#" class="footer-link">Community Guidelines</a>
+                    <a href="#" class="footer-link">Terms & Conditions</a>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="footer-head">FOLLOW US</div>
+                    <div class="social-icons">
+                        <i class="fab fa-instagram"></i>
+                        <i class="fab fa-youtube"></i>
+                        <i class="fab fa-twitter"></i>
+                    </div>
+                    <p class="mt-4 text-secondary" style="font-size: 11px;">© 2026 Royal Mist Fragrances. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
