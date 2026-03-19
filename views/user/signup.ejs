@@ -128,27 +128,57 @@
         <div class="row">
             <div class="col-6">
                 <label>First Name</label>
-                <input type="text"name="firstName" class="form-control" placeholder="Julian">
+                <input type="text" name="firstName" class="form-control" placeholder="Julian">
+
+<% if (errors && errors.firstName) { %>
+  <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
+  <%= errors.firstName %>
+</p>
+<% } %>
             </div>
             <div class="col-6">
                 <label>Last Name</label>
-                <input type="text" name = "lastName" class="form-control" placeholder="Vane">
+                <input type="text" name="lastName" class="form-control" placeholder="Vane">
+<% if (errors && errors.lastName) { %>
+  <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
+  <%= errors.lastName %>
+</p>
+<% } %>
             </div>
         </div>
 
         <label>Email Address</label>
-        <input type="email" name = "email" class="form-control" placeholder="vane@luxury.com">
+       <input type="email" name="email" class="form-control" placeholder="vane@luxury.com">
+<% if (errors && errors.email) { %>
+  <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
+  <%= errors.email %>
+</p>
+<% } %>
 
         <label>Phone Number</label>
-        <input type="tel" name = "phoneNumber" class="form-control" placeholder="+91 00000 00000">
+       <input type="tel" name="phoneNumber" class="form-control" placeholder="9876543210">
+<% if (errors && errors.phoneNumber) { %>
+  <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
+  <%= errors.phoneNumber %>
+</p>
+<% } %>
 
         <label>Password</label>
-        <input type="password" name= "password" class="form-control" placeholder="••••••••">
+       <input type="password" name="password" class="form-control">
+<% if (errors && errors.password) { %>
+  <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
+  <%= errors.password %>
+</p>
+<% } %>
         <p style="font-size: 0.65rem; color: #444; margin-top: -20px; margin-bottom: 25px;">Must be at least 8 characters including a symbol.</p>
 
         <label>Confirm Password</label>
-        <input type="password" name="confirmPassword" class="form-control" placeholder="••••••••">
-
+       <input type="password" name="confirmPassword" class="form-control">
+<% if (errors && errors.confirmPassword) { %>
+ <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
+  <%= errors.confirmPassword %>
+</p>
+<% } %>
         <label>Referral Code (Optional)</label>
         <input type="text" name = "referralCode"class="form-control" placeholder="ROYAL-2024">
 

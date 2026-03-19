@@ -1,7 +1,6 @@
 const User = require("../../model/userSchema");
 const bcrypt = require("bcryptjs");
 
-//SIGNUP SERVICE
 const signupService = async (data) => {
   const {
     firstName,
@@ -13,39 +12,53 @@ const signupService = async (data) => {
     referralCode
   } = data;
 
+  const errors = {};
+
   //VALIDATION
-  if (!firstName || !lastName || !email || !phoneNumber || !password || !confirmPassword) {
-    throw new Error("All required fields must be filled");
-  }
+  if (!firstName) errors.firstName = "First name is required";
+  if (!lastName) errors.lastName = "Last name is required";
 
   const emailRegex = /\S+@\S+\.\S+/;
-  if (!emailRegex.test(email)) {
-    throw new Error("Invalid email format");
+  if (!email) {
+    errors.email = "Email is required";
+  } else if (!emailRegex.test(email)) {
+    errors.email = "Invalid email format";
   }
 
-  if (!/^\d{10}$/.test(phoneNumber)) {
-    throw new Error("Phone number must be exactly 10 digits");
+  if (!phoneNumber) {
+    errors.phoneNumber = "Phone number is required";
+  } else if (!/^\d{10}$/.test(phoneNumber)) {
+    errors.phoneNumber = "Phone number must be 10 digits";
   }
 
-  if (password.length < 8) {
-    throw new Error("Password must be at least 8 characters");
+  if (!password) {
+    errors.password = "Password is required";
+  } else if (password.length < 8) {
+    errors.password = "Password must be at least 8 characters";
   }
 
-  if (password !== confirmPassword) {
-    throw new Error("Passwords do not match");
+  if (!confirmPassword) {
+    errors.confirmPassword = "Confirm password is required";
+  } else if (password !== confirmPassword) {
+    errors.confirmPassword = "Passwords do not match";
   }
 
-  //CHECK EXISTING USER
+  // IF ANY ERROR
+  if (Object.keys(errors).length > 0) {
+    throw errors;
+  }
+
+  // CHECK USER EXISTS
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    throw new Error("User already exists");
+    throw { email: "User already exists" };
   }
 
-  //HASH PASSWORD
+  // HASH PASSWORD
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  //SAVE USER
+  // SAVE USER
   await User.create({
     firstName,
     lastName,
@@ -57,6 +70,5 @@ const signupService = async (data) => {
 
   return { message: "Signup successful" };
 };
-module.exports = signupService
 
-  
+module.exports = signupService;

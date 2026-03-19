@@ -7,7 +7,7 @@ const signupController = require("../controller/user/userController");
 
 // signup page
 router.get("/signup", (req, res) => {
-  res.render("user/signup");
+  res.render("user/signup",{errors : {} });
 });
 
 // signup

@@ -8,8 +8,7 @@ const signupController = async (req, res) => {
 
     res.send(result.message);
   } catch (err) {
-    console.log(err); 
-    res.send(err.message);
+    res.render("user/signup", {errors:err})
   }
 };
 
