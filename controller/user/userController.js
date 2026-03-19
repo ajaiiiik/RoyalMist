@@ -8,7 +8,7 @@ const signupController = async (req, res) => {
 
     res.send(result.message);
   } catch (err) {
-    res.render("user/signup", {errors:err})
+    res.render("user/signup", {errors:err,oldData:req.body})
   }
 };
 

@@ -25,17 +25,23 @@ const signupService = async (data) => {
     errors.email = "Invalid email format";
   }
 
-  if (!phoneNumber) {
-    errors.phoneNumber = "Phone number is required";
-  } else if (!/^\d{10}$/.test(phoneNumber)) {
-    errors.phoneNumber = "Phone number must be 10 digits";
-  }
+if (!phoneNumber) {
+  errors.phoneNumber = "Phone number is required";
+} else if (!/^\d+$/.test(phoneNumber)) {
+  errors.phoneNumber = "Phone number must contain only numbers";
+} else if (phoneNumber.length !== 10) {
+  errors.phoneNumber = "Phone number must be exactly 10 digits";
+}
 
-  if (!password) {
-    errors.password = "Password is required";
-  } else if (password.length < 8) {
-    errors.password = "Password must be at least 8 characters";
-  }
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+
+if (!password) {
+  errors.password = "Password is required";
+} else if (!passwordRegex.test(password)) {
+  errors.password =
+    "Password must contain uppercase, lowercase, number & special character";
+}
 
   if (!confirmPassword) {
     errors.confirmPassword = "Confirm password is required";

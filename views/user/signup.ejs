@@ -128,7 +128,13 @@
         <div class="row">
             <div class="col-6">
                 <label>First Name</label>
-                <input type="text" name="firstName" class="form-control" placeholder="Julian">
+                <input 
+  type="text" 
+  name="firstName" 
+  class="form-control" 
+  placeholder="firstname"
+  value="<%= oldData.firstName || '' %>"
+>
 
 <% if (errors && errors.firstName) { %>
   <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
@@ -138,7 +144,7 @@
             </div>
             <div class="col-6">
                 <label>Last Name</label>
-                <input type="text" name="lastName" class="form-control" placeholder="Vane">
+                <input type="text" name="lastName" class="form-control" placeholder="lastname" value="<%= oldData.lastName || '' %>">
 <% if (errors && errors.lastName) { %>
   <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
   <%= errors.lastName %>
@@ -148,7 +154,7 @@
         </div>
 
         <label>Email Address</label>
-       <input type="email" name="email" class="form-control" placeholder="vane@luxury.com">
+       <input type="email" name="email" class="form-control" placeholder="vane@luxury.com" value="<%= oldData.email || '' %>">
 <% if (errors && errors.email) { %>
   <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
   <%= errors.email %>
@@ -156,7 +162,7 @@
 <% } %>
 
         <label>Phone Number</label>
-       <input type="tel" name="phoneNumber" class="form-control" placeholder="9876543210">
+       <input type="tel" name="phoneNumber" class="form-control" placeholder="9876543210" value="<%= oldData.phoneNumber || '' %>">
 <% if (errors && errors.phoneNumber) { %>
   <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
   <%= errors.phoneNumber %>
@@ -180,7 +186,7 @@
 </p>
 <% } %>
         <label>Referral Code (Optional)</label>
-        <input type="text" name = "referralCode"class="form-control" placeholder="ROYAL-2024">
+        <input type="text" name = "referralCode"class="form-control" placeholder="ROYAL-2024"  value="<%= oldData.referralCode || '' %>">
 
         <p class="text-center" style="font-size: 0.65rem; color: #444; margin: 20px 0;">BY JOINING, YOU AGREE TO OUR <a href="#">TERMS OF SERVICE</a> AND <a href="#">PRIVACY POLICY</a>.</p>
 
