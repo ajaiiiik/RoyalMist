@@ -23,6 +23,8 @@ const signupService = async (data) => {
     errors.email = "Email is required";
   } else if (!emailRegex.test(email)) {
     errors.email = "Invalid email format";
+  } else if (email !== email.toLowerCase()) {
+    errors.email = "Email must be lowercase";
   }
 
 if (!phoneNumber) {
@@ -60,12 +62,14 @@ if (!password) {
     throw { email: "User already exists" };
   }
 
+
   // HASH PASSWORD
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
   // SAVE USER
-  await User.create({
+  try{
+const newUser = await User.create({
     firstName,
     lastName,
     email,
@@ -73,8 +77,12 @@ if (!password) {
     password: hashedPassword,
     referralCode
   });
-
-  return { message: "Signup successful" };
+  console.log("User saved to DB:", newUser._id); // ✅ debug log
+    return { message: "Signup successful" };
+  }catch (err) {
+    console.error("DB save error:", err);
+    throw { general: "Failed to save user. Try again." };
+  }
 };
 
 module.exports = signupService;

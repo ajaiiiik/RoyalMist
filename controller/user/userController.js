@@ -6,9 +6,17 @@ const signupController = async (req, res) => {
   try {
     const result = await signupService(req.body);
 
-    res.send(result.message);
-  } catch (err) {
-    res.render("user/signup", {errors:err,oldData:req.body})
+   return res.json({
+      success: true,
+      message: result.message
+    });
+  }
+  catch (err) {
+    console.error("signup error",err)
+    return res.json({
+      success: false,
+      errors: err
+    });
   }
 };
 

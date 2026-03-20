@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const path = require("path");
+const session = require("express-session")
 
 const connectDB = require("./config/db");
 const userRoutes = require("./router/userRouter"); 
@@ -22,10 +23,18 @@ app.use(express.json());
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
+app.use(
+  session({
+    secret: "mysecretkey",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 
 // ROUTES
 app.use("/auth", userRoutes);
+
 
 
 app.get("/", (req, res) => {

@@ -50,6 +50,23 @@
             border-color: var(--gold) !important; 
             box-shadow: none !important; 
         }
+
+        /* Autofill / browser suggestion fix */
+        input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0px 1000px var(--solid-black) inset !important;
+            -webkit-text-fill-color: #fff !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0px 1000px var(--solid-black) inset !important;
+            -webkit-text-fill-color: #fff !important;
+        }
+
+        input:-moz-autofill {
+            box-shadow: 0 0 0px 1000px var(--solid-black) inset !important;
+            -moz-text-fill-color: #fff !important;
+        }
         
         .btn-create { 
             background: linear-gradient(to right, #c4a14d, #b59242); 
@@ -66,7 +83,6 @@
 
         .btn-create:hover { background: #e2bd65; transform: translateY(-2px); }
 
-        /* Divider Style */
         .divider {
             display: flex;
             align-items: center;
@@ -86,7 +102,6 @@
         .divider:not(:empty)::before { margin-right: .5em; }
         .divider:not(:empty)::after { margin-left: .5em; }
 
-        /* Google Button Style */
         .btn-google {
             background-color: transparent;
             color: #fff;
@@ -109,84 +124,91 @@
             background: rgba(255, 255, 255, 0.05);
         }
 
-        .google-icon {
-            font-size: 1.1rem;
-        }
+        .google-icon { font-size: 1.1rem; }
         
         .footer-link { color: #555; font-size: 0.8rem; margin-top: 30px; text-align: center; }
         a { color: var(--gold); text-decoration: none; }
         .sub-text { color: #777; font-size: 0.85rem; margin-bottom: 40px; }
+
+
+        
     </style>
 </head>
 <body>
-
+<!-- Success Toast -->
+<div id="successToast" style="
+    display:none;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: black;
+    color:  #c4a14d;
+    border: 2px solid #c4a14d;
+    padding: 15px 25px;
+    font-weight: 700;
+    border-radius: 8px;
+    font-family: 'Montserrat', sans-serif;
+    z-index: 9999;
+    align-items:center;
+    gap:10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+">
+    <span style="font-size:18px;">✅</span>
+    <span id="successText">Account created successfully</span>
+</div>
 <div class="container signup-wrapper">
     <h2 class="text-center">Create Account</h2>
     <p class="text-center sub-text">Enter the world of luxury fragrances</p>
 
-    <form action="/auth/signup" method = "POST">
+    <form id="signupForm" action="/auth/signup" method="POST">
         <div class="row">
             <div class="col-6">
                 <label>First Name</label>
-                <input 
-  type="text" 
-  name="firstName" 
-  class="form-control" 
-  placeholder="firstname"
-  value="<%= oldData.firstName || '' %>"
->
-
-<% if (errors && errors.firstName) { %>
-  <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
-  <%= errors.firstName %>
-</p>
-<% } %>
+                <input type="text" name="firstName" id="firstName" class="form-control" placeholder="firstname">
+                  <p id = "firstName-error" style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px; display: none;"></p>
+  
             </div>
             <div class="col-6">
                 <label>Last Name</label>
-                <input type="text" name="lastName" class="form-control" placeholder="lastname" value="<%= oldData.lastName || '' %>">
-<% if (errors && errors.lastName) { %>
-  <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
-  <%= errors.lastName %>
-</p>
-<% } %>
+                <input type="text" id="lastName" name="lastName" class="form-control" placeholder="lastname">
+                  <p  id = "lastName-error" style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px; display: none;"></p>
+
             </div>
         </div>
 
-        <label>Email Address</label>
-       <input type="email" name="email" class="form-control" placeholder="vane@luxury.com" value="<%= oldData.email || '' %>">
-<% if (errors && errors.email) { %>
-  <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
-  <%= errors.email %>
-</p>
-<% } %>
+       <label>Email Address</label>
+<input type="text" name="email" id="email" class="form-control" placeholder="vane@luxury.com">
+  <p id="email-error" style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px; display: none;"></p>
 
-        <label>Phone Number</label>
-       <input type="tel" name="phoneNumber" class="form-control" placeholder="9876543210" value="<%= oldData.phoneNumber || '' %>">
-<% if (errors && errors.phoneNumber) { %>
-  <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
-  <%= errors.phoneNumber %>
-</p>
-<% } %>
+       <label>Phone Number</label>
+<input type="tel" name="phoneNumber" class="form-control" placeholder="9876543210">
+  <p id="phone-error" style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px; display: none;"></p>
+
 
         <label>Password</label>
-       <input type="password" name="password" class="form-control">
-<% if (errors && errors.password) { %>
-  <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
-  <%= errors.password %>
-</p>
-<% } %>
-        <p style="font-size: 0.65rem; color: #444; margin-top: -20px; margin-bottom: 25px;">Must be at least 8 characters including a symbol.</p>
+       <div style="position: relative;">
+  <input type="password" name="password" id="password" class="form-control">
+  <button type="button" id="toggle-password" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #fff; cursor: pointer;">
+      <i class="fa fa-eye"></i>
+  </button>
+</div>
+          <p id="password-error" style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px; display: none;"></p>
+        <p id="password-guide" style="font-size: 0.65rem; color: #444; margin-top: -20px; margin-bottom: 25px;">Must be at least 8 characters including a symbol.</p>
 
         <label>Confirm Password</label>
-       <input type="password" name="confirmPassword" class="form-control">
-<% if (errors && errors.confirmPassword) { %>
- <p style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px;">
-  <%= errors.confirmPassword %>
+        <div style="position: relative;">
+  <input type="password" name="confirmPassword" id="confirmPassword" class="form-control">
+  <button type="button" id="toggle-confirm-password" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #fff; cursor: pointer; display:none;">
+      <i class="fa fa-eye"></i>
+  </button>
+</div>
+      <p id="confirmPassword-error" 
+   style="color:red; font-size:12px; margin-top:-15px; margin-bottom:10px; display:none;">
 </p>
-<% } %>
+
         <label>Referral Code (Optional)</label>
-        <input type="text" name = "referralCode"class="form-control" placeholder="ROYAL-2024"  value="<%= oldData.referralCode || '' %>">
+        <input type="text" name="referralCode" class="form-control" placeholder="ROYAL-2024">
 
         <p class="text-center" style="font-size: 0.65rem; color: #444; margin: 20px 0;">BY JOINING, YOU AGREE TO OUR <a href="#">TERMS OF SERVICE</a> AND <a href="#">PRIVACY POLICY</a>.</p>
 
@@ -204,5 +226,189 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  
+const passwordInput = document.getElementById("password");
+const togglePassword = document.getElementById("toggle-password");
+const passwordError = document.getElementById("password-error");
+const guideText = document.getElementById("password-guide");
+const firstNameInput = document.getElementById("firstName");
+const firstNameError = document.getElementById("firstName-error");
+const lastNameInput = document.getElementById("lastName"); 
+const lastNameError = document.getElementById("lastName-error")
+const emailInput = document.getElementById("email");
+const emailError = document.getElementById("email-error");
+
+const confirmPasswordInput = document.getElementById("confirmPassword");
+const toggleConfirmPassword = document.getElementById("toggle-confirm-password");
+const confirmPasswordError = document.getElementById("confirmPassword-error");
+const form = document.getElementById("signupForm");
+ 
+
+// Function to show/hide eye toggle based on value or error
+function updateToggle(inputField, toggleBtn, errorElement) {
+  const value = inputField.value;
+  if (value.length > 0 || (errorElement && errorElement.style.display === "block")) {
+    toggleBtn.style.display = "block";
+  } else {
+    toggleBtn.style.display = "none";
+    inputField.setAttribute("type", "password");
+    toggleBtn.innerHTML = '<i class="fa fa-eye"></i>';
+  }
+}
+
+// Initialize toggle visibility
+updateToggle(passwordInput, togglePassword, passwordError);
+updateToggle(confirmPasswordInput, toggleConfirmPassword, confirmPasswordError);
+
+// Password input event
+passwordInput.addEventListener("input", () => {
+  updateToggle(passwordInput, togglePassword, passwordError);
+   if (passwordError) passwordError.style.display = "none";
+
+  const value = passwordInput.value;
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+
+   if (value === "") {
+    guideText.style.display = "block";
+  } else if (!regex.test(value)) {
+    guideText.style.display = "block";
+  } else {
+    guideText.style.display = "block";
+  }
+});
+
+// Confirm password input event
+confirmPasswordInput.addEventListener("input", () => {
+  updateToggle(confirmPasswordInput, toggleConfirmPassword, confirmPasswordError);
+});
+
+// Toggle password visibility
+togglePassword.addEventListener("click", () => {
+  const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+  passwordInput.setAttribute("type", type);
+  togglePassword.innerHTML = type === "password" ? '<i class="fa fa-eye"></i>' : '<i class="fa fa-eye-slash"></i>';
+});
+
+// Toggle confirm password visibility
+toggleConfirmPassword.addEventListener("click", () => {
+  const type = confirmPasswordInput.getAttribute("type") === "password" ? "text" : "password";
+  confirmPasswordInput.setAttribute("type", type);
+  toggleConfirmPassword.innerHTML = type === "password" ? '<i class="fa fa-eye"></i>' : '<i class="fa fa-eye-slash"></i>';
+});
+
+
+   const phoneInput = document.querySelector("input[name='phoneNumber']");
+let phoneError = document.getElementById("phone-error");
+phoneInput.addEventListener("input", () => {
+  if (phoneError) {
+    phoneError.style.display = "none";
+  }
+});
+
+firstNameInput.addEventListener("input", () => {
+  firstNameInput.value = firstNameInput.value.replace(/\s/g, "");
+
+  if (firstNameError) {
+    firstNameError.style.display = "none";
+  }
+});
+lastNameInput.addEventListener("input", () => {
+  lastNameInput.value = lastNameInput.value.replace(/\s/g, "");
+
+  if (lastNameError) {
+    lastNameError.style.display = "none";
+  }
+});
+
+emailInput.addEventListener("input", () => {
+  emailInput.value = emailInput.value.replace(/\s/g, "");
+
+  if (emailError) emailError.style.display = "none";
+});
+
+confirmPasswordInput.addEventListener("input", () => {
+  if (confirmPasswordError) confirmPasswordError.style.display = "none";
+});
+
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  // clear old errors first 🔥
+  if (firstNameError) firstNameError.style.display = "none";
+  if (emailError) emailError.style.display = "none";
+
+  const formData = {
+    firstName: firstNameInput.value.trim(),
+    lastName: lastNameInput.value.trim(),
+    email: emailInput.value.trim(),
+    phoneNumber: phoneInput.value.trim(),
+    password: passwordInput.value,
+    confirmPassword: confirmPasswordInput.value
+  };
+
+  try {
+    const res = await fetch("/auth/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(formData)
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+    const toast = document.getElementById("successToast");
+    const text = document.getElementById("successText");
+    text.innerText = data.message || "Account created successfully";
+    toast.style.display = "flex"; // show toast
+
+    // hide after 2 seconds and redirect to signin
+    setTimeout(() => {
+        toast.style.display = "none";
+        window.location.href = "/signin";
+    }, 2000);
+    } else {
+      const errors = data.errors;
+
+      if (errors.firstName) {
+        firstNameError.innerText = errors.firstName;
+        firstNameError.style.display = "block";
+      }
+
+      if (errors.lastName) {
+        lastNameError.innerText = errors.lastName;
+        lastNameError.style.display = "block";
+      }
+
+      if (errors.email) {
+        emailError.innerText = errors.email;
+        emailError.style.display = "block";
+      }
+
+      if (errors.phoneNumber) {
+        phoneError.innerText = errors.phoneNumber;
+        phoneError.style.display = "block";
+      }
+
+      if (errors.password) {
+        passwordError.innerText = errors.password;
+        passwordError.style.display = "block";
+      }
+
+      if (errors.confirmPassword) {
+        confirmPasswordError.innerText = errors.confirmPassword;
+        confirmPasswordError.style.display = "block";
+      }
+    }
+
+  } catch (err) {
+    console.log(err);
+  }
+});
+</script>
 </body>
 </html>
