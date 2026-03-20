@@ -222,7 +222,7 @@
         SIGN UP WITH GOOGLE
     </button>
 
-    <p class="footer-link">Already have an account? <a href="/signin">Sign in</a></p>
+    <p class="footer-link">Already have an account? <a href="/auth/signin">Sign in</a></p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -369,7 +369,7 @@ form.addEventListener("submit", async (e) => {
     // hide after 2 seconds and redirect to signin
     setTimeout(() => {
         toast.style.display = "none";
-        window.location.href = "/signin";
+        window.location.href = "/auth/signin";
     }, 2000);
     } else {
       const errors = data.errors;

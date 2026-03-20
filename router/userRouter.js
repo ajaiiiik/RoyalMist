@@ -9,6 +9,10 @@ const signupController = require("../controller/user/userController");
 router.get("/signup", (req, res) => {
   res.render("user/signup");
 });
+router.get("/signin", (req, res) => {
+  res.render("user/signin");
+});
+
 
 // signup
 router.post("/signup", signupController);
