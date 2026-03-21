@@ -1,4 +1,4 @@
-const signupService = require("../../services/user/userService");
+const { signupService, signinService } = require("../../services/user/userService");
 
 
 //SIGNUP CONTROLLER
@@ -20,4 +20,26 @@ const signupController = async (req, res) => {
   }
 };
 
-module.exports = signupController
+
+
+
+// SIGNIN CONTROLLER
+const signinController = async (req, res) => {
+  try {
+    const result = await signinService(req.body);
+
+    return res.json({
+      success: true,
+      message: result.message,
+      user: result.user // optional, user data if needed
+    });
+  } catch (err) {
+    console.error("signin error", err);
+    return res.json({
+      success: false,
+      errors: err
+    });
+  }
+};
+
+module.exports = { signupController, signinController };

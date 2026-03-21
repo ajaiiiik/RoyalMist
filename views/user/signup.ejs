@@ -369,7 +369,7 @@ form.addEventListener("submit", async (e) => {
     // hide after 2 seconds and redirect to signin
     setTimeout(() => {
         toast.style.display = "none";
-        window.location.href = "/signin";
+        window.location.href = "/auth/signin";
     }, 2000);
     } else {
       const errors = data.errors;

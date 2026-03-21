@@ -85,4 +85,35 @@ const newUser = await User.create({
   }
 };
 
-module.exports = signupService;
+//signin
+const signinService = async (data) => {
+  const { email, password } = data;
+  const errors = {};
+
+  // VALIDATION
+  if (!email) errors.email = "Email is required";
+  if (!password) errors.password = "Password is required";
+
+  if (Object.keys(errors).length > 0) {
+    throw errors;
+  }
+
+  // FIND USER
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw { email: "User not found" };
+  }
+
+  // CHECK PASSWORD
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    throw { password: "Incorrect password" };
+  }
+
+  return {
+    message: "Signin successful",
+    user: { id: user._id, firstName: user.firstName, email: user.email } // optional
+  };
+};
+
+module.exports = { signupService, signinService };
