@@ -21,8 +21,7 @@ const signupController = async (req, res) => {
 };
 
 
-
-
+ 
 // SIGNIN CONTROLLER
 const signinController = async (req, res) => {
   try {
