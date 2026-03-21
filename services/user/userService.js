@@ -62,6 +62,11 @@ if (!password) {
     throw { email: "User already exists" };
   }
 
+  const existingPhone = await User.findOne({phoneNumber});
+  if(existingPhone){
+    throw {phoneNumber:"Phone number already exists"}
+  }
+
 
   // HASH PASSWORD
   const salt = await bcrypt.genSalt(10);
