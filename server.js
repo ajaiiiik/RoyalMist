@@ -3,6 +3,8 @@ require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const session = require("express-session")
+const passport = require("./config/passport");
+const User = require("./model/userSchema");
 
 const connectDB = require("./config/db");
 const userRoutes = require("./router/userRouter"); 
@@ -17,6 +19,8 @@ connectDB();
 //MIDDLEWARE
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.json()); 
+
+
 
 
 //VIEW ENGINE
@@ -34,7 +38,8 @@ app.use(
     }
   })
 );
-
+app.use(passport.initialize());
+app.use(passport.session());
 
 // ROUTES
 app.use('/',userRoutes);

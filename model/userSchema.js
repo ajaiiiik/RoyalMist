@@ -8,7 +8,9 @@ const userSchema = new mongoose.Schema({
   },
   lastName: {
     type:String,
-    required:true,
+     required:  function () {
+    return this.googleId?false:true
+  },
     trim:true
 },
   email: {
@@ -21,18 +23,25 @@ const userSchema = new mongoose.Schema({
 
   phoneNumber: {
     type: String,
-    required: true
+    required:  function () {
+    return this.googleId ?false:true
+  }
   },
 
   password: {
     type: String,
-    required: true
+    required:  function () {
+    return this.googleId ?false:true
+  }
   },
 
   referralCode: {
     type: String,
     default: null,
     trim:true
+  },
+  googleId:{
+    type:String
   }
 
 }, { timestamps: true });

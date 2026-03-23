@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const passport = require("passport")
 
 const {signupController,signinController,verifyOtpController,resendOtpController} = require("../controller/user/userController");
 
@@ -15,6 +16,21 @@ router.get("/signin", (req, res) => {
 router.get("/otp", (req,res)=>{
   res.render("user/otp")
 })
+//goog login start
+router.get("/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+//google login
+router.get("/auth/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/signup"
+  }),
+  (req, res) => {
+    res.redirect("/home"); 
+  }
+);
+
 
 // signup
 router.post("/signup", signupController);
