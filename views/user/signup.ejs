@@ -363,7 +363,6 @@ form.addEventListener("submit", async (e) => {
     const data = await res.json();
 
     if (data.success) {
-      localStorage.setItem("signupEmail",formData.email)
     const toast = document.getElementById("successToast");
     const text = document.getElementById("successText");
     text.innerText = data.message || "Account created successfully";

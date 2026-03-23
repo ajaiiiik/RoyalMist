@@ -1,5 +1,7 @@
 const User = require("../../model/userSchema");
 const bcrypt = require("bcryptjs");
+const Otp = require("../../model/otpSchema")
+const sendOtp = require("../../utils/generateOtp");
 
 const signupService = async (data,req) => {
   const {
@@ -62,33 +64,29 @@ if (!password) {
     throw { email: "User already exists" };
   }
 // GENERATE OTP
-const otp = Math.floor(100000 + Math.random() * 900000);
 
-//SEND OTP
-const sendOtp = require("../../utils/generateOtp");
-const isSent = await sendOtp(email, otp);
+// Generate OTP
+const otpCode = Math.floor(100000 + Math.random() * 900000);
 
-if (!isSent) {
-  throw { email: "Failed to send OTP" };
-}
-
-//STORE IN SESSION
-req.session.otp = otp;
+// Save OTP in DB
+const otpEntry = new Otp({ email, otp: otpCode.toString()});
+await otpEntry.save();
+req.session.userData = { firstName, lastName, email, phoneNumber, password, referralCode };
 req.session.otpExpiry = Date.now() + 2 * 60 * 1000;
-req.session.userData = {
-  firstName,
-  lastName,
-  email,
-  phoneNumber,
-  password,
-  referralCode
-};
 
-console.log("OTP:", otp);
+// Send OTP
+console.log("OTP:", otpCode);
+
+sendOtp(email, otpCode)
+  .then(() => console.log("OTP sent successfully"))
+  .catch(err => console.log("Failed to send OTP", err));
+
+// Store user data temporarily in session
+
+
 
 return { message: "OTP sent successfully" };
 }
-
  
 
 //signin
@@ -125,69 +123,51 @@ const signinService = async (data) => {
 
 
 const verifyOtpService = async (data,req)=>{
-  const {otp} = data
+  let {otp} = data
+  otp=otp.toString().trim()
 
+const userData = req.session.userData;
 
-  if(!req.session.otp || !req.session.userData){
-    throw {otp: "Session expired.Please signup  again"}
-  }
+  if (!userData) throw { otp: "Session expired. Please signup again." };
 
-   if (Date.now() > req.session.otpExpiry) {
-    req.session.otp = null
-    req.session.userData=null
-    req.session.otpExpiry=null
-    throw { otp: "OTP expired" };
-  }
-  if(Number(otp)!==req.session.otp){
-    throw {otp:"Invalid OTP"}
-  }
-  const userData = req.session.userData;
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(userData.password,salt)
-    try {
-    const newUser = await User.create({
-      ...userData,
-      password: hashedPassword
-    });
+  // Get OTP from DB
+  const otpRecord = await Otp.findOne({ email: userData.email }).sort({ createdAt: -1 });
+  if (!otpRecord) throw { otp: "OTP expired. Request a new one." };
 
-    console.log("User saved to DB:", newUser._id);
+  if (otp.trim() !== otpRecord.otp) throw { otp: "Invalid OTP" };
+  if (Date.now() > req.session.otpExpiry) throw { otp: "OTP expired" };
 
-    // session clear
-    req.session.otp = null;
-    req.session.userData = null;
+  // Hash password and save user
+  const hashedPassword = await bcrypt.hash(userData.password, 10);
+  await User.create({ ...userData, password: hashedPassword });
 
-    return { message: "Signup successful" };
-  } catch (err) {
-    console.error("DB save error:", err);
-    throw { general: "Failed to save user. Try again." };
-  }
+  // Delete OTP after successful verification
+  await Otp.deleteMany({ email: userData.email });
+
+  // Clear session
+  req.session.userData = null;
+  req.session.otpExpiry = null;
+
+  return { message: "Signup successful" };
 };
 
 const resendOtpService = async (req) => {
+  const userData = req.session.userData;
+  if (!userData) throw { otp: "Session expired. Please signup again." };
 
-  if (!req.session.userData) {
-    throw { otp: "Session expired. Please signup again" };
-  }
- const email = req.session.userData.email;
+  // Delete old OTPs
+  await Otp.deleteMany({ email: userData.email });
 
-  const otp = Math.floor(100000 + Math.random() * 900000);
+  // Generate new OTP
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  await Otp.create({ email: userData.email, otp: otpCode });
 
-  req.session.otp = otp;
+  // Send OTP
+  const isSent = await sendOtp(userData.email, otpCode);
+  if (!isSent) throw { otp: "Failed to resend OTP" };
+
   req.session.otpExpiry = Date.now() + 2 * 60 * 1000;
-
- 
-
-  const sendOtp = require("../../utils/generateOtp");
-  const isSent = await sendOtp(email, otp);
-
-  if (!isSent) {
-    throw { otp: "Failed to resend OTP" };
-  }
- 
-
-  return { message: "OTP resent successfully" };
+  return { success:true, message: "OTP resent successfully" };
 };
-
-
 
 module.exports = { signupService, signinService,verifyOtpService, resendOtpService};  

@@ -102,7 +102,7 @@ startTimer();
 const form = document.querySelector("form");
 const otpInput = document.querySelector("input");
 const otpError = document.getElementById("otp-error");
-const email = localStorage.getItem("signupEmail");
+
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -119,7 +119,8 @@ form.addEventListener("submit", async (e) => {
         const res = await fetch("/verify-otp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ otp })
+            body: JSON.stringify({ otp }),
+            credentials:"include"
         });
         const data = await res.json();
 
@@ -148,7 +149,7 @@ resendBtn.onclick = async () => {
         const res = await fetch("/resend-otp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email })
+            credentials:"include"
         });
         const data = await res.json();
         if (data.success) {
