@@ -30,6 +30,9 @@ router.get("/auth/google/callback",
     res.redirect("/home"); 
   }
 );
+router.get("/home",(req,res)=>{
+  res.render("user/home")
+})
 
 
 // signup

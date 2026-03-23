@@ -120,6 +120,17 @@
 
         a { color: var(--gold); text-decoration: none; }
         .footer-text { color: #555; font-size: 0.8rem; margin-top: 30px; }
+
+        input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px var(--dark-bg) inset !important;
+  -webkit-text-fill-color: #fff !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px var(--dark-bg) inset !important;
+  -webkit-text-fill-color: #fff !important;
+}
     </style>
 </head>
 <body>
@@ -165,12 +176,12 @@
 
     <div class="divider">OR SIGN IN WITH</div>
 
-    <button type="button" class="btn-google">
+    <button type="button" class="btn-google" onclick="window.location.href='/auth/google'">
         <i class="fab fa-google"></i>
         SIGN IN WITH GOOGLE
     </button>
 
-    <p class="text-center footer-text">Don't have an account? <a href="/auth/signup">Create an account</a></p>
+    <p class="text-center footer-text">Don't have an account? <a href="/signup">Create an account</a></p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -183,6 +194,14 @@ const emailError = document.getElementById("email-error");
 const passwordError = document.getElementById("password-error");
 const toast = document.getElementById("signinToast");
 const toastText = document.getElementById("signinText");
+
+emailInput.addEventListener("input", () => {
+  if (emailError) emailError.style.display = "none";
+});
+
+passwordInput.addEventListener("input", () => {
+  if (passwordError) passwordError.style.display = "none";
+});
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -197,7 +216,7 @@ form.addEventListener("submit", async (e) => {
   };
 
   try {
-    const res = await fetch("/auth/signin", {
+    const res = await fetch("/signin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData)
