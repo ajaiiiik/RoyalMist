@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const {signupController,signinController} = require("../controller/user/userController");
+const {signupController,signinController,verifyOtpController,resendOtpController} = require("../controller/user/userController");
 
 
 
@@ -12,10 +12,16 @@ router.get("/signup", (req, res) => {
 router.get("/signin", (req, res) => {
   res.render("user/signin")
 });
+router.get("/otp", (req,res)=>{
+  res.render("user/otp")
+})
 
 // signup
 router.post("/signup", signupController);
 router.post("/signin", signinController);
+router.post("/verify-otp", verifyOtpController);
+router.post("/resend-otp",resendOtpController)
+
 
 
 module.exports = router;

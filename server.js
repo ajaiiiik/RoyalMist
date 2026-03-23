@@ -25,20 +25,24 @@ app.set("views", path.join(__dirname, "views"));
 
 app.use(
   session({
-    secret: "mysecretkey",
+    secret: process.env.SESSION_SECRET || "mysecretkey",
     resave: false,
     saveUninitialized: true,
+    cookie :{
+      maxAge:2*60*1000,
+      httpOnly:true
+    }
   })
 );
 
 
 // ROUTES
-app.use("/auth", userRoutes);
+app.use('/',userRoutes);
 
 
 
 app.get("/", (req, res) => {
-  res.redirect("/auth/signup");
+  res.redirect("/signup");
 });
 
 
