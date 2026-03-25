@@ -31,7 +31,8 @@ router.get("/auth/google/callback",
   }
 );
 router.get("/home",(req,res)=>{
-  res.render("user/home")
+ const user = req.session.user || null;
+  res.render("user/home", { user });
 })
 
 
@@ -40,6 +41,13 @@ router.post("/signup", signupController);
 router.post("/signin", signinController);
 router.post("/verify-otp", verifyOtpController);
 router.post("/resend-otp",resendOtpController)
+router.post("/logout", (req, res) => {
+  req.session.destroy(err => {
+    if (err) return res.status(500).send("Logout failed");
+    res.clearCookie("connect.sid");
+    res.redirect("/signin");
+  });
+});
 
 
 

@@ -8,7 +8,8 @@
 
         return res.status(200).json({
             success: true,
-            message: result.message
+            message: result.message,
+            redirect : "/otp"
           });
         }
         catch (err) {

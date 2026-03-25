@@ -43,7 +43,7 @@
     gap:10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
 ">
-    <span style="font-size:18px;">✅</span>
+    <span style="font-size:18px;"></span>
     <span id="successText">OTP Verified!</span>
 </div>
 
@@ -99,15 +99,25 @@ function startTimer() {
 startTimer();
 
 // Form submit logic
-const form = document.querySelector("form");
-const otpInput = document.querySelector("input");
-const otpError = document.getElementById("otp-error");
+const form = document.querySelector("form")
+const otpInput = document.querySelector("input")
+const otpError = document.getElementById("otp-error")
+
+otpInput.addEventListener("input", () => {
+    otpInput.value = otpInput.value.replace(/\D/g,''); 
+});
 
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const otp = otpInput.value.trim();
+    const otp = otpInput.value.trim()
     otpError.style.display = "none";
+
+    if(!otp){
+        otpError.innerText="please fill OTP"
+        otpError.style.display="block"
+        return
+    }
 
     if (otp.length !== 6 || !/^\d+$/.test(otp)) {
         otpError.innerText = "Enter a valid 6-digit OTP";
@@ -119,7 +129,7 @@ form.addEventListener("submit", async (e) => {
         const res = await fetch("/verify-otp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ otp }),
+            body: JSON.stringify({otp}),
             credentials:"include"
         });
         const data = await res.json();

@@ -11,10 +11,16 @@ const sendOtp = async (email, otp) => {
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"Royal Mist" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Your OTP for Royal Mist",
-      html: `<h3>Your OTP is <b>${otp}</b></h3><p>Do not share it with anyone.</p>`,
+       html: `
+        <div style="font-family: sans-serif; color: #000;">
+          <h3>Your OTP is <b>${otp}</b></h3>
+          <p>Do not share it with anyone.</p>
+        </div>
+      `,
+      replyTo:process.env.EMAIL_USER,
     };
 
     await transporter.sendMail(mailOptions);

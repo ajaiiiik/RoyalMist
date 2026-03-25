@@ -161,7 +161,7 @@
     <h2 class="text-center">Create Account</h2>
     <p class="text-center sub-text">Enter the world of luxury fragrances</p>
 
-    <form id="signupForm" action="/auth/signup" method="POST">
+    <form id="signupForm" action="/signup" method="POST">
         <div class="row">
             <div class="col-6">
                 <label>First Name</label>
@@ -212,7 +212,8 @@
 
         <p class="text-center" style="font-size: 0.65rem; color: #444; margin: 20px 0;">BY JOINING, YOU AGREE TO OUR <a href="#">TERMS OF SERVICE</a> AND <a href="#">PRIVACY POLICY</a>.</p>
 
-        <button type="submit" class="btn-create" id="createBtn">CREATE ACCOUNT →</button>
+        <button type="submit" class="btn-create" id="createBtn">
+          CREATE ACCOUNT →</button>
     </form>
 
     <div class="divider">OR SIGN UP WITH</div>
@@ -332,11 +333,16 @@ confirmPasswordInput.addEventListener("input", () => {
   if (confirmPasswordError) confirmPasswordError.style.display = "none";
 });
 
-
+let isSubmitting = false;
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+   if (isSubmitting) return; 
+  isSubmitting = true;
 
    const btn = form.querySelector("button[type='submit']");
+  //  btn.disabled = true;
+  // btn.innerText = "Processing...";
+
 
   // clear old errors first 
   if (firstNameError) firstNameError.style.display = "none";
@@ -357,7 +363,8 @@ form.addEventListener("submit", async (e) => {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(formData)
+      body: JSON.stringify(formData),
+      credentials:"include"
     });
 
     const data = await res.json();
@@ -372,7 +379,7 @@ form.addEventListener("submit", async (e) => {
     setTimeout(() => {
         toast.style.display = "none";
         window.location.href = "/otp";
-    }, 2000);
+    }, 1200);
     } else {
       const errors = data.errors;
 
@@ -405,10 +412,19 @@ form.addEventListener("submit", async (e) => {
         confirmPasswordError.innerText = errors.confirmPassword;
         confirmPasswordError.style.display = "block";
       }
+      // btn.disabled = false;
+      // btn.innerText = "CREATE ACCOUNT →";
     }
 
   } catch (err) {
     console.log(err);
+    btn.disabled = false;
+  //    btn.innerText = "CREATE ACCOUNT →";
+  //   text.innerText="something went wrong"
+   }
+   finally {
+    isSubmitting = false;  
+    btn.disabled = false;
   }
 });
 
