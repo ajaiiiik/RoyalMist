@@ -10,6 +10,33 @@ const connectDB = async () => {
   }
 };
 
+
+const createAdmin = async () => {
+  try {
+    const email = "admin@royalmist.com";
+    const existingAdmin = await User.findOne({ email, role: "admin" });
+
+    if (existingAdmin) {
+      console.log("Admin already exists.");
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash("Admin@123", 10);
+
+    await User.create({
+      email,
+      password: hashedPassword,
+      role: "admin",
+    });
+
+    console.log("Admin created successfully!");
+  } catch (err) {
+    console.error("Error creating admin:", err.message);
+  } finally {
+    mongoose.connection.close();
+  }
+};
+
 module.exports = connectDB;
 
 

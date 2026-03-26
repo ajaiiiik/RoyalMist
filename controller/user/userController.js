@@ -1,4 +1,4 @@
-      const { signupService, signinService,verifyOtpService ,resendOtpService} = require("../../services/user/userService");
+      const { signupService, signinService,verifyOtpService ,resendOtpService,adminSigninService} = require("../../services/user/userService");
 
 
       //SIGNUP CONTROLLER
@@ -20,8 +20,7 @@
           });
         }
       };
-
-
+      
       
       // SIGNIN CONTROLLER
       const signinController = async (req, res) => {
@@ -75,4 +74,20 @@
     };
 
 
-      module.exports = { signupController, signinController,verifyOtpController, resendOtpController};
+
+const adminSigninController = async (req, res) => {
+  try {
+    const result = await adminSigninService(req.body);
+    req.session.admin = result.admin; // store admin session
+    return res.status(200).json({
+       success: true,
+        message: result.message });
+  } catch (err) {
+    return res.status(400).json({ 
+      success: false,
+       errors: err });
+  }
+};
+
+
+      module.exports = { signupController, signinController,verifyOtpController, resendOtpController,adminSigninController};

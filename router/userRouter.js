@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport")
 
-const {signupController,signinController,verifyOtpController,resendOtpController} = require("../controller/user/userController");
+const {signupController,signinController,verifyOtpController,resendOtpController,adminSigninController} = require("../controller/user/userController");
 
 
 
@@ -34,13 +34,20 @@ router.get("/home",(req,res)=>{
  const user = req.session.user || null;
   res.render("user/home", { user });
 })
+router.get("/admin/signin", (req, res) => {
+  res.render("admin/adminSignin");
+});
 
+router.get("/profile", (req,res)=>{
+  res.render("user/profile/profile")
+})
 
 // signup
 router.post("/signup", signupController);
 router.post("/signin", signinController);
 router.post("/verify-otp", verifyOtpController);
 router.post("/resend-otp",resendOtpController)
+router.post("/admin/signin", adminSigninController); 
 router.post("/logout", (req, res) => {
   req.session.destroy(err => {
     if (err) return res.status(500).send("Logout failed");

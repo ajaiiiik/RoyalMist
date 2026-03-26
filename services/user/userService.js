@@ -234,4 +234,32 @@ await Otp.create({
   return { success:true, message: "OTP resent successfully" };
 };
 
-module.exports = { signupService, signinService,verifyOtpService, resendOtpService};  
+
+
+//admin
+const adminSigninService = async (data) => {
+  const { email, password } = data;
+  const errors = {};
+
+  if (!email) errors.email = "Email is required";
+  if (!password) errors.password = "Password is required";
+
+  if (Object.keys(errors).length > 0) throw errors;
+
+  // find user with role admin
+  const admin = await User.findOne({ email: email.trim().toLowerCase(), role: "admin" });
+  if (!admin) throw { email: "Admin not found" };
+
+  const isMatch = await bcrypt.compare(password, admin.password);
+  if (!isMatch) throw { password: "Incorrect password" };
+
+  return {
+    message: "Admin signin successful",
+    admin: { id: admin._id, email: admin.email }
+  };
+};
+
+
+
+
+module.exports = { signupService, signinService,verifyOtpService, resendOtpService,adminSigninService};  
