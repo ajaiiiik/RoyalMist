@@ -58,39 +58,49 @@ if (!password) {
     throw errors;
   }
 
+  if (req.session.isSignupInProgress ){
+    if(!req.session.userData || Date.now() > req.session.otpExpiry) {
+      // Previous signup expired, reset session
+      req.session.isSignupInProgress = false;
+      req.session.userData = null;
+       req.session.otpAttempts = 0;
+    req.session.otpExpiry = null;
+  }
+  else {
+    // Active session — block
+    throw { otp: "Signup already in progress. Check your email for OTP." };
+  }
+}
+
   const existingUser = await User.findOne({ email:emailNormalized });
   if (existingUser) {
     throw { email: "User already exists" };
   }
 
-  if (req.session.isSignupInProgress) {
-    throw { otp: "Signup already in progress. Check your email for OTP." };
-  }
+
+  try{
   req.session.isSignupInProgress = true;
 
-  
-  
+
 
 //generate OTP
 const otpCode = Math.floor(100000 + Math.random() * 900000);
-console.log('otp',otpCode)
 
-try{
 await Otp.deleteMany({ email:emailNormalized});
 
 
 // Save OTP in db
 const hashedOtp = await bcrypt.hash(otpCode.toString(), 10);
 
-const otpEntry = new Otp({
+await Otp.create({
   email: emailNormalized,
-  otp: hashedOtp
+  otp: hashedOtp,
+  expiresAt: new Date(Date.now() + 5 * 60 * 1000)
 });
 
-await otpEntry.save();
 const hashedTempPassword = await bcrypt.hash(password, 10);
 req.session.userData = { firstName, lastName, email :emailNormalized, phoneNumber, password:hashedTempPassword, referralCode:referralCode || null };
-req.session.otpExpiry = Date.now() + 5 * 60 * 1000;
+req.session.otpExpiry = Date.now() + 5* 60 * 1000;
 
 
 await new Promise((resolve, reject) => {
@@ -111,13 +121,13 @@ await new Promise((resolve, reject) => {
   throw err;
 }
 
-console.log("OTP:", otpCode);
+
 return { message: "OTP sent successfully" };
 }
  
 
 //signin
-const signinService = async (data) => {
+const signinService = async (data,req) => {
   const { email, password } = data;
 
   const emailNormalized = email.trim().toLowerCase();
@@ -143,6 +153,18 @@ const signinService = async (data) => {
     throw { password: "Incorrect password" };
   }
 
+   req.session.user = {
+    id: user._id,
+    firstName: user.firstName,
+    email: user.email
+  };
+    await new Promise((resolve, reject) => {
+    req.session.save((err) => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+
   return {
     message: "Signin successful",
     user: { id: user._id, firstName: user.firstName, email: user.email } // optional
@@ -152,6 +174,14 @@ const signinService = async (data) => {
 
 
 const verifyOtpService = async (data,req)=>{
+
+  if (!req.session.userData || Date.now() > req.session.otpExpiry) {
+    req.session.isSignupInProgress = false;
+    req.session.userData = null;
+    req.session.otpAttempts = 0;
+    req.session.otpExpiry = null;
+    throw { otp: "Session expired. Please signup again." };
+}
   const userData = req.session.userData;
   let {otp} = data
   otp=otp.toString().trim()
@@ -164,42 +194,71 @@ const verifyOtpService = async (data,req)=>{
     req.session.otpAttempts = 0;
   }
 
-  // Get OTP from DB
-  const otpRecord = await Otp.findOne({ email: userData.email }).sort({ createdAt: -1 });
-  if (!otpRecord) throw { otp: "OTP expired. Request a new one." };
+  
 
   if (req.session.otpAttempts >= 5) {
   throw { otp: "Too many attempts. Please resend OTP." };
 }
   
-if (Date.now() > req.session.otpExpiry) {
-  throw { otp: "OTP expired" };
+
+
+// Get OTP from DB
+ const otpRecord = await Otp.findOne({ email: userData.email })
+  .sort({ createdAt: -1 });
+  console.log("OTP from frontend:", otp); 
+  console.log("OTP record from DB:", otpRecord);
+console.log("Current time:", new Date());
+
+ if (!otpRecord) throw { otp: "OTP not found" };
+
+if (new Date() > otpRecord.expiresAt) {
+  throw { otp: "OTP expired. Request a new one." };
 }
+
  const isValidOtp = await bcrypt.compare(otp, otpRecord.otp);
+ console.log("OTP valid result:", isValidOtp);
 
 if (!isValidOtp) {
   req.session.otpAttempts += 1;
   throw { otp: "Invalid OTP" };
 }
 
-const existingUser = await User.findOne({ email: userData.email });
-if (existingUser) {
-  throw { email: "User already verified. Please login." };
-}
-
-
   // Hash password and save user
- await User.create(userData);
+  let newUser;
+
+try {
+  newUser = await User.create(userData);
+} catch (err) {
+  if (err.code === 11000) {
+     req.session.userData = null;           
+    req.session.isSignupInProgress = false; 
+    req.session.otpAttempts = 0;            
+    req.session.otpExpiry = null; 
+    throw {otp: "User already exists, please login" };
+  }
+  throw err;
+}
+  await Otp.deleteMany({ email: userData.email });
+
+  // Clean session data
+  req.session.userData = null;
   req.session.otpAttempts = 0;
+  req.session.otpExpiry = null;
+  req.session.isSignupInProgress = false;
 
-  // // Delete OTP after successful verification
-   await Otp.deleteMany({ email: userData.email});
+  req.session.user = {
+    id: newUser._id,
+    firstName: newUser.firstName,
+    email: newUser.email
+  };
 
-   req.session.isSignupInProgress = false;
-  // Clear session
- req.session.destroy((err) => {
-  if (err) console.log("Session destroy error:", err);
-});
+
+  await new Promise((resolve, reject) => {
+    req.session.save((err) => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
 
   return { message: "Signup successful" };
 };
@@ -223,14 +282,15 @@ const resendOtpService = async (req) => {
 
 await Otp.create({
   email: userData.email,
-  otp: hashedOtp
+  otp: hashedOtp,
+   expiresAt: new Date(Date.now() + 5*  60 * 1000)
 });
 
   // Send OTP
   const isSent = await sendOtp(userData.email, otpCode);
   if (!isSent) throw { otp: "Failed to resend OTP" };
 
-  req.session.otpExpiry = Date.now() + 5 * 60 * 1000;
+  req.session.otpExpiry = Date.now()+5 * 60 * 1000;
   return { success:true, message: "OTP resent successfully" };
 };
 

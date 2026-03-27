@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport")
+const { isAuthenticated,requireSignupSession } = require("../middleware/auth");
 
 const {signupController,signinController,verifyOtpController,resendOtpController} = require("../controller/user/userController");
 
@@ -13,7 +14,7 @@ router.get("/signup", (req, res) => {
 router.get("/signin", (req, res) => {
   res.render("user/signin")
 });
-router.get("/otp", (req,res)=>{
+router.get("/otp", requireSignupSession, (req,res)=>{
   res.render("user/otp")
 })
 //goog login start
@@ -30,11 +31,10 @@ router.get("/auth/google/callback",
     res.redirect("/home"); 
   }
 );
-router.get("/home",(req,res)=>{
+router.get("/home",isAuthenticated, (req,res)=>{
  const user = req.session.user || null;
   res.render("user/home", { user });
 })
-
 
 // signup
 router.post("/signup", signupController);
@@ -49,6 +49,11 @@ router.post("/logout", (req, res) => {
   });
 });
 
-
+// Clear OTP session
+router.post("/clear-otp-session", (req, res) => {
+    req.session.otp = null;
+    req.session.email = null; // if you store email in session
+    res.json({ success: true });
+});
 
 module.exports = router;

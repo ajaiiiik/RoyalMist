@@ -102,6 +102,7 @@ startTimer();
 const form = document.querySelector("form")
 const otpInput = document.querySelector("input")
 const otpError = document.getElementById("otp-error")
+const submitBtn = document.querySelector(".btn-verify");
 
 otpInput.addEventListener("input", () => {
     otpInput.value = otpInput.value.replace(/\D/g,''); 
@@ -110,18 +111,22 @@ otpInput.addEventListener("input", () => {
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
+     submitBtn.disabled = true;
     const otp = otpInput.value.trim()
-    otpError.style.display = "none";
+   otpError.style.display = "none";
+otpError.innerText = "";
 
     if(!otp){
         otpError.innerText="please fill OTP"
         otpError.style.display="block"
+        submitBtn.disabled = false;
         return
     }
 
     if (otp.length !== 6 || !/^\d+$/.test(otp)) {
         otpError.innerText = "Enter a valid 6-digit OTP";
         otpError.style.display = "block";
+        submitBtn.disabled = false;
         return;
     }
 
@@ -133,6 +138,7 @@ form.addEventListener("submit", async (e) => {
             credentials:"include"
         });
         const data = await res.json();
+        console.log(data)
 
         if (data.success) {
     const toast = document.getElementById("successToast");
@@ -145,16 +151,22 @@ form.addEventListener("submit", async (e) => {
         window.location.href = "/home";
     }, 2000); // redirect after 2 seconds
 } else {
-            otpError.innerText = data.errors?.otp || "Invalid OTP";
+            otpError.innerText = data.errors?.otp || data.errors?.email || "Invalid OTP";
             otpError.style.display = "block";
+            submitBtn.disabled = false;
         }
     } catch (err) {
         console.log(err);
+        submitBtn.disabled = false;
     }
 });
 
 // Resend OTP logic
 resendBtn.onclick = async () => {
+
+        otpInput.value = '';               
+   otpError.style.display = 'none';
+otpError.innerText = "";
     try {
         const res = await fetch("/resend-otp", {
             method: "POST",
@@ -174,12 +186,25 @@ resendBtn.onclick = async () => {
         toast.style.display = "none";
     }, 2000); // hide toast after 2 seconds
 } else {
-            alert(data.errors?.message || "Failed to resend OTP");
-        }
+  const toast = document.getElementById("successToast");
+  const text = document.getElementById("successText");
+  toast.style.borderColor = "red";
+  toast.style.color = "red";
+  text.innerText = data.errors?.otp || "Failed to resend OTP";
+  toast.style.display = "flex";
+
+  setTimeout(() => {
+    toast.style.display = "none";
+    toast.style.borderColor = "#c4a14d";
+    toast.style.color = "#c4a14d";
+  }, 3000);
+}
     } catch (err) {
         console.log(err);
     }
 };
+
+
 </script>
 </body>
 </html>

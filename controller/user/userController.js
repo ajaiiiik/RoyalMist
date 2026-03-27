@@ -26,12 +26,14 @@
       // SIGNIN CONTROLLER
       const signinController = async (req, res) => {
         try {
-          const result = await signinService(req.body);
+          const result = await signinService(req.body,req);
 
           return res.json({
             success: true,
             message: result.message,
-            user: result.user // optional, user data if needed
+            redirect: "/home",
+
+            user: result.user // user data if needed
           });
         } catch (err) {
           console.error("signin error", err);
@@ -51,7 +53,7 @@
           message: result.message
         });
       } catch (err) {
-        return res.json({
+        return res.status(400).json({
           success: false,
           errors: err
         });
