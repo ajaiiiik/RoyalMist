@@ -1,4 +1,5 @@
-      const { signupService, signinService,verifyOtpService ,resendOtpService} = require("../../services/user/userService");
+      const User = require("../../model/userSchema");
+      const { signupService, signinService,verifyOtpService ,resendOtpService,updateProfileImageService,removeProfileImageService} = require("../../services/user/userService");
 
 
       //SIGNUP CONTROLLER
@@ -76,5 +77,54 @@
       }             
     };
 
+const accountController = async (req, res) => {
+    try {
+        if (!req.session.user) return res.redirect("/signin");
 
-      module.exports = { signupController, signinController,verifyOtpController, resendOtpController};
+        const freshUser = await User.findById(req.session.user.id);
+        if (!freshUser) return res.redirect("/signin");
+
+        res.render("user/profile/profile", { 
+            user: {
+              ...freshUser._doc,
+              phone:freshUser.phoneNumber
+            },
+            addresses: freshUser.addresses || []
+        });
+    } catch (err) {
+        console.log(err);
+        res.redirect("/signin");
+    }
+};
+
+const updateProfileImageController = async (req, res) => {
+    try {
+        if (!req.session.user) return res.status(401).json({ success: false, message: "Unauthorized" });
+        if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded" });
+
+        // Assuming you store file in /uploads and return URL
+        const imageUrl = `/uploads/${req.file.filename}`; 
+        const result = await updateProfileImageService(req.session.user.id, imageUrl);
+
+        res.json({ success: true, imageUrl: result.imageUrl });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Failed to update profile image" });
+    }
+};
+
+
+
+const removeProfileImageController = async (req, res) => {
+    try {
+        if (!req.session.user) return res.status(401).json({ success: false });
+        await removeProfileImageService(req.session.user.id);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false });
+    }
+};
+
+
+      module.exports = { signupController, signinController,verifyOtpController, resendOtpController,accountController,updateProfileImageController,removeProfileImageController};

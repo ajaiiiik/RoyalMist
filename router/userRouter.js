@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport")
+const multer = require("multer");
+const path = require("path");
 const { isAuthenticated,requireSignupSession } = require("../middleware/auth");
 
-const {signupController,signinController,verifyOtpController,resendOtpController} = require("../controller/user/userController");
+const {signupController,signinController,verifyOtpController,resendOtpController,accountController,updateProfileImageController,removeProfileImageController} = require("../controller/user/userController");
 
 
 
@@ -36,11 +38,15 @@ router.get("/home",isAuthenticated, (req,res)=>{
   res.render("user/home", { user });
 })
 
+
+router.get("/account", isAuthenticated, accountController);
+
 // signup
 router.post("/signup", signupController);
 router.post("/signin", signinController);
 router.post("/verify-otp", verifyOtpController);
-router.post("/resend-otp",resendOtpController)
+router.post("/resend-otp",resendOtpController);
+router.post("/removeProfileImage", removeProfileImageController);
 router.post("/logout", (req, res) => {
   req.session.destroy(err => {
     if (err) return res.status(500).send("Logout failed");
@@ -55,5 +61,28 @@ router.post("/clear-otp-session", (req, res) => {
     req.session.email = null; // if you store email in session
     res.json({ success: true });
 });
+
+
+// multer setup
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "public/uploads/");
+    },
+    filename: function (req, file, cb) {
+        const ext = path.extname(file.originalname);
+        cb(null, "profile_" + Date.now() + ext);
+    }
+});
+
+const upload = multer({ storage });
+router.post("/updateProfileImage", upload.single("profileImage"), updateProfileImageController)
+
+
+
+
+
+
+
+
 
 module.exports = router;

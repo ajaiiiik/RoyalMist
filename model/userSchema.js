@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
 
   phoneNumber: {
     type: String,
+    unique:true,
     required:  function () {
     return this.googleId ?false:true
   }
@@ -40,6 +41,11 @@ const userSchema = new mongoose.Schema({
     default: null,
     trim:true
   },
+
+  profileImage: 
+  { type: String, 
+    default: "" },
+    
   googleId:{
     type:String
   }

@@ -246,33 +246,56 @@
 }
 
 .user-icon {
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    transition: 0.3s;
+   cursor: pointer;
+    color: #fff;          
+    background: none;     
+    border: none;        
+    padding: 0;           
+    font-family: var(--font-main);
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .user-icon:hover {
-    background: #111;
-    color: var(--gold);
+    background:none;
+    color: #fff
+    
+}
+
+.user-icon .caret {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.username-text {
+    cursor: default;
+}
+
+/* Arrow only: pointer hand */
+.caret {
+    /* cursor: pointer; */
+    display: inline-flex;
+    align-items: center;
 }
 
 /* ITEMS */
 .dropdown-item-custom {
-    display: block;
-    padding: 10px;
-    color: #fff;
-    text-decoration: none;
+    color: #fff;           /* white default */
     background: none;
     border: none;
+    text-decoration: none;
+    display: block;
+    padding: 10px 15px;
     width: 100%;
     text-align: left;
     font-family: var(--font-main);
 }
 
 .dropdown-item-custom:hover {
-    background: #111;
     color: var(--gold);
+     background: #111;
 }
 
 
@@ -286,17 +309,20 @@
 }
 
 .dropdown-menu-custom {
-    position: fixed;
-    right: 30px;
-    top: 70px;
-    will-change: transform, opacity;
-    max-height: none !important;  
-    overflow: visible !important;
-    background: #0a0a0a;
-    border: 1px solid #222;
+    position: absolute;   /* Relative to parent */
+    top: 100%;
+    right: 0;
+    background: #0a0a0a;  /* Dark background */
+    border: none;
     min-width: 160px;
     z-index: 3000;
     box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    display: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.25s ease-in-out;
+    visibility: hidden;
+    pointer-events: none;
 
     display: none;
     opacity: 0;
@@ -366,9 +392,9 @@
   <div class="user-dropdown">
   <% if(user) { %>
     <div class="dropdown">
-      <button id="userIcon" class="dropbtn">
+      <span id="userIcon" class="dropbtn">
         <%= user.firstName %> <i class="fa fa-caret-down"></i>
-      </button>
+      </span>
       <div id="dropdownMenu" class="dropdown-menu-custom">
         <a href="/account" class="dropdown-item-custom">Account</a>
         <form action="/logout" method="POST">
@@ -620,11 +646,23 @@ const dropdown = document.getElementById("dropdownMenu");
 if (userIcon && dropdown) {
     userIcon.addEventListener("click", (e) => {
         e.stopPropagation();
-        dropdown.classList.toggle("show");
+        const isShown = dropdown.classList.toggle("show");
+           userIcon.setAttribute("aria-expanded", isShown);
     });
 
     window.addEventListener("click", (e) => {
             dropdown.classList.remove("show");
+             userIcon.setAttribute("aria-expanded", false);
+    });
+}
+
+const caret = document.querySelector("#userIcon .caret");
+
+if (caret && dropdown) {
+    caret.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isShown = dropdown.classList.toggle("show");
+        caret.setAttribute("aria-expanded", isShown);
     });
 }
 
