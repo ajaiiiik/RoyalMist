@@ -19,10 +19,18 @@ passport.use(
   user = await User.create({
     googleId: profile.id,
     firstName: profile.name.givenName,
-    lastName: profile.name.familyName,
+    lastName: profile.name.familyName || "",
     email
   });
 }
+
+ if (!user.googleId) {
+          user = await User.findByIdAndUpdate(
+            user._id,
+            { googleId: profile.id },
+            { new: true }
+          );
+        }
 
         return done(null, user);
       } catch (err) {
@@ -36,8 +44,12 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser(async (id, done) => {
-  const user = await User.findById(id);
-  done(null, user);
+ try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
 });
 
 module.exports = passport;

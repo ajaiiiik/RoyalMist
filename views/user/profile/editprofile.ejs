@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --gold: #c4a14d;
+    --bg: #000;
+}
+body {
+    margin: 0;
+    background: var(--bg);
+    color: #fff;
+    font-family: 'Playfair Display', serif;
+}
+.container {
+    max-width: 600px;
+    margin: auto;
+    padding: 60px 20px;
+}
+.title { font-size: 30px; margin-bottom: 10px; }
+.subtitle { color: #777; font-size: 13px; margin-bottom: 40px; }
+.form { display: flex; flex-direction: column; gap: 25px; }
+.row { display: flex; gap: 30px; }
+.row .field { flex: 1; }
+.field label {
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    display: block;
+}
+.field input {
+    width: 100%;
+    padding: 12px;
+    background: #000;
+    border: 1px solid #333;
+    color: #fff;
+    font-family: 'Playfair Display', serif;
+    outline: none;
+    transition: border-color .2s;
+     box-sizing: border-box;
+}
+.field input:focus { border-color: var(--gold); }
+.field input[readonly] { color: #888; cursor: default; }
+
+.email-row { display: flex; gap: 0; }
+.email-row input { flex: 1; border-right: none; }
+.btn-change {
+    background: transparent;
+    border: 1px solid #333;
+    border-left: none;
+    color: var(--gold);
+    padding: 0 16px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    font-family: 'Playfair Display', serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: .2s;
+}
+.btn-change:hover { background: var(--gold); color: #000; border-color: var(--gold); }
+
+.btn-gold-fill {
+    background: var(--gold);
+    color: #000;
+    border: none;
+    padding: 12px 24px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    transition: .2s;
+}
+.btn-gold-fill:hover { background: #d4b05d; }
+.btn-gold-fill:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-gold {
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    background: transparent;
+    padding: 12px 24px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    transition: .2s;
+}
+.btn-gold:hover { background: var(--gold); color: #000; }
+.actions { display: flex; gap: 15px; }
+.error { color: red; font-size: 12px; margin-top: 4px; }
+
+.toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    padding: 12px 20px;
+    display: none;
+    font-family: 'Playfair Display', serif;
+    z-index: 9999;
+}
+.toast.success { background: var(--gold); color: #000; }
+.toast.fail { background: #c0392b; color: #fff; }
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+.modal.active { display: flex; }
+.modal-box {
+    background: #000;
+    border: 1px solid #333;
+    padding: 36px 30px;
+    width: 100%;
+    max-width: 380px;
+}
+.modal-title { font-size: 22px; color: #fff; margin-bottom: 6px; }
+.modal-sub {
+    font-size: 10px;
+    color: #555;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+}
+.modal-box .field { margin-bottom: 20px; }
+.modal-err { color: red; font-size: 11px; margin-top: -12px; margin-bottom: 14px; display: none; }
+.modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+.modal-actions .btn-gold-fill { flex: 1; padding: 12px; text-align: center; }
+.modal-divider { border: none; border-top: 1px solid #1a1a1a; margin: 24px 0; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="title">Edit Profile</div>
+    <div class="subtitle">Manage your personal info</div>
+
+    <form id="form" class="form">
+        <div class="row">
+            <div class="field">
+                <label>FIRST NAME</label>
+                <input id="firstName" value="<%= user.firstName %>">
+                <div class="error" id="errFirst"></div>
+            </div>
+            <div class="field">
+                <label>LAST NAME</label>
+                <input id="lastName" value="<%= user.lastName %>">
+                <div class="error" id="errLast"></div>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>EMAIL</label>
+            <div class="email-row">
+                <input id="email" value="<%= user.email %>" readonly>
+                <button type="button" class="btn-change" onclick="openModal()">CHANGE</button>
+            </div>
+            <div class="error" id="errEmail"></div>
+        </div>
+
+        <div class="field">
+            <label>PHONE</label>
+            <input id="phone" value="<%= user.phone %>">
+            <div class="error" id="errPhone"></div>
+        </div>
+
+        <div class="field">
+            <label>REFERRAL CODE</label>
+            <input id="referral" value="<%= user.referralCode || '' %>">
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn-gold-fill" id="saveBtn">SAVE</button>
+            <button type="button" class="btn-gold" onclick="history.back()">CANCEL</button>
+        </div>
+    </form>
+</div>
+
+<div id="successToast" style="
+    display:none;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: black;
+    color: #c4a14d;
+    border: 2px solid #c4a14d;
+    padding: 15px 25px;
+    font-weight: 700;
+    border-radius: 8px;
+    font-family: 'Playfair Display', serif;
+    z-index: 9999;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+">
+    <span style="font-size:18px;">✅</span>
+    <span id="successText"></span>
+</div>
+
+<div class="modal" id="modal">
+    <div class="modal-box">
+        <div id="step1">
+            <div class="modal-title">Change Email</div>
+            <div class="modal-sub">Enter your new email address</div>
+            <div class="field">
+                <label>NEW EMAIL</label>
+                <input id="newEmail" type="email" placeholder="new@example.com">
+            </div>
+            <div class="modal-err" id="modalErr"></div>
+            <div class="modal-actions">
+                <button class="btn-gold-fill" onclick="sendOtp()">SEND OTP</button>
+                <button class="btn-gold" onclick="closeModal()">CANCEL</button>
+            </div>
+        </div>
+
+        <div id="step2" style="display:none;">
+            <div class="modal-title">Verify OTP</div>
+            <div class="modal-sub">Check your new email inbox</div>
+            <hr class="modal-divider">
+            <div class="field">
+                <label>ENTER OTP</label>
+                <input id="otpInput" type="text" placeholder="6-digit OTP" maxlength="6">
+            </div>
+            <div class="modal-err" id="otpErr"></div>
+            <div class="modal-actions">
+                <button class="btn-gold-fill" onclick="verifyOtp()">VERIFY & UPDATE</button>
+                <button class="btn-gold" onclick="closeModal()">CANCEL</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const saveBtn = document.getElementById("saveBtn");
+
+function openModal() {
+    document.getElementById("newEmail").value = "";
+    document.getElementById("otpInput").value = "";
+    document.getElementById("step1").style.display = "block";
+    document.getElementById("step2").style.display = "none";
+    document.getElementById("modalErr").style.display = "none";
+    document.getElementById("otpErr").style.display = "none";
+    document.getElementById("modal").classList.add("active");
+}
+
+function closeModal() {
+    document.getElementById("modal").classList.remove("active");
+}
+
+document.getElementById("modal").addEventListener("click", (e) => {
+    if (e.target === document.getElementById("modal")) closeModal();
+});
+
+async function sendOtp() {
+    const val = document.getElementById("newEmail").value.trim();
+    const err = document.getElementById("modalErr");
+
+    if (!val || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+        err.innerText = "Please enter a valid email address";
+        err.style.display = "block";
+        return;
+    }
+    err.style.display = "none";
+
+    try {
+        const res = await fetch("/send-email-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ newEmail: val })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            document.getElementById("step1").style.display = "none";
+            document.getElementById("step2").style.display = "block";
+        } else {
+            err.innerText = data.message || "Failed to send OTP";
+            err.style.display = "block";
+        }
+    } catch {
+        err.innerText = "Something went wrong. Try again.";
+        err.style.display = "block";
+    }
+}
+
+async function verifyOtp() {
+    const otp = document.getElementById("otpInput").value.trim();
+    const err = document.getElementById("otpErr");
+
+    if (!/^\d{6}$/.test(otp)) {
+        err.innerText = "Enter a valid 6-digit OTP";
+        err.style.display = "block";
+        return;
+    }
+    err.style.display = "none";
+
+    try {
+        const res = await fetch("/verify-email-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ otp })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            // Update displayed email
+            document.getElementById("email").value = document.getElementById("newEmail").value.trim();
+            closeModal();
+            showToast("Email updated successfully", "success");
+        } else {
+            err.innerText = data.message || "Invalid OTP";
+            err.style.display = "block";
+        }
+    } catch {
+        err.innerText = "Something went wrong. Try again.";
+        err.style.display = "block";
+    }
+}
+
+function showToast(msg, type = "success") {
+    const toast = document.getElementById("successToast");
+    const text = document.getElementById("successText");
+    const icon = toast.querySelector("span:first-child");
+    text.innerText = msg;
+    icon.innerText = type === "success" ? "✅" : "⚠️";
+    toast.style.display = "flex";
+    setTimeout(() => toast.style.display = "none", 2000);
+}
+document.getElementById("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (saveBtn.disabled) return;
+
+    const first = document.getElementById("firstName").value.trim();
+    const last  = document.getElementById("lastName").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    document.querySelectorAll(".error").forEach(e => e.innerText = "");
+
+    // Phone validation only if phone is entered
+    if (phone && !/^[6-9]\d{9}$/.test(phone)) {
+        document.getElementById("errPhone").innerText = "Valid 10-digit number required";
+        return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.innerText = "SAVING...";
+
+    try {
+        const res = await fetch("/updateProfile", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                firstName: first,
+                lastName: last,
+                phoneNumber: phone,
+                referralCode: document.getElementById("referral").value
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            showToast("Profile Updated", "success");
+            setTimeout(() => window.location.href = "/account", 1500);
+        } else {
+            showToast(data.message || "Update failed. Try again.", "fail");
+        }
+    } catch {
+        showToast("Something went wrong. Try again.", "fail");
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = "SAVE";
+    }
+});
+
+</script>
+
+</body>
+</html>

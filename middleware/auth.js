@@ -1,9 +1,9 @@
 
 const isAuthenticated = (req, res, next) => {
-  if (!req.session.user) {
-    return res.redirect("/signin");
+  if (req.isAuthenticated() || req.session.user) {
+    return next();
   }
-  next();
+  return res.redirect("/signin");
 };
 
 const requireSignupSession = (req, res, next) => {

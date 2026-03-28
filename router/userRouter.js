@@ -5,7 +5,7 @@ const multer = require("multer");
 const path = require("path");
 const { isAuthenticated,requireSignupSession } = require("../middleware/auth");
 
-const {signupController,signinController,verifyOtpController,resendOtpController,accountController,updateProfileImageController,removeProfileImageController} = require("../controller/user/userController");
+const {signupController,signinController,verifyOtpController,resendOtpController,accountController,updateProfileImageController,removeProfileImageController,updateProfileController,sendEmailChangeOtpController,verifyEmailChangeOtpController} = require("../controller/user/userController");
 
 
 
@@ -30,14 +30,28 @@ router.get("/auth/google/callback",
     failureRedirect: "/signup"
   }),
   (req, res) => {
+      req.session.user = {
+      id: req.user._id,                         
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      email: req.user.email,
+      phone: req.user.phoneNumber || null,
+      referralCode: req.user.referralCode || null
+    };
+    req.session.save((err) => {
+  if (err) return res.redirect("/signup");
     res.redirect("/home"); 
-  }
+  })
+}
 );
 router.get("/home",isAuthenticated, (req,res)=>{
- const user = req.session.user || null;
+ const user = req.session.user || req.user|| null;
   res.render("user/home", { user });
 })
-
+router.get("/editProfile", isAuthenticated, (req, res) => {
+  const user = req.session.user || null;
+  res.render("user/profile/editProfile", { user });
+});
 
 router.get("/account", isAuthenticated, accountController);
 
@@ -46,7 +60,13 @@ router.post("/signup", signupController);
 router.post("/signin", signinController);
 router.post("/verify-otp", verifyOtpController);
 router.post("/resend-otp",resendOtpController);
-router.post("/removeProfileImage", removeProfileImageController);
+router.post("/removeProfileImage", isAuthenticated, removeProfileImageController);
+router.post("/updateProfile", isAuthenticated, updateProfileController);
+router.post("/send-email-otp", isAuthenticated, sendEmailChangeOtpController);
+router.post("/verify-email-otp", isAuthenticated, verifyEmailChangeOtpController);
+
+
+
 router.post("/logout", (req, res) => {
   req.session.destroy(err => {
     if (err) return res.status(500).send("Logout failed");
@@ -56,7 +76,7 @@ router.post("/logout", (req, res) => {
 });
 
 // Clear OTP session
-router.post("/clear-otp-session", (req, res) => {
+router.post("/clear-otp-session", requireSignupSession,(req, res) => {
     req.session.otp = null;
     req.session.email = null; // if you store email in session
     res.json({ success: true });
@@ -64,18 +84,26 @@ router.post("/clear-otp-session", (req, res) => {
 
 
 // multer setup
+
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, "public/uploads/");
-    },
-    filename: function (req, file, cb) {
-        const ext = path.extname(file.originalname);
-        cb(null, "profile_" + Date.now() + ext);
-    }
+  destination: (req, file, cb) => cb(null, "public/uploads/"),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, "profile_" + Date.now() + ext);
+  }
 });
 
-const upload = multer({ storage });
-router.post("/updateProfileImage", upload.single("profileImage"), updateProfileImageController)
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    allowed.includes(file.mimetype)
+      ? cb(null, true)
+      : cb(new Error("Only JPEG, PNG, WEBP allowed"), false);
+  }
+});
+router.post("/updateProfileImage",  isAuthenticated,upload.single("profileImage"), updateProfileImageController)
 
 
 

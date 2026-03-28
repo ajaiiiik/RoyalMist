@@ -24,6 +24,8 @@ const userSchema = new mongoose.Schema({
   phoneNumber: {
     type: String,
     unique:true,
+    sparse:true,
+    default:undefined,
     required:  function () {
     return this.googleId ?false:true
   }

@@ -1,5 +1,5 @@
       const User = require("../../model/userSchema");
-      const { signupService, signinService,verifyOtpService ,resendOtpService,updateProfileImageService,removeProfileImageService} = require("../../services/user/userService");
+      const { signupService, signinService,verifyOtpService ,resendOtpService, updateProfileService,updateProfileImageService,removeProfileImageService,sendEmailChangeOtpService,verifyEmailChangeOtpService} = require("../../services/user/userService");
 
 
       //SIGNUP CONTROLLER
@@ -127,4 +127,38 @@ const removeProfileImageController = async (req, res) => {
 };
 
 
-      module.exports = { signupController, signinController,verifyOtpController, resendOtpController,accountController,updateProfileImageController,removeProfileImageController};
+const updateProfileController = async (req, res) => {
+  try {
+    const result = await updateProfileService(req.body, req);
+
+    res.json({ success: true, message: result.message });
+
+  } catch (err) {
+    res.json({ success: false, message: err.message || "Update failed" });
+  }
+};
+
+
+const sendEmailChangeOtpController = async (req, res) => {
+    try {
+        const result = await sendEmailChangeOtpService(req.body, req);
+        res.json({ success: true, message: result.message });
+    } catch (err) {
+        res.json({ success: false, message: err.message || "Something went wrong" });
+    }
+};
+
+const verifyEmailChangeOtpController = async (req, res) => {
+    try {
+        const result = await verifyEmailChangeOtpService(req.body, req);
+        res.json({ success: true, message: result.message });
+    } catch (err) {
+        res.json({ success: false, message: err.message || "Something went wrong" });
+    }
+};
+
+
+
+
+      module.exports = { signupController, signinController,verifyOtpController, resendOtpController,accountController,updateProfileImageController,removeProfileImageController,updateProfileController, sendEmailChangeOtpController, 
+    verifyEmailChangeOtpController};

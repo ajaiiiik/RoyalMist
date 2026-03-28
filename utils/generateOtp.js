@@ -28,7 +28,7 @@ const sendOtp = async (email, otp) => {
   } catch (err) {
     console.log("OTP send error:", err);
     return false;
-  }
+  } 
 };
 
 module.exports = sendOtp;

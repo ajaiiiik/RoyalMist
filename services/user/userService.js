@@ -338,6 +338,100 @@ const removeProfileImageService = async (userId) => {
   return { message: "Profile image removed" };
 };
 
+const updateProfileService = async (data, req) => {
+  const { firstName, lastName, phoneNumber, referralCode } = data;
+
+  if (!firstName || !lastName || !phoneNumber) {
+    throw { message: "All fields required" };
+  }
+
+  if (!/^[6-9]\d{9}$/.test(phoneNumber)) {
+    throw { message: "Valid 10-digit phone number required" };
+  }
+
+  const user = await User.findById(req.session.user.id);
+  if (!user) throw { message: "User not found" };
+
+  user.firstName = firstName;
+  user.lastName = lastName;
+  user.phoneNumber = phoneNumber;
+  if (referralCode) user.referralCode = referralCode;
+
+  await user.save();
+
+  req.session.user.firstName = firstName;
+  req.session.user.lastName = lastName;
+  req.session.user.phone = phoneNumber;
+
+  return { message: "Profile updated successfully" };
+};
+
+
+
+
+
+// SEND EMAIL CHANGE OTP SERVICE
+const sendEmailChangeOtpService = async (data, req) => {
+    const { newEmail } = data;
+    const emailNormalized = newEmail.trim().toLowerCase();
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!newEmail || !emailRegex.test(newEmail)) {
+        throw { message: "Invalid email format" };
+    }
+
+    const existing = await User.findOne({ email: emailNormalized });
+    if (existing) throw { message: "Email already in use" };
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000);
+    await Otp.deleteMany({ email: emailNormalized });
+
+    const hashedOtp = await bcrypt.hash(otpCode.toString(), 10);
+    await Otp.create({
+        email: emailNormalized,
+        otp: hashedOtp,
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000)
+    });
+
+    req.session.pendingEmail = emailNormalized;
+    await new Promise((resolve, reject) => {
+        req.session.save(err => err ? reject(err) : resolve());
+    });
+
+    const isSent = await sendOtp(emailNormalized, otpCode);
+    if (!isSent) throw { message: "Failed to send OTP" };
+
+    return { message: "OTP sent to new email" };
+};
+
+// VERIFY EMAIL CHANGE OTP SERVICE
+const verifyEmailChangeOtpService = async (data, req) => {
+    const { otp } = data;
+    const newEmail = req.session.pendingEmail;
+
+    if (!newEmail) throw { message: "Session expired. Try again." };
+
+    const otpRecord = await Otp.findOne({ email: newEmail }).sort({ createdAt: -1 });
+    if (!otpRecord) throw { message: "OTP not found. Please resend." };
+
+    if (new Date() > otpRecord.expiresAt) throw { message: "OTP expired. Please resend." };
+
+    const isValid = await bcrypt.compare(otp.toString(), otpRecord.otp);
+    if (!isValid) throw { message: "Invalid OTP. Try again." };
+
+    await Otp.deleteMany({ email: newEmail });
+
+    await User.findByIdAndUpdate(req.session.user.id, { email: newEmail });
+
+    req.session.user.email = newEmail;
+    req.session.pendingEmail = null;
+    await new Promise((resolve, reject) => {
+        req.session.save(err => err ? reject(err) : resolve());
+    });
+
+    return { message: "Email updated successfully" };
+};
+
 module.exports = {
   signupService,
   signinService,
@@ -345,4 +439,7 @@ module.exports = {
   resendOtpService,
   updateProfileImageService,
   removeProfileImageService,
+  updateProfileService,
+  sendEmailChangeOtpService,  
+  verifyEmailChangeOtpService 
 };
