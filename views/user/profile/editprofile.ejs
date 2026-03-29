@@ -10,43 +10,64 @@
     --gold: #c4a14d;
     --bg: #000;
 }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-    margin: 0;
     background: var(--bg);
     color: #fff;
     font-family: 'Playfair Display', serif;
 }
+
+/* ── NAV ── */
+
+
+/* ── CONTAINER ── */
 .container {
     max-width: 600px;
-    margin: auto;
-    padding: 60px 20px;
+    margin: 0 auto;
+    padding: 50px 20px 80px;
 }
-.title { font-size: 30px; margin-bottom: 10px; }
-.subtitle { color: #777; font-size: 13px; margin-bottom: 40px; }
-.form { display: flex; flex-direction: column; gap: 25px; }
-.row { display: flex; gap: 30px; }
+.title {
+    font-size: 28px;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+}
+.subtitle {
+    color: #777;
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-bottom: 36px;
+    text-transform: uppercase;
+}
+
+/* ── FORM ── */
+.form { display: flex; flex-direction: column; gap: 24px; }
+.row { display: flex; gap: 24px; }
 .row .field { flex: 1; }
+
 .field label {
     font-size: 11px;
     color: var(--gold);
     letter-spacing: 2px;
     margin-bottom: 8px;
     display: block;
+    text-transform: uppercase;
 }
 .field input {
     width: 100%;
-    padding: 12px;
+    padding: 12px 14px;
     background: #000;
     border: 1px solid #333;
     color: #fff;
     font-family: 'Playfair Display', serif;
+    font-size: 14px;
     outline: none;
     transition: border-color .2s;
-     box-sizing: border-box;
 }
 .field input:focus { border-color: var(--gold); }
 .field input[readonly] { color: #888; cursor: default; }
+.field input::placeholder { color: #444; }
 
+/* email row */
 .email-row { display: flex; gap: 0; }
 .email-row input { flex: 1; border-right: none; }
 .btn-change {
@@ -64,11 +85,12 @@ body {
 }
 .btn-change:hover { background: var(--gold); color: #000; border-color: var(--gold); }
 
+/* buttons */
 .btn-gold-fill {
     background: var(--gold);
     color: #000;
     border: none;
-    padding: 12px 24px;
+    padding: 13px 24px;
     font-size: 12px;
     letter-spacing: 2px;
     cursor: pointer;
@@ -77,12 +99,11 @@ body {
 }
 .btn-gold-fill:hover { background: #d4b05d; }
 .btn-gold-fill:disabled { opacity: 0.6; cursor: not-allowed; }
-
 .btn-gold {
     border: 1px solid var(--gold);
     color: var(--gold);
     background: transparent;
-    padding: 12px 24px;
+    padding: 13px 24px;
     font-size: 12px;
     letter-spacing: 2px;
     cursor: pointer;
@@ -90,39 +111,50 @@ body {
     transition: .2s;
 }
 .btn-gold:hover { background: var(--gold); color: #000; }
-.actions { display: flex; gap: 15px; }
-.error { color: red; font-size: 12px; margin-top: 4px; }
+.actions { display: flex; gap: 14px; flex-wrap: wrap; }
 
-.toast {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    padding: 12px 20px;
+.error { color: #e74c3c; font-size: 11px; margin-top: 5px; }
+
+/* ── TOAST ── */
+#successToast {
     display: none;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    padding: 14px 24px;
+    font-weight: 700;
+    border-radius: 4px;
     font-family: 'Playfair Display', serif;
     z-index: 9999;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
 }
-.toast.success { background: var(--gold); color: #000; }
-.toast.fail { background: #c0392b; color: #fff; }
 
+/* ── MODAL ── */
 .modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.88);
     display: none;
     justify-content: center;
     align-items: center;
     z-index: 999;
+    padding: 20px;
 }
 .modal.active { display: flex; }
 .modal-box {
     background: #000;
-    border: 1px solid #333;
-    padding: 36px 30px;
+    border: 1px solid #2a2a2a;
+    padding: 36px 28px;
     width: 100%;
     max-width: 380px;
 }
-.modal-title { font-size: 22px; color: #fff; margin-bottom: 6px; }
+.modal-title { font-size: 20px; color: #fff; margin-bottom: 6px; }
 .modal-sub {
     font-size: 10px;
     color: #555;
@@ -131,89 +163,109 @@ body {
     margin-bottom: 28px;
 }
 .modal-box .field { margin-bottom: 20px; }
-.modal-err { color: red; font-size: 11px; margin-top: -12px; margin-bottom: 14px; display: none; }
-.modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+.modal-err {
+    color: #e74c3c;
+    font-size: 11px;
+    margin-top: -12px;
+    margin-bottom: 14px;
+    display: none;
+}
+.modal-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
 .modal-actions .btn-gold-fill { flex: 1; padding: 12px; text-align: center; }
 .modal-divider { border: none; border-top: 1px solid #1a1a1a; margin: 24px 0; }
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+    .top-bar { flex-direction: column; align-items: center; text-align: center; padding: 14px 16px; gap: 10px; }
+    .nav-menu { justify-content: center; gap: 14px; }
+    .nav-menu a { font-size: 12px; }
+    .nav-actions { justify-content: center; }
+    .container { padding: 36px 16px 60px; }
+    .title { font-size: 22px; }
+    .row { flex-direction: column; gap: 20px; }
+    .actions { flex-direction: column; }
+    .actions .btn-gold-fill,
+    .actions .btn-gold { width: 100%; text-align: center; }
+    .modal-actions { flex-direction: column; }
+    .modal-actions .btn-gold-fill,
+    .modal-actions .btn-gold { width: 100%; text-align: center; }
+}
+@media (max-width: 480px) {
+    .nav-logo { font-size: 15px; letter-spacing: 2px; }
+    .btn-nav, .btn-nav-outline { padding: 6px 12px; font-size: 10px; }
+    .nav-menu a { font-size: 11px; letter-spacing: 1px; }
+    .modal-box { padding: 24px 18px; }
+}
 </style>
 </head>
-
 <body>
 
+<!-- NAV -->
+
+
+<!-- MAIN -->
 <div class="container">
     <div class="title">Edit Profile</div>
     <div class="subtitle">Manage your personal info</div>
 
-    <form id="form" class="form">
+    <form id="form" class="form" novalidate>
+
         <div class="row">
             <div class="field">
-                <label>FIRST NAME</label>
-                <input id="firstName" value="<%= user.firstName %>">
+                <label>First Name</label>
+                <input id="firstName" type="text" value="<%= user.firstName %>">
                 <div class="error" id="errFirst"></div>
             </div>
             <div class="field">
-                <label>LAST NAME</label>
-                <input id="lastName" value="<%= user.lastName %>">
+                <label>Last Name</label>
+                <input id="lastName" type="text" value="<%= user.lastName %>">
                 <div class="error" id="errLast"></div>
             </div>
         </div>
 
         <div class="field">
-            <label>EMAIL</label>
+            <label>Email</label>
             <div class="email-row">
-                <input id="email" value="<%= user.email %>" readonly>
+                <input id="email" type="email" value="<%= user.email %>" readonly>
                 <button type="button" class="btn-change" onclick="openModal()">CHANGE</button>
             </div>
             <div class="error" id="errEmail"></div>
         </div>
 
         <div class="field">
-            <label>PHONE</label>
-            <input id="phone" value="<%= user.phone %>">
+            <label>Phone</label>
+            <input id="phone" type="tel" value="<%= user.phone %>">
             <div class="error" id="errPhone"></div>
         </div>
 
         <div class="field">
-            <label>REFERRAL CODE</label>
-            <input id="referral" value="<%= user.referralCode || '' %>">
+            <label>Referral Code</label>
+            <input id="referral" type="text" value="<%= user.referralCode || '' %>">
         </div>
 
         <div class="actions">
             <button type="submit" class="btn-gold-fill" id="saveBtn">SAVE</button>
             <button type="button" class="btn-gold" onclick="history.back()">CANCEL</button>
         </div>
+
     </form>
 </div>
 
-<div id="successToast" style="
-    display:none;
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: black;
-    color: #c4a14d;
-    border: 2px solid #c4a14d;
-    padding: 15px 25px;
-    font-weight: 700;
-    border-radius: 8px;
-    font-family: 'Playfair Display', serif;
-    z-index: 9999;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-">
-    <span style="font-size:18px;">✅</span>
-    <span id="successText"></span>
+<!-- TOAST -->
+<div id="successToast">
+    <span id="toastIcon">✅</span>
+    <span id="toastText"></span>
 </div>
 
+<!-- EMAIL CHANGE MODAL -->
 <div class="modal" id="modal">
     <div class="modal-box">
+
         <div id="step1">
             <div class="modal-title">Change Email</div>
             <div class="modal-sub">Enter your new email address</div>
             <div class="field">
-                <label>NEW EMAIL</label>
+                <label>New Email</label>
                 <input id="newEmail" type="email" placeholder="new@example.com">
             </div>
             <div class="modal-err" id="modalErr"></div>
@@ -228,7 +280,7 @@ body {
             <div class="modal-sub">Check your new email inbox</div>
             <hr class="modal-divider">
             <div class="field">
-                <label>ENTER OTP</label>
+                <label>Enter OTP</label>
                 <input id="otpInput" type="text" placeholder="6-digit OTP" maxlength="6">
             </div>
             <div class="modal-err" id="otpErr"></div>
@@ -237,11 +289,20 @@ body {
                 <button class="btn-gold" onclick="closeModal()">CANCEL</button>
             </div>
         </div>
+
     </div>
 </div>
 
 <script>
 const saveBtn = document.getElementById("saveBtn");
+
+function showToast(msg, type = "success") {
+    const toast = document.getElementById("successToast");
+    document.getElementById("toastText").innerText = msg;
+    document.getElementById("toastIcon").innerText = type === "success" ? "✅" : "⚠️";
+    toast.style.display = "flex";
+    setTimeout(() => toast.style.display = "none", 2200);
+}
 
 function openModal() {
     document.getElementById("newEmail").value = "";
@@ -252,11 +313,9 @@ function openModal() {
     document.getElementById("otpErr").style.display = "none";
     document.getElementById("modal").classList.add("active");
 }
-
 function closeModal() {
     document.getElementById("modal").classList.remove("active");
 }
-
 document.getElementById("modal").addEventListener("click", (e) => {
     if (e.target === document.getElementById("modal")) closeModal();
 });
@@ -264,23 +323,18 @@ document.getElementById("modal").addEventListener("click", (e) => {
 async function sendOtp() {
     const val = document.getElementById("newEmail").value.trim();
     const err = document.getElementById("modalErr");
-
     if (!val || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
         err.innerText = "Please enter a valid email address";
-        err.style.display = "block";
-        return;
+        err.style.display = "block"; return;
     }
     err.style.display = "none";
-
     try {
         const res = await fetch("/send-email-otp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ newEmail: val })
         });
-
         const data = await res.json();
-
         if (data.success) {
             document.getElementById("step1").style.display = "none";
             document.getElementById("step2").style.display = "block";
@@ -297,25 +351,19 @@ async function sendOtp() {
 async function verifyOtp() {
     const otp = document.getElementById("otpInput").value.trim();
     const err = document.getElementById("otpErr");
-
     if (!/^\d{6}$/.test(otp)) {
         err.innerText = "Enter a valid 6-digit OTP";
-        err.style.display = "block";
-        return;
+        err.style.display = "block"; return;
     }
     err.style.display = "none";
-
     try {
         const res = await fetch("/verify-email-otp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ otp })
         });
-
         const data = await res.json();
-
         if (data.success) {
-            // Update displayed email
             document.getElementById("email").value = document.getElementById("newEmail").value.trim();
             closeModal();
             showToast("Email updated successfully", "success");
@@ -329,15 +377,6 @@ async function verifyOtp() {
     }
 }
 
-function showToast(msg, type = "success") {
-    const toast = document.getElementById("successToast");
-    const text = document.getElementById("successText");
-    const icon = toast.querySelector("span:first-child");
-    text.innerText = msg;
-    icon.innerText = type === "success" ? "✅" : "⚠️";
-    toast.style.display = "flex";
-    setTimeout(() => toast.style.display = "none", 2000);
-}
 document.getElementById("form").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (saveBtn.disabled) return;
@@ -346,13 +385,15 @@ document.getElementById("form").addEventListener("submit", async (e) => {
     const last  = document.getElementById("lastName").value.trim();
     const phone = document.getElementById("phone").value.trim();
 
-    document.querySelectorAll(".error").forEach(e => e.innerText = "");
+    document.querySelectorAll(".error").forEach(el => el.innerText = "");
 
-    // Phone validation only if phone is entered
+    let valid = true;
+    if (!first) { document.getElementById("errFirst").innerText = "First name required"; valid = false; }
+    if (!last)  { document.getElementById("errLast").innerText = "Last name required"; valid = false; }
     if (phone && !/^[6-9]\d{9}$/.test(phone)) {
-        document.getElementById("errPhone").innerText = "Valid 10-digit number required";
-        return;
+        document.getElementById("errPhone").innerText = "Valid 10-digit number required"; valid = false;
     }
+    if (!valid) return;
 
     saveBtn.disabled = true;
     saveBtn.innerText = "SAVING...";
@@ -368,9 +409,7 @@ document.getElementById("form").addEventListener("submit", async (e) => {
                 referralCode: document.getElementById("referral").value
             })
         });
-
         const data = await res.json();
-
         if (data.success) {
             showToast("Profile Updated", "success");
             setTimeout(() => window.location.href = "/account", 1500);
@@ -384,7 +423,6 @@ document.getElementById("form").addEventListener("submit", async (e) => {
         saveBtn.innerText = "SAVE";
     }
 });
-
 </script>
 
 </body>

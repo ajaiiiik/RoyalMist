@@ -5,7 +5,23 @@ const multer = require("multer");
 const path = require("path");
 const { isAuthenticated,requireSignupSession } = require("../middleware/auth");
 
-const {signupController,signinController,verifyOtpController,resendOtpController,accountController,updateProfileImageController,removeProfileImageController,updateProfileController,sendEmailChangeOtpController,verifyEmailChangeOtpController} = require("../controller/user/userController");
+const {
+  signupController,
+  signinController,
+  verifyOtpController,
+  resendOtpController,
+  accountController,
+  updateProfileImageController,
+  removeProfileImageController,
+  updateProfileController,
+  sendEmailChangeOtpController,
+  verifyEmailChangeOtpController,
+  addAddressController, 
+  saveAddressController,
+  deleteAddressController,
+getAddressController, 
+updateAddressController,
+changePasswordController} = require("../controller/user/userController");
 
 
 
@@ -53,7 +69,19 @@ router.get("/editProfile", isAuthenticated, (req, res) => {
   res.render("user/profile/editProfile", { user });
 });
 
+router.get("/checkAuthType", isAuthenticated, (req, res) => {
+  if (req.user && req.user.googleId) {
+    return res.json({ googleUser: true });
+  }
+  res.json({ googleUser: false });
+});
+
 router.get("/account", isAuthenticated, accountController);
+router.get("/addAddress", isAuthenticated, addAddressController);
+router.get("/getAddress/:id", isAuthenticated, getAddressController);
+
+
+
 
 // signup
 router.post("/signup", signupController);
@@ -64,6 +92,10 @@ router.post("/removeProfileImage", isAuthenticated, removeProfileImageController
 router.post("/updateProfile", isAuthenticated, updateProfileController);
 router.post("/send-email-otp", isAuthenticated, sendEmailChangeOtpController);
 router.post("/verify-email-otp", isAuthenticated, verifyEmailChangeOtpController);
+router.post("/addAddress", isAuthenticated, saveAddressController);
+router.delete("/deleteAddress/:id", isAuthenticated, deleteAddressController);
+router.post("/editAddress/:id", isAuthenticated, updateAddressController);
+router.post("/changePassword", isAuthenticated,changePasswordController);
 
 
 

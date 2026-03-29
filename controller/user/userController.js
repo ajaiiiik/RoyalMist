@@ -1,4 +1,5 @@
       const User = require("../../model/userSchema");
+      const bcrypt = require("bcrypt")
       const { signupService, signinService,verifyOtpService ,resendOtpService, updateProfileService,updateProfileImageService,removeProfileImageService,sendEmailChangeOtpService,verifyEmailChangeOtpService} = require("../../services/user/userService");
 
 
@@ -158,7 +159,129 @@ const verifyEmailChangeOtpController = async (req, res) => {
 };
 
 
+// ── ADD ADDRESS PAGE - GET ──
+const addAddressController = (req, res) => {
+    res.render("user/profile/address");
+};
+
+// ── SAVE ADDRESS - POST ──
+const saveAddressController = async (req, res) => {
+    try {
+        const { fullName, addressLine1, addressLine2, 
+                city, state, country, zipCode, addressType } = req.body;
+
+        const user = await User.findById(req.session.user.id);
+        if (!user) return res.json({ success: false, message: "User not found" });
+
+        user.addresses.push({
+            fullName, addressLine1, addressLine2,
+            city, state, country, zipCode, addressType
+        });
+
+        await user.save();
+        res.json({ success: true });
+
+    } catch (err) {
+        console.error("Add address error:", err);
+        res.json({ success: false, message: "Something went wrong" });
+    }
+};
 
 
-      module.exports = { signupController, signinController,verifyOtpController, resendOtpController,accountController,updateProfileImageController,removeProfileImageController,updateProfileController, sendEmailChangeOtpController, 
-    verifyEmailChangeOtpController};
+const deleteAddressController = async (req, res) => {
+    try {
+        const user = await User.findById(req.session.user.id);
+        user.addresses.pull({ _id: req.params.id });
+        await user.save();
+        res.json({ success: true });
+    } catch (err) {
+        res.json({ success: false, message: "Something went wrong" });
+    }
+};
+
+const getAddressController = async (req, res) => {
+    try {
+        const user = await User.findById(req.session.user.id);
+        const address = user.addresses.id(req.params.id);
+        if (!address) return res.json({ success: false });
+        res.json({ success: true, address });
+    } catch (err) {
+        res.json({ success: false });
+    }
+};
+
+const updateAddressController = async (req, res) => {
+    try {
+        const user = await User.findById(req.session.user.id);
+        const address = user.addresses.id(req.params.id);
+        if (!address) return res.json({ success: false, message: "Address not found" });
+        Object.assign(address, req.body);
+        await user.save();
+        res.json({ success: true });
+    } catch (err) {
+        res.json({ success: false, message: "Something went wrong" });
+    }
+};
+
+const changePasswordController = async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const { oldPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.session.user.id);
+
+    // 🔴 GOOGLE LOGIN CHECK
+    if (!user.password) {
+      return res.json({
+        success: false,
+        googleUser: true,
+        message: "Google users cannot change password"
+      });
+    }
+
+    // OLD PASSWORD CHECK
+    if (!newPassword || newPassword.length < 6) {
+    return res.json({ success: false, message: "Password too short" });
+}
+
+const isMatch = await bcrypt.compare(oldPassword, user.password);
+if (!isMatch) {
+    return res.json({ success: false, message: "Incorrect old password" });
+}
+
+    // NEW PASSWORD HASH
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+
+    await user.save();
+
+    res.json({ success: true, message: "Password updated successfully" });
+
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, message: "Something went wrong" });
+  }
+};
+
+
+      module.exports = { signupController, 
+        signinController,
+        verifyOtpController,
+         resendOtpController,
+         accountController,
+         updateProfileImageController,
+         removeProfileImageController,
+         updateProfileController,
+          sendEmailChangeOtpController, 
+    verifyEmailChangeOtpController,
+     addAddressController,  
+    saveAddressController ,
+    deleteAddressController,
+    getAddressController,
+    updateAddressController,
+    changePasswordController 
+
+  };

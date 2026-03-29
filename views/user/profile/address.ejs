@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Address</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --gold: #c4a14d;
+    --bg: #000;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: var(--bg);
+    color: #fff;
+    font-family: 'Playfair Display', serif;
+}
+
+/* ── NAV ── */
+.top-bar {
+    border-bottom: 1px solid #1a1a1a;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.nav-logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-decoration: none;
+}
+.nav-menu {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    list-style: none;
+}
+.nav-menu a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 1px;
+    transition: color .2s;
+}
+.nav-menu a:hover { color: var(--gold); }
+.nav-menu a.active,
+.menu a.active {
+    color: var(--gold);
+}
+.nav-actions { display: flex; gap: 10px; }
+.btn-nav {
+    background: #000;
+    color: #fff;
+    border: 1px solid var(--gold);
+    padding: 6px 16px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-family: 'Playfair Display', serif;
+    cursor: pointer;
+    transition: .3s;
+    text-decoration: none;
+    display: inline-block;
+    white-space: nowrap;
+}
+.btn-nav:hover { background: var(--gold); color: #000; }
+.btn-nav-outline {
+    background: #000;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 6px 16px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-family: 'Playfair Display', serif;
+    cursor: pointer;
+    transition: .3s;
+    white-space: nowrap;
+}
+.btn-nav-outline:hover { background: var(--gold); color: #000; }
+
+/* ── CONTAINER ── */
+.container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 50px 20px 80px;
+}
+.title {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+.subtitle {
+    color: #555;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+}
+
+/* ── FORM ── */
+.form { display: flex; flex-direction: column; gap: 24px; }
+.row { display: flex; gap: 24px; }
+.row .field { flex: 1; min-width: 0; }
+
+.field label {
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    display: block;
+    text-transform: uppercase;
+}
+.field input,
+.field select {
+    width: 100%;
+    padding: 12px 14px;
+    background: #000;
+    border: 1px solid #333;
+    color: #fff;
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s;
+    appearance: none;
+    -webkit-appearance: none;
+}
+.field input::placeholder { color: #444; }
+.field input:focus,
+.field select:focus { border-color: var(--gold); }
+
+.select-wrap { position: relative; }
+.select-wrap::after {
+    content: '›';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    color: var(--gold);
+    font-size: 16px;
+    pointer-events: none;
+}
+.field select option { background: #111; color: #fff; }
+
+.error { color: #c0392b; font-size: 11px; margin-top: 5px; display: none; }
+
+/* ── ACTIONS ── */
+.actions { display: flex; flex-direction: column; gap: 14px; margin-top: 10px; }
+.btn-gold-fill {
+    background: var(--gold);
+    color: #000;
+    border: none;
+    padding: 14px 24px;
+    font-size: 12px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    transition: .2s;
+    width: 100%;
+    text-transform: uppercase;
+}
+.btn-gold-fill:hover { background: #d4b05d; }
+.btn-gold-fill:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-gold {
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    background: transparent;
+    padding: 14px 24px;
+    font-size: 12px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    transition: .2s;
+    width: 100%;
+    text-transform: uppercase;
+}
+.btn-gold:hover { background: var(--gold); color: #000; }
+
+/* ── TOAST ── */
+#successToast {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    padding: 14px 24px;
+    font-weight: 700;
+    border-radius: 4px;
+    font-family: 'Playfair Display', serif;
+    z-index: 9999;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+    .top-bar { flex-direction: column; align-items: center; text-align: center; padding: 14px 16px; gap: 10px; }
+    .nav-menu { justify-content: center; gap: 14px; }
+    .nav-menu a { font-size: 12px;letter-spacing: 2px; }
+    .nav-actions { justify-content: center; }
+    .container { padding: 36px 16px 60px; }
+    .title { font-size: 22px; }
+    .row { flex-direction: column; gap: 20px; }
+}
+@media (max-width: 480px) {
+    .nav-logo { font-size: 15px; letter-spacing: 2px; }
+    .btn-nav, .btn-nav-outline { padding: 6px 12px; font-size: 10px; }
+    .nav-menu a { font-size: 11px; letter-spacing: 2px; }
+    .title { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="top-bar">
+    <a class="nav-logo" href="/account">PROFILE</a>
+    <ul class="nav-menu">
+        <li><a href="#">Order History</a></li>
+        <li><a href="#">Wallet</a></li>
+        <li><a href="/addAddress" class="active">Add Address</a></li>
+    </ul>
+    <div class="nav-actions">
+        <a class="btn-nav" href="/home">HOME</a>
+        <button class="btn-nav-outline" onclick="window.location.href='/logout'">LOGOUT</button>
+    </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+    <div class="title">Add New Address</div>
+    <div class="subtitle">Delivery Details</div>
+
+    <form id="addressForm" class="form" novalidate>
+
+        <div class="row">
+            <div class="field">
+                <label>Full Name</label>
+                <input id="fullName" type="text" placeholder="Enter name">
+                <div class="error" id="errName">Full name is required</div>
+            </div>
+            <div class="field">
+                <label>Address Type</label>
+                <div class="select-wrap">
+                    <select id="addressType">
+                        <option value="home">Home</option>
+                        <option value="work">Work</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Address Line 1</label>
+            <input id="addr1" type="text" placeholder="Street address">
+            <div class="error" id="errAddr1">Address line 1 is required</div>
+        </div>
+
+        <div class="field">
+            <label>Address Line 2 <span style="color:#444;font-size:10px;letter-spacing:1px;">(Optional)</span></label>
+            <input id="addr2" type="text" placeholder="Apartment, suite, etc.">
+        </div>
+
+        <div class="row">
+            <div class="field">
+                <label>City</label>
+                <input id="city" type="text" placeholder="City">
+                <div class="error" id="errCity">City is required</div>
+            </div>
+            <div class="field">
+                <label>State / Province</label>
+                <input id="state" type="text" placeholder="State">
+                <div class="error" id="errState">State is required</div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="field">
+                <label>Country</label>
+                <div class="select-wrap">
+                    <select id="country">
+                        <option value="IN">India</option>
+                        <option value="US">United States</option>
+                        <option value="GB">United Kingdom</option>
+                        <option value="CA">Canada</option>
+                        <option value="AU">Australia</option>
+                        <option value="AE">UAE</option>
+                        <option value="SG">Singapore</option>
+                        <option value="DE">Germany</option>
+                        <option value="FR">France</option>
+                        <option value="JP">Japan</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field">
+                <label>ZIP / PIN Code</label>
+                <input id="zip" type="text" placeholder="Zip code" maxlength="10">
+                <div class="error" id="errZip">Valid ZIP/PIN code required</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn-gold-fill" id="saveBtn">Save Address</button>
+            <button type="button" class="btn-gold" onclick="history.back()">Back</button>
+        </div>
+
+    </form>
+</div>
+
+<!-- TOAST -->
+<div id="successToast">
+    <span id="toastIcon">✅</span>
+    <span id="toastText"></span>
+</div>
+
+<script>
+function showToast(msg, type = "success") {
+    const toast = document.getElementById("successToast");
+    document.getElementById("toastText").innerText = msg;
+    document.getElementById("toastIcon").innerText = type === "success" ? "✅" : "⚠️";
+    toast.style.display = "flex";
+    setTimeout(() => toast.style.display = "none", 2500);
+}
+
+function showErr(id, show) {
+    document.getElementById(id).style.display = show ? "block" : "none";
+}
+
+document.getElementById("addressForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const saveBtn = document.getElementById("saveBtn");
+    if (saveBtn.disabled) return;
+
+    const fullName = document.getElementById("fullName").value.trim();
+    const addr1    = document.getElementById("addr1").value.trim();
+    const addr2    = document.getElementById("addr2").value.trim();
+    const city     = document.getElementById("city").value.trim();
+    const state    = document.getElementById("state").value.trim();
+    const zip      = document.getElementById("zip").value.trim();
+    const country  = document.getElementById("country").value;
+    const addrType = document.getElementById("addressType").value;
+
+    ["errName","errAddr1","errCity","errState","errZip"].forEach(id => showErr(id, false));
+
+    let valid = true;
+    if (!fullName) { showErr("errName", true); valid = false; }
+    if (!addr1)    { showErr("errAddr1", true); valid = false; }
+    if (!city)     { showErr("errCity", true); valid = false; }
+    if (!state)    { showErr("errState", true); valid = false; }
+    if (!zip || !/^[a-zA-Z0-9\s\-]{3,10}$/.test(zip)) { showErr("errZip", true); valid = false; }
+    if (!valid) return;
+
+    saveBtn.disabled = true;
+    saveBtn.innerText = "SAVING...";
+
+    try {
+        const res = await fetch("/addAddress", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fullName, addressLine1: addr1, addressLine2: addr2, city, state, country, zipCode: zip, addressType: addrType })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast("Address saved successfully", "success");
+            setTimeout(() => window.location.href = "/account", 1800);
+        } else {
+            showToast(data.message || "Failed to save address. Try again.", "fail");
+        }
+    } catch {
+        showToast("Something went wrong. Try again.", "fail");
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = "SAVE ADDRESS";
+    }
+});
+</script>
+
+</body>
+</html>
