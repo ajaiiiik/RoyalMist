@@ -1,34 +1,35 @@
-const nodemailer = require("nodemailer");
+const SibApiV3Sdk = require("sib-api-v3-sdk");
 
 const sendOtp = async (email, otp) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail", 
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    const defaultClient = SibApiV3Sdk.ApiClient.instance;
+    const apiKey = defaultClient.authentications["api-key"];
+    apiKey.apiKey = process.env.BREVO_API_KEY;
 
-    const mailOptions = {
-      from: `"Royal Mist" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Your OTP for Royal Mist",
-       html: `
-        <div style="font-family: sans-serif; color: #000;">
-          <h3>Your OTP is <b>${otp}</b></h3>
-          <p>Do not share it with anyone.</p>
-        </div>
-      `,
-      replyTo:process.env.EMAIL_USER,
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    sendSmtpEmail.to = [{ email: email }];
+    sendSmtpEmail.sender = { 
+      email: process.env.BREVO_SENDER_EMAIL, 
+      name: "Royal Mist" 
     };
+    sendSmtpEmail.subject = "Your OTP for Royal Mist";
+    sendSmtpEmail.htmlContent = `
+      <div style="font-family: sans-serif; color: #000;">
+        <h3>Your OTP is <b>${otp}</b></h3>
+        <p>Do not share it with anyone.</p>
+      </div>
+    `;
 
-    await transporter.sendMail(mailOptions);
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log("OTP sent to:", email);
     return true;
+
   } catch (err) {
-    console.log("OTP send error:", err);
+    console.log("OTP send error:", err?.response?.body || err.message);
     return false;
-  } 
+  }
 };
 
 module.exports = sendOtp;

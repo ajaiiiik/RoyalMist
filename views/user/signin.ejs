@@ -153,6 +153,7 @@ input:-webkit-autofill:focus {
     gap:10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
 ">
+    <span style="font-size:18px;">✅</span>
     <span id="signinText">Signin successful</span>
 </div>
 
@@ -165,11 +166,16 @@ input:-webkit-autofill:focus {
         <input type="text" id="email"  name="email"  class="form-control" placeholder="vane@luxury.com">
         <p id="email-error" style="color:red; font-size:12px; display:none;"></p>
 
-        <label>Password</label>
-        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••">
-        <p id="password-error" style="color:red; font-size:12px; display:none;"></p>
+       <label>Password</label>
+<div style="position: relative;">
+    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••">
+    <button type="button" id="toggle-password" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #fff; cursor: pointer; display: none;">
+        <i class="fa fa-eye"></i>
+    </button>
+</div>
+<p id="password-error" style="color:red; font-size:12px; display:none;"></p>
         
-        <a href="#" class="forgot-link text-end">Forgot password?</a>
+        <a href="/forgot-password" class="forgot-link text-end">Forgot password?</a>
 
         <button type="submit" class="btn-signin">Sign In →</button>
     </form>
@@ -246,6 +252,27 @@ form.addEventListener("submit", async (e) => {
   } catch (err) {
     console.log(err);
   }
+});
+
+const togglePassword = document.getElementById("toggle-password");
+
+passwordInput.addEventListener("input", () => {
+    if (passwordInput.value.length > 0) {
+        togglePassword.style.display = "block";
+    } else {
+        togglePassword.style.display = "none";
+        passwordInput.setAttribute("type", "password");
+        togglePassword.innerHTML = '<i class="fa fa-eye"></i>';
+    }
+    if (passwordError) passwordError.style.display = "none";
+});
+
+togglePassword.addEventListener("click", () => {
+    const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+    passwordInput.setAttribute("type", type);
+    togglePassword.innerHTML = type === "password"
+        ? '<i class="fa fa-eye"></i>'
+        : '<i class="fa fa-eye-slash"></i>';
 });
 </script>
 </body>

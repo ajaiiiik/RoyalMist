@@ -342,7 +342,10 @@ form.addEventListener("submit", async (e) => {
    const btn = form.querySelector("button[type='submit']");
   //  btn.disabled = true;
   // btn.innerText = "Processing...";
+  btn.disabled = true;  
+btn.innerText = "PLEASE WAIT..."
 
+  let data;
 
   // clear old errors first 
   if (firstNameError) firstNameError.style.display = "none";
@@ -367,7 +370,7 @@ form.addEventListener("submit", async (e) => {
       credentials:"include"
     });
 
-    const data = await res.json();
+     data = await res.json();
 
     if (data.success) {
     const toast = document.getElementById("successToast");
@@ -413,20 +416,21 @@ form.addEventListener("submit", async (e) => {
         confirmPasswordError.innerText = errors.confirmPassword;
         confirmPasswordError.style.display = "block";
       }
-      // btn.disabled = false;
-      // btn.innerText = "CREATE ACCOUNT →";
+
     }
 
   } catch (err) {
     console.log(err);
     btn.disabled = false;
-  //    btn.innerText = "CREATE ACCOUNT →";
-  //   text.innerText="something went wrong"
+    btn.innerText = "CREATE ACCOUNT →";
    }
    finally {
-    isSubmitting = false;  
+     isSubmitting = false;
+    if (!data || !data.success) {  
     btn.disabled = false;
+      btn.innerText = "CREATE ACCOUNT →";
   }
+}
 });
 
 

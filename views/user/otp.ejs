@@ -111,53 +111,70 @@ otpInput.addEventListener("input", () => {
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
-     submitBtn.disabled = true;
-    const otp = otpInput.value.trim()
-   otpError.style.display = "none";
-otpError.innerText = "";
+    submitBtn.disabled = true;
+    submitBtn.innerText = "VERIFYING...";
+    
+    const otp = otpInput.value.trim();
+    otpError.style.display = "none";
+    otpError.innerText = "";
 
-    if(!otp){
-        otpError.innerText="please fill OTP"
-        otpError.style.display="block"
+    if (!otp) {
+        otpError.innerText = "Please fill OTP";
+        otpError.style.display = "block";
         submitBtn.disabled = false;
-        return
+        submitBtn.innerText = "Verify Code →";
+        return;
     }
 
     if (otp.length !== 6 || !/^\d+$/.test(otp)) {
         otpError.innerText = "Enter a valid 6-digit OTP";
         otpError.style.display = "block";
         submitBtn.disabled = false;
+        submitBtn.innerText = "Verify Code →";
         return;
     }
 
     try {
-        const res = await fetch("/verify-otp", {
+        const params = new URLSearchParams(window.location.search);
+        const flow = params.get('flow');
+        const endpoint = flow === 'forgot' ? '/verify-forgot-otp' : '/verify-otp';
+
+        const res = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({otp}),
-            credentials:"include"
+            body: JSON.stringify({ otp }),
+            credentials: "include"
         });
         const data = await res.json();
-        console.log(data)
 
         if (data.success) {
-    const toast = document.getElementById("successToast");
-    const text = document.getElementById("successText");
-    text.innerText = "OTP Verified! Redirecting to Home...";
-    toast.style.display = "flex";
-
-    setTimeout(() => {
-        toast.style.display = "none";
-        window.location.href = "/home";
-    }, 2000); // redirect after 2 seconds
-} else {
-            otpError.innerText = data.errors?.otp || data.errors?.email || "Invalid OTP";
+            const toast = document.getElementById("successToast");
+            const text = document.getElementById("successText");
+            toast.style.display = "flex";
+            if (flow === 'forgot') {
+                text.innerText = "OTP Verified! Redirecting...";
+                setTimeout(() => {
+                    toast.style.display = "none";
+                    window.location.href = "/reset-password";
+                }, 2000);
+            } else {
+                text.innerText = "OTP Verified! Redirecting to Home...";
+                setTimeout(() => {
+                    toast.style.display = "none";
+                    window.location.href = "/home";
+                }, 2000);
+            }
+        } else {
+            otpError.innerText = data.errors?.otp || "Invalid OTP. Try again.";
             otpError.style.display = "block";
             submitBtn.disabled = false;
+            submitBtn.innerText = "Verify Code →";
         }
+
     } catch (err) {
         console.log(err);
         submitBtn.disabled = false;
+        submitBtn.innerText = "Verify Code →";
     }
 });
 

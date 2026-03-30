@@ -75,6 +75,7 @@ if (existingPhone) {
   ) {
     // Resend OTP for the same email without blocking
     const otpCode = Math.floor(100000 + Math.random() * 900000);
+     console.log('otp',otpCode)
     await Otp.deleteMany({ email: emailNormalized });
 
     const hashedOtp = await bcrypt.hash(otpCode.toString(), 10);
@@ -107,6 +108,7 @@ if (existingPhone) {
     req.session.isSignupInProgress = true;
 
     const otpCode = Math.floor(100000 + Math.random() * 900000);
+    console.log('otp',otpCode)
     await Otp.deleteMany({ email: emailNormalized });
 
     const hashedOtp = await bcrypt.hash(otpCode.toString(), 10);
@@ -384,6 +386,7 @@ const sendEmailChangeOtpService = async (data, req) => {
     if (existing) throw { message: "Email already in use" };
 
     const otpCode = Math.floor(100000 + Math.random() * 900000);
+    console.log('otp',otpCode)
     await Otp.deleteMany({ email: emailNormalized });
 
     const hashedOtp = await bcrypt.hash(otpCode.toString(), 10);
@@ -432,6 +435,67 @@ const verifyEmailChangeOtpService = async (data, req) => {
     return { message: "Email updated successfully" };
 };
 
+const forgotPasswordService = async (data, req) => {
+  const { email } = data;
+  const emailNormalized = email.trim().toLowerCase();
+
+  if (!email) throw { email: "Email is required" };
+
+  //  check user exists
+  const user = await User.findOne({ email: emailNormalized });
+  if (!user) {
+    throw { email: "No account found with this email" };
+  }
+
+  //  OTP generate
+  const otpCode = Math.floor(100000 + Math.random() * 900000);
+
+  await Otp.deleteMany({ email: emailNormalized });
+
+  const hashedOtp = await bcrypt.hash(otpCode.toString(), 10);
+
+  await Otp.create({
+    email: emailNormalized,
+    otp: hashedOtp,
+    expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+  });
+
+  // session store (IMPORTANT)
+  req.session.forgotEmail = emailNormalized;
+  req.session.otpExpiry = Date.now() + 5 * 60 * 1000;
+  req.session.otpAttempts = 0;
+
+  await new Promise((resolve, reject) => {
+    req.session.save(err => err ? reject(err) : resolve());
+  });
+
+  // send mail
+  const isSent = await sendOtp(emailNormalized, otpCode);
+  if (!isSent) throw { email: "Failed to send OTP" };
+
+  return { message: "OTP sent successfully" };
+};
+
+const verifyForgotOtpService = async (data, req) => {
+  const { otp } = data;
+  const email = req.session.forgotEmail;
+
+  if (!email) throw { otp: "Session expired. Try again." };
+
+  const otpRecord = await Otp.findOne({ email }).sort({ createdAt: -1 });
+  if (!otpRecord) throw { otp: "OTP not found" };
+
+  if (new Date() > otpRecord.expiresAt) {
+    throw { otp: "OTP expired" };
+  }
+
+  const isValid = await bcrypt.compare(otp.toString(), otpRecord.otp);
+  if (!isValid) throw { otp: "Invalid OTP" };
+
+  return { message: "OTP verified successfully" };
+};
+
+
 module.exports = {
   signupService,
   signinService,
@@ -441,5 +505,8 @@ module.exports = {
   removeProfileImageService,
   updateProfileService,
   sendEmailChangeOtpService,  
-  verifyEmailChangeOtpService 
+  verifyEmailChangeOtpService,
+  forgotPasswordService,
+  verifyForgotOtpService
+
 };

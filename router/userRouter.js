@@ -21,7 +21,11 @@ const {
   deleteAddressController,
 getAddressController, 
 updateAddressController,
-changePasswordController} = require("../controller/user/userController");
+changePasswordController,
+forgotPasswordController,
+verifyForgotOtpController,
+resetPasswordController
+} = require("../controller/user/userController");
 
 
 
@@ -75,10 +79,21 @@ router.get("/checkAuthType", isAuthenticated, (req, res) => {
   }
   res.json({ googleUser: false });
 });
+router.get("/forgot-password", (req, res) => {
+  res.render("user/forgotPassword");
+});
 
 router.get("/account", isAuthenticated, accountController);
 router.get("/addAddress", isAuthenticated, addAddressController);
 router.get("/getAddress/:id", isAuthenticated, getAddressController);
+// Forgot password OTP page - middleware இல்லாம
+router.get("/forgot-otp", (req, res) => {
+  res.render("user/otp");
+});
+
+router.get("/reset-password", (req, res) => {
+  res.render("user/resetPassword");
+});
 
 
 
@@ -96,6 +111,8 @@ router.post("/addAddress", isAuthenticated, saveAddressController);
 router.delete("/deleteAddress/:id", isAuthenticated, deleteAddressController);
 router.post("/editAddress/:id", isAuthenticated, updateAddressController);
 router.post("/changePassword", isAuthenticated,changePasswordController);
+router.post("/forgot-password", forgotPasswordController);
+router.post("/verify-forgot-otp", verifyForgotOtpController);
 
 
 
@@ -113,6 +130,10 @@ router.post("/clear-otp-session", requireSignupSession,(req, res) => {
     req.session.email = null; // if you store email in session
     res.json({ success: true });
 });
+
+router.post("/reset-password", resetPasswordController);
+
+
 
 
 // multer setup

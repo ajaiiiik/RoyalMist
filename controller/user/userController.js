@@ -1,6 +1,6 @@
       const User = require("../../model/userSchema");
       const bcrypt = require("bcrypt")
-      const { signupService, signinService,verifyOtpService ,resendOtpService, updateProfileService,updateProfileImageService,removeProfileImageService,sendEmailChangeOtpService,verifyEmailChangeOtpService} = require("../../services/user/userService");
+      const { signupService, signinService,verifyOtpService ,resendOtpService, updateProfileService,updateProfileImageService,removeProfileImageService,sendEmailChangeOtpService,verifyEmailChangeOtpService, forgotPasswordService,verifyForgotOtpService} = require("../../services/user/userService");
 
 
       //SIGNUP CONTROLLER
@@ -265,7 +265,58 @@ if (!isMatch) {
     res.json({ success: false, message: "Something went wrong" });
   }
 };
+const forgotPasswordController = async (req, res) => {
+  try {
+    const result = await forgotPasswordService(req.body, req);
+    res.json({ success: true, message: result.message });
+  } catch (err) {
+    res.json({
+      success: false,
+      errors: err,
+      message: err.message || "Something went wrong"
+    });
+  }
+};
 
+const verifyForgotOtpController = async (req, res) => {
+  try {
+    const result = await verifyForgotOtpService(req.body, req);
+
+    res.json({ success: true, message: result.message });
+  } catch (err) {
+    res.json({ success: false, errors: err });
+  }
+};
+
+const resetPasswordController = async (req, res) => {
+  try {
+    const { password, confirmPassword } = req.body;
+    const email = req.session.forgotEmail;
+
+    if (!email) return res.json({ success: false, message: "Session expired. Try again." });
+
+    if (!password || password.length < 8) {
+      return res.json({ success: false, errors: { password: "Password too short" } });
+    }
+
+    if (password !== confirmPassword) {
+      return res.json({ success: false, errors: { confirmPassword: "Passwords do not match" } });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+    await User.updateOne({ email }, { password: hashed });
+
+    req.session.forgotEmail = null;
+    await new Promise((resolve, reject) => {
+      req.session.save(err => err ? reject(err) : resolve());
+    });
+
+    res.json({ success: true, message: "Password reset successful" });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, message: "Something went wrong" });
+  }
+};
 
       module.exports = { signupController, 
         signinController,
@@ -282,6 +333,9 @@ if (!isMatch) {
     deleteAddressController,
     getAddressController,
     updateAddressController,
-    changePasswordController 
+    changePasswordController ,
+    forgotPasswordController,
+    verifyForgotOtpController,
+    resetPasswordController 
 
   };
