@@ -86,7 +86,7 @@ router.get("/forgot-password", (req, res) => {
 router.get("/account", isAuthenticated, accountController);
 router.get("/addAddress", isAuthenticated, addAddressController);
 router.get("/getAddress/:id", isAuthenticated, getAddressController);
-// Forgot password OTP page - middleware இல்லாம
+// Forgot password OTP page
 router.get("/forgot-otp", (req, res) => {
   res.render("user/otp");
 });
@@ -94,6 +94,7 @@ router.get("/forgot-otp", (req, res) => {
 router.get("/reset-password", (req, res) => {
   res.render("user/resetPassword");
 });
+
 
 
 
@@ -156,10 +157,12 @@ const upload = multer({
       : cb(new Error("Only JPEG, PNG, WEBP allowed"), false);
   }
 });
-router.post("/updateProfileImage",  isAuthenticated,upload.single("profileImage"), updateProfileImageController)
-
-
-
+router.post("/updateProfileImage", isAuthenticated, (req, res, next) => {
+  upload.single("profileImage")(req, res, (err) => {
+    if (err) return res.status(400).json({ success: false, message: err.message });
+    next();
+  });
+}, updateProfileImageController);
 
 
 

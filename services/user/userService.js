@@ -155,9 +155,7 @@ if (existingPhone) {
   return { message: "OTP sent successfully" };
 };
 
-// ─────────────────────────────────────────────
 // SIGNIN SERVICE
-// ─────────────────────────────────────────────
 const signinService = async (data, req) => {
   const { email, password } = data;
   const emailNormalized = email.trim().toLowerCase();
@@ -172,6 +170,7 @@ const signinService = async (data, req) => {
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw { password: "Incorrect password" };
+  if (user.isBlocked) throw { email: "Your account has been blocked. Please contact support." };
 
   req.session.user = {
     id: user._id,
@@ -192,9 +191,7 @@ const signinService = async (data, req) => {
   };
 };
 
-// ─────────────────────────────────────────────
-// VERIFY OTP SERVICE  ← BUG FIX IS HERE
-// ─────────────────────────────────────────────
+// VERIFY OTP SERVICE 
 const verifyOtpService = async (data, req) => {
   // ── SESSION CHECK ──
   if (!req.session.userData || Date.now() > req.session.otpExpiry) {
@@ -284,9 +281,7 @@ const verifyOtpService = async (data, req) => {
   return { message: "Signup successful" };
 };
 
-// ─────────────────────────────────────────────
 // RESEND OTP SERVICE
-// ─────────────────────────────────────────────
 const resendOtpService = async (req) => {
   const userData = req.session.userData;
   if (!userData) throw { otp: "Session expired. Please signup again." };
@@ -316,9 +311,8 @@ const resendOtpService = async (req) => {
   return { success: true, message: "OTP resent successfully" };
 };
 
-// ─────────────────────────────────────────────
+
 // PROFILE IMAGE SERVICES
-// ─────────────────────────────────────────────
 const updateProfileImageService = async (userId, imageUrl) => {
   if (!userId) throw { profile: "User not found" };
   const user = await User.findById(userId);
@@ -507,6 +501,6 @@ module.exports = {
   sendEmailChangeOtpService,  
   verifyEmailChangeOtpService,
   forgotPasswordService,
-  verifyForgotOtpService
+  verifyForgotOtpService,
 
 };

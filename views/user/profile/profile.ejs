@@ -651,7 +651,17 @@ body {
             <% user.addresses.forEach(address => { %>
                 <div class="address-col">
                     <div class="address-box">
-                        <h5><%= address.fullName %></h5>
+                        <h5><%= address.fullName %>
+    <span style="
+  font-size:10px;
+  color:<%= address.addressType === 'home' ? '#4caf50' : '#c4a14d' %>;
+  border:1px solid <%= address.addressType === 'home' ? '#4caf50' : '#c4a14d' %>;
+  padding:2px 6px;
+  margin-left:6px;
+  letter-spacing:1px;
+">
+  <%= address.addressType.toUpperCase() %>
+</span></h5>
                         <p>
                             <%= address.addressLine1 %><br>
                             <% if (address.addressLine2) { %>
@@ -747,7 +757,24 @@ body {
     </div>
 </div>
 
-<div id="toast" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#000;border:2px solid var(--gold);color:var(--gold);padding:14px 24px;font-family:'Playfair Display',serif;font-size:12px;letter-spacing:2px;z-index:9999;white-space:nowrap;border-radius:2px;"></div>
+<div id="toast" style="
+display:none;
+position: fixed;
+top: 20px;
+left: 50%;
+transform: translateX(-50%);
+background:#000;
+border:2px solid #c4a14d;
+color:#c4a14d;
+padding:14px 28px;
+font-family:'Playfair Display',serif;
+font-size:14px;
+font-weight:600;
+letter-spacing:2px;
+z-index:9999;
+border-radius:2px;
+">
+</div>
 <!-- CHANGE PASSWORD MODAL -->
 <div class="edit-modal-overlay" id="passwordModal">
     <div class="edit-modal" style="max-width:500px;">
@@ -851,6 +878,12 @@ sourceModal.addEventListener("click", (e) => { if (e.target === sourceModal) sou
 function handleFile(e) {
     const file = e.target.files[0];
     if (!file) return;
+      const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) {
+        e.target.value = "";
+        showToast("Only JPEG, PNG, WEBP allowed", "fail");
+        return;
+    }
     e.target.value = "";
     const reader = new FileReader();
     reader.onload = function(ev) {
@@ -898,7 +931,7 @@ document.getElementById("cropSaveBtn").addEventListener("click", async () => {
                     plusBtn.addEventListener("click", (e) => {
                         e.stopPropagation();
                         sourceModal.classList.add("active");
-                    });
+                    }); 
                 }
                 img.src = data.imageUrl + "?t=" + Date.now();
                 closeCrop();
@@ -918,10 +951,13 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
 function showToast(msg, type) {
     const t = document.getElementById("toast");
     t.innerHTML = type === "fail" ? "⚠️ " + msg : "✅ " + msg;
-    t.style.color = type === "fail" ? "#ff4444" : "var(--gold)";
-    t.style.borderColor = type === "fail" ? "#ff4444" : "var(--gold)";
+    t.style.color = type === "fail" ? "#ff4444" : "#c4a14d";
+    t.style.borderColor = type === "fail" ? "#ff4444" : "#c4a14d";
     t.style.display = "block";
-    setTimeout(() => t.style.display = "none", 2500);
+
+    setTimeout(() => {
+        t.style.display = "none";
+    }, 2500);
 }
 
 const editModal = document.getElementById("editModal");
@@ -1084,10 +1120,14 @@ if (!oldPass) {
     valid = false;
 }
 
-if (!newPass || newPass.length < 6) {
+if (!newPass || !validatePassword(newPass)) {
+    document.getElementById("errNew").textContent =
+        "Password must be 8+ chars, include uppercase, lowercase & number";
     document.getElementById("errNew").style.display = "block";
     valid = false;
 }
+
+
 
     if (newPass !== confirmPass) {
         document.getElementById("errConfirm").style.display = "block";
@@ -1139,7 +1179,14 @@ function togglePass(inputId, btn) {
         btn.style.color = "#555";
     }
 }
+function validatePassword(password) {
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const minLength = password.length >= 8;
 
+    return hasUpper && hasLower && hasNumber && minLength;
+}
 
 </script>
 

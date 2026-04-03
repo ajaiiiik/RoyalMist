@@ -234,7 +234,7 @@ body {
 
         <div class="field">
             <label>Phone</label>
-            <input id="phone" type="tel" value="<%= user.phone %>">
+            <input id="phone" type="tel" value="<%= user.phone %>" maxlength="10">
             <div class="error" id="errPhone"></div>
         </div>
 
@@ -376,6 +376,12 @@ async function verifyOtp() {
         err.style.display = "block";
     }
 }
+document.getElementById("phone").addEventListener("input", function() {
+    this.value = this.value.replace(/\D/g, "");
+    if (this.value.length > 10) {
+        this.value = this.value.slice(0, 10);
+    }
+});
 
 document.getElementById("form").addEventListener("submit", async (e) => {
     e.preventDefault();

@@ -1,6 +1,18 @@
       const User = require("../../model/userSchema");
       const bcrypt = require("bcrypt")
-      const { signupService, signinService,verifyOtpService ,resendOtpService, updateProfileService,updateProfileImageService,removeProfileImageService,sendEmailChangeOtpService,verifyEmailChangeOtpService, forgotPasswordService,verifyForgotOtpService} = require("../../services/user/userService");
+      const {
+         signupService,
+          signinService,
+          verifyOtpService ,
+          resendOtpService,
+           updateProfileService,
+           updateProfileImageService,
+           removeProfileImageService,
+           sendEmailChangeOtpService,
+           verifyEmailChangeOtpService,
+            forgotPasswordService,
+            verifyForgotOtpService,
+          } = require("../../services/user/userService");
 
 
       //SIGNUP CONTROLLER
@@ -22,7 +34,7 @@
           });
         }
       };
-
+      
 
       
       // SIGNIN CONTROLLER
@@ -233,7 +245,7 @@ const changePasswordController = async (req, res) => {
 
     const user = await User.findById(req.session.user.id);
 
-    // 🔴 GOOGLE LOGIN CHECK
+    // GOOGLE LOGIN CHECK
     if (!user.password) {
       return res.json({
         success: false,
@@ -318,6 +330,10 @@ const resetPasswordController = async (req, res) => {
   }
 };
 
+
+
+
+
       module.exports = { signupController, 
         signinController,
         verifyOtpController,
@@ -336,6 +352,6 @@ const resetPasswordController = async (req, res) => {
     changePasswordController ,
     forgotPasswordController,
     verifyForgotOtpController,
-    resetPasswordController 
+    resetPasswordController ,
 
   };

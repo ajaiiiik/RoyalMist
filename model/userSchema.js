@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
+  role: {
+  type: String,
+  enum: ["user", "admin"],
+  default: "user"
+},
 
   phoneNumber: {
     type: String,
@@ -50,6 +55,11 @@ const userSchema = new mongoose.Schema({
     
   googleId:{
     type:String
+  },
+
+  isBlocked: {
+    type: Boolean,
+    default: false
   },
 
 addresses: [{

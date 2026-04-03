@@ -8,6 +8,7 @@ const User = require("./model/userSchema");
 
 const connectDB = require("./config/db");
 const userRoutes = require("./router/userRouter"); 
+const adminRoutes = require("./router/adminRouter");
 
 const app = express();
 
@@ -18,7 +19,8 @@ connectDB();
 
 //MIDDLEWARE
 app.use(express.urlencoded({ extended: true })); 
-app.use(express.json()); 
+app.use(express.json());
+
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -31,9 +33,9 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET || "mysecretkey",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie :{
-      maxAge:10*60*1000,
+      maxAge:24*60*60*1000,
       httpOnly:true,
         secure: false,  
         sameSite: "lax"
@@ -45,6 +47,7 @@ app.use(passport.session());
 
 // ROUTES
 app.use('/',userRoutes);
+app.use('/admin', adminRoutes); 
 
 
 

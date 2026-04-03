@@ -381,7 +381,7 @@ btn.innerText = "PLEASE WAIT..."
     // hide after 2 seconds and redirect to signin
     setTimeout(() => {
         toast.style.display = "none";
-        window.location.href = "/otp";
+        window.location.replace("/otp");
     }, 1200);
     } else {
       const errors = data.errors;
