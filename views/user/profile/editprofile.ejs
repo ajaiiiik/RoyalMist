@@ -113,8 +113,7 @@ body {
 .btn-gold:hover { background: var(--gold); color: #000; }
 .actions { display: flex; gap: 14px; flex-wrap: wrap; }
 
-.error { color: #e74c3c; font-size: 11px; margin-top: 5px; }
-
+.error { color: red; font-size: 12px; margin-top: 5px; font-family: sans-serif; }
 /* ── TOAST ── */
 #successToast {
     display: none;
@@ -164,15 +163,24 @@ body {
 }
 .modal-box .field { margin-bottom: 20px; }
 .modal-err {
-    color: #e74c3c;
-    font-size: 11px;
+    color: red;
+    font-size: 12px;
     margin-top: -12px;
     margin-bottom: 14px;
     display: none;
+     font-family: sans-serif;
 }
 .modal-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
 .modal-actions .btn-gold-fill { flex: 1; padding: 12px; text-align: center; }
 .modal-divider { border: none; border-top: 1px solid #1a1a1a; margin: 24px 0; }
+
+input:-webkit-autofill,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:hover {
+    -webkit-box-shadow: 0 0 0px 1000px #000 inset !important;
+    -webkit-text-fill-color: #fff !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
 
 /* ── MOBILE ── */
 @media (max-width: 768px) {
@@ -335,6 +343,14 @@ async function sendOtp() {
             body: JSON.stringify({ newEmail: val })
         });
         const data = await res.json();
+        
+        // ── HANDLE GOOGLE USER ERROR ──
+        if (!data.success && data.googleUser) {
+            closeModal();
+            showToast('Google users cannot change email', 'fail');
+            return;
+        }
+        
         if (data.success) {
             document.getElementById("step1").style.display = "none";
             document.getElementById("step2").style.display = "block";
@@ -362,7 +378,15 @@ async function verifyOtp() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ otp })
         });
-        const data = await res.json();
+               const data = await res.json();
+        
+        // ── HANDLE GOOGLE USER ERROR ──
+        if (!data.success && data.googleUser) {
+            closeModal();
+            showToast('Google users cannot change email', 'fail');
+            return;
+        }
+        
         if (data.success) {
             document.getElementById("email").value = document.getElementById("newEmail").value.trim();
             closeModal();
@@ -385,8 +409,7 @@ document.getElementById("phone").addEventListener("input", function() {
 
 document.getElementById("form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (saveBtn.disabled) return;
-
+    
     const first = document.getElementById("firstName").value.trim();
     const last  = document.getElementById("lastName").value.trim();
     const phone = document.getElementById("phone").value.trim();
@@ -401,8 +424,24 @@ document.getElementById("form").addEventListener("submit", async (e) => {
     }
     if (!valid) return;
 
+    // ── SHOW CONFIRMATION MODAL ──
+    document.getElementById("confirmSaveModal").style.display = "flex";
+});
+
+function cancelSave() {
+    document.getElementById("confirmSaveModal").style.display = "none";
+}
+
+async function confirmSave() {
+    const saveBtn = document.getElementById("saveBtn");
     saveBtn.disabled = true;
     saveBtn.innerText = "SAVING...";
+
+    document.getElementById("confirmSaveModal").style.display = "none";
+
+    const first = document.getElementById("firstName").value.trim();
+    const last  = document.getElementById("lastName").value.trim();
+    const phone = document.getElementById("phone").value.trim();
 
     try {
         const res = await fetch("/updateProfile", {
@@ -424,12 +463,28 @@ document.getElementById("form").addEventListener("submit", async (e) => {
         }
     } catch {
         showToast("Something went wrong. Try again.", "fail");
-    } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerText = "SAVE";
-    }
-});
+   } finally {
+    saveBtn.disabled = false;
+    saveBtn.innerText = "SAVE";
+}
+}
 </script>
+<!-- ── CONFIRMATION MODAL ── -->
+<div id="confirmSaveModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#0a0a0a;border:1px solid #1a1a1a;padding:32px;width:90%;max-width:400px;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+        <h3 style="color:#fff;font-size:16px;margin-bottom:12px;letter-spacing:1px;font-family:'Playfair Display',serif;">CONFIRM SAVE</h3>
+        <p style="color:#888;font-size:13px;margin-bottom:24px;line-height:1.6;">Are you sure you want to save these profile changes?</p>
+        
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+            <button onclick="cancelSave()" style="background:transparent;border:1px solid #333;color:#666;font-family:'Playfair Display',serif;font-size:11px;letter-spacing:2px;padding:10px 20px;cursor:pointer;border-radius:4px;transition:0.2s;">
+                CANCEL
+            </button>
+            <button onclick="confirmSave()" style="background:#c4a14d;border:none;color:#000;font-family:'Playfair Display',serif;font-size:11px;letter-spacing:2px;font-weight:700;padding:10px 24px;cursor:pointer;border-radius:4px;transition:0.2s;">
+                YES, SAVE
+            </button>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

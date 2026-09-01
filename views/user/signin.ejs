@@ -201,6 +201,16 @@ const passwordError = document.getElementById("password-error");
 const toast = document.getElementById("signinToast");
 const toastText = document.getElementById("signinText");
 
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get("blocked") === "true") {
+  document.querySelector("#signinToast span:first-child").innerText = "🚫";
+  toastText.innerText = "Your account has been blocked. Please contact support.";
+  toast.style.borderColor = "#e74c3c";
+  toast.style.color = "#e74c3c";
+  toast.style.display = "flex";
+  setTimeout(() => toast.style.display = "none", 4000);
+}
+
 emailInput.addEventListener("input", () => {
   if (emailError) emailError.style.display = "none";
 });
@@ -232,14 +242,18 @@ form.addEventListener("submit", async (e) => {
     const data = await res.json();
 
     if (data.success) {
-      toastText.innerText = data.message || "Signin successful";
-      toast.style.display = "flex";
+  document.querySelector("#signinToast span:first-child").innerText = "✅";
+  toast.style.borderColor = "#c4a14d";
+  toast.style.color = "#c4a14d";
+  toastText.innerText = data.message || "Signin successful";
+  toast.style.display = "flex";
 
-      setTimeout(() => {
-        toast.style.display = "none";
-        window.location.href = "/home"; // redirect after signin
-      }, 2000);
-    } else {
+  setTimeout(() => {
+    toast.style.display = "none";
+    window.location.href = "/home";
+  }, 2000);
+}
+     else {
       if (data.errors.email) {
         emailError.innerText = data.errors.email;
         emailError.style.display = "block";

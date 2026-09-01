@@ -1,0 +1,456 @@
+<%# views/admin/orders.ejs — Admin Order Management %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Orders | Royal Mist Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root{--gold:#c4a14d;--gold-dim:rgba(196,161,77,0.12);--bg:#000;--sidebar-bg:#050505;--card:#0a0a0a;--border:#1a1a1a;--text:#fff;--muted:#888;--dim:#555;--sidebar-w:220px;--green:#4caf82;--red:#e05252;--blue:#5b8cff;--orange:#f39c12;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Playfair Display',serif;min-height:100vh;display:flex;}
+    /* SIDEBAR */
+    .sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--sidebar-bg);border-right:1px solid #111;display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;transition:transform 0.3s;}
+    .sidebar-logo{display:flex;align-items:center;gap:10px;padding:22px 20px 26px;border-bottom:1px solid #111;}
+    .logo-icon{width:30px;height:30px;background:var(--gold);clip-path:polygon(0 0,55% 0,100% 45%,100% 100%,45% 100%,0 55%);}
+    .logo-text{font-size:15px;font-weight:700;letter-spacing:3px;color:var(--gold);}
+    .nav-menu{flex:1;padding:20px 0;overflow-y:auto;}
+    .nav-item{display:flex;align-items:center;gap:14px;padding:13px 24px;color:#666;text-decoration:none;font-size:13px;letter-spacing:1px;transition:all 0.2s;border-left:3px solid transparent;}
+    .nav-item:hover{color:var(--gold);background:var(--gold-dim);}
+    .nav-item.active{color:var(--gold);border-left-color:var(--gold);background:var(--gold-dim);}
+    .nav-item i{width:18px;text-align:center;font-size:13px;}
+    /* MAIN */
+    .main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;border-bottom:1px solid #111;background:var(--bg);position:sticky;top:0;z-index:50;gap:12px;flex-wrap:wrap;}
+    .topbar-title{font-size:22px;font-weight:700;letter-spacing:1px;}
+    .hamburger{display:none;background:none;border:1px solid #222;color:var(--muted);padding:7px 10px;cursor:pointer;font-size:16px;}
+    .content{padding:24px 28px;flex:1;}
+    /* STAT CARDS */
+    .stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;}
+    .stat-card{background:var(--card);border:1px solid var(--border);padding:18px 16px;}
+    .stat-icon{width:34px;height:34px;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:14px;margin-bottom:12px;}
+    .stat-label{font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;}
+    .stat-value{font-size:22px;font-weight:700;}
+    /* FILTERS */
+    .filter-bar{background:var(--card);border:1px solid var(--border);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+    .filter-grp{display:flex;flex-direction:column;gap:6px;}
+    .filter-label{font-size:9px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;}
+    .filter-input,.filter-select{background:#000;border:1px solid #222;color:#fff;font-family:'Playfair Display',serif;font-size:12px;padding:8px 12px;outline:none;transition:border-color 0.2s;}
+    .filter-input:focus,.filter-select:focus{border-color:var(--gold);}
+    .filter-input::placeholder{color:#444;}
+    .filter-select option{background:#111;}
+    .btn-search{background:var(--gold);border:none;color:#000;font-family:'Playfair Display',serif;font-size:10px;letter-spacing:2px;font-weight:700;padding:8px 18px;cursor:pointer;transition:0.2s;align-self:flex-end;}
+    .btn-search:hover{background:#b38f3d;}
+    .btn-clear{background:transparent;border:1px solid #333;color:#666;font-family:'Playfair Display',serif;font-size:10px;letter-spacing:2px;padding:8px 14px;cursor:pointer;transition:0.2s;align-self:flex-end;text-decoration:none;display:inline-flex;align-items:center;}
+    .btn-clear:hover{border-color:#c0392b;color:#c0392b;}
+    /* TABLE */
+    .table-wrap{background:var(--card);border:1px solid var(--border);overflow:hidden;}
+    .table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+    .table-title{font-size:11px;letter-spacing:2px;color:var(--gold);}
+    .count-badge{background:var(--gold-dim);border:1px solid var(--gold);color:var(--gold);font-size:10px;padding:3px 10px;letter-spacing:1px;}
+    table{width:100%;border-collapse:collapse;}
+    thead tr{background:#050505;border-bottom:1px solid var(--border);}
+    th{padding:12px 16px;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;text-align:left;white-space:nowrap;}
+    tbody tr{border-bottom:1px solid #0d0d0d;transition:background 0.15s;}
+    tbody tr:hover{background:#0f0f0f;}
+    tbody tr:last-child{border-bottom:none;}
+    td{padding:14px 16px;font-size:12px;vertical-align:middle;}
+    .order-id{font-weight:700;letter-spacing:1px;color:var(--gold);}
+    .order-date{font-size:10px;color:var(--dim);}
+    .user-name{font-size:12px;font-weight:600;}
+    .user-email{font-size:10px;color:var(--dim);}
+    /* STATUS BADGE */
+    .s-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;letter-spacing:1px;padding:4px 10px;border:1px solid;font-weight:600;white-space:nowrap;}
+    .s-Pending       {border-color:#555;   color:#888;   background:rgba(85,85,85,0.1);}
+    .s-Processing    {border-color:#5b8cff;color:#5b8cff;background:rgba(91,140,255,0.08);}
+    .s-Shipped       {border-color:#f39c12;color:#f39c12;background:rgba(243,156,18,0.08);}
+    .s-Delivered     {border-color:#4caf82;color:#4caf82;background:rgba(76,175,130,0.08);}
+    .s-Cancelled     {border-color:#e05252;color:#e05252;background:rgba(224,82,82,0.08);}
+    .s-Return-Requested{border-color:#9b59b6;color:#9b59b6;background:rgba(155,89,182,0.08);}
+    .pay-chip{font-size:9px;letter-spacing:1px;padding:3px 8px;border:1px solid #222;color:var(--muted);}
+    .pay-chip.paid{border-color:#1a3a2a;color:var(--green);}
+    /* STATUS SELECT */
+    .status-select{background:#000;border:1px solid #2a2a2a;color:#fff;font-family:'Playfair Display',serif;font-size:10px;letter-spacing:1px;padding:5px 8px;cursor:pointer;outline:none;transition:border-color 0.2s;}
+    .status-select:focus{border-color:var(--gold);}
+    .status-select option{background:#111;}
+    /* ACTION BUTTONS */
+    .btn-view{background:transparent;border:1px solid #2a2a2a;color:#888;font-family:'Playfair Display',serif;font-size:9px;letter-spacing:1px;padding:6px 12px;cursor:pointer;transition:0.2s;text-decoration:none;display:inline-block;}
+    .btn-view:hover{border-color:var(--gold);color:var(--gold);}
+    /* PAGINATION */
+    .pagination-wrap{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px;}
+    .page-info{font-size:11px;color:var(--muted);}
+    .page-btns{display:flex;gap:6px;}
+    .page-btn{background:transparent;border:1px solid #2a2a2a;color:#666;font-family:'Playfair Display',serif;font-size:11px;padding:6px 12px;cursor:pointer;transition:0.2s;text-decoration:none;display:inline-block;}
+    .page-btn:hover{border-color:var(--gold);color:var(--gold);}
+    .page-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);}
+    .page-btn.disabled{opacity:0.3;pointer-events:none;}
+    /* EMPTY */
+    .empty-state{text-align:center;padding:60px 20px;color:var(--dim);}
+    .empty-state i{font-size:40px;color:#1a1a1a;margin-bottom:16px;display:block;}
+    /* TOAST */
+    .toast-msg{position:fixed;bottom:28px;right:24px;background:#0a0a0a;border:1px solid var(--gold);color:var(--gold);font-size:12px;letter-spacing:1px;padding:12px 20px;z-index:9999;display:none;}
+    .toast-msg.error{border-color:#e05252;color:#e05252;}
+    /* OVERLAY */
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99;}
+    .sidebar-overlay.active{display:block;}
+    /* CONFIRM MODAL */
+    .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:9998;opacity:0;pointer-events:none;transition:opacity 0.25s ease;}
+    .confirm-overlay.show{opacity:1;pointer-events:all;}
+    .confirm-box{background:#0a0a0a;border:1px solid #2a2a2a;padding:36px 32px;max-width:360px;width:90%;text-align:center;animation:confirmSlide 0.3s ease;}
+    @keyframes confirmSlide{from{transform:translateY(28px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .confirm-icon{width:52px;height:52px;border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--gold);font-size:18px;}
+    .confirm-title{font-size:14px;letter-spacing:3px;color:#fff;font-weight:600;margin-bottom:8px;}
+    .confirm-sub{font-size:11px;color:#555;letter-spacing:1px;line-height:1.7;margin-bottom:22px;}
+    .confirm-actions{display:flex;gap:10px;}
+    .btn-confirm-yes{flex:1;background:var(--gold);border:none;color:#000;font-family:'Playfair Display',serif;font-size:11px;letter-spacing:2px;font-weight:700;padding:14px;cursor:pointer;transition:0.2s;}
+    .btn-confirm-yes:hover{background:#b38f3d;}
+    .btn-confirm-no{flex:1;background:transparent;border:1px solid #2a2a2a;color:#666;font-family:'Playfair Display',serif;font-size:11px;letter-spacing:2px;padding:14px;cursor:pointer;transition:0.2s;}
+    .btn-confirm-no:hover{border-color:#555;color:#aaa;}
+    /* RESPONSIVE */
+    @media(max-width:1200px){.stat-row{grid-template-columns:repeat(3,1fr);}}
+    @media(max-width:900px){.stat-row{grid-template-columns:repeat(2,1fr);}.main{margin-left:0;}.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}.hamburger{display:flex;align-items:center;}.content{padding:16px;}}
+    @media(max-width:600px){.stat-row{grid-template-columns:1fr 1fr;}.filter-bar{flex-direction:column;}.table-wrap{overflow-x:auto;}}
+  </style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebar">
+   <div class="sidebar-logo">
+        <span class="logo-text"><i class="fas fa-gem me-2" style="color:var(--gold)"></i>ROYALMIST</span>
+    </div>
+    <nav class="nav-menu">
+        <a class="nav-item" href="/admin/dashboard">
+            <i class="fas fa-th-large"></i>
+            <span>Dashboard</span>
+        </a>
+        <a class="nav-item" href="/admin/products">
+            <i class="fas fa-box"></i>
+            <span>Products</span>
+        </a>
+        <a class="nav-item" href="/admin/categories">
+            <i class="fas fa-tag"></i>
+            <span>Categories</span>
+        </a>
+        <a class="nav-item" href="/admin/coupons">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Coupons</span>
+        </a>
+        <a class="nav-item" href="/admin/customers">
+            <i class="fas fa-users"></i>
+            <span>Customers</span>
+        </a>
+        <a class="nav-item active" href="/admin/orders">
+            <i class="fas fa-shopping-bag"></i>
+            <span>Orders</span>
+        </a>
+        <a class="nav-item" href="/admin/inventory">
+            <i class="fas fa-warehouse"></i>
+            <span>Inventory</span>
+        </a>
+        <a class="nav-item" href="/admin/product-offer">
+            <i class="fas fa-percent"></i>
+            <span>Product Offer</span>
+        </a>
+        <a class="nav-item" href="/admin/category-offer">
+            <i class="fas fa-layer-group"></i>
+            <span>Category Offer</span>
+        </a>
+        <a class="nav-item" href="/admin/sales-report">
+            <i class="fas fa-chart-bar"></i>
+            <span>Sales Report</span>
+        </a>
+        <a class="nav-item" href="/admin/logout">
+            <i class="fas fa-right-from-bracket"></i>
+            <span>Logout</span>
+        </a>
+    </nav>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button>
+      <h1 class="topbar-title">Order Management</h1>
+    </div>
+    <div style="font-size:11px;color:var(--muted);letter-spacing:1px;"><%= total %> TOTAL ORDERS</div>
+  </div>
+
+  <div class="content">
+
+    <!-- STAT CARDS -->
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-shopping-bag"></i></div><div class="stat-label">Total Orders</div><div class="stat-value"><%= stats.totalCount %></div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div class="stat-label">Pending</div><div class="stat-value"><%= stats.pendingCount %></div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-truck"></i></div><div class="stat-label">Shipped</div><div class="stat-value"><%= stats.shippedCount %></div></div>
+      <div class="stat-card" style="border-color:#1a3a2a;"><div class="stat-icon" style="background:rgba(76,175,130,0.1);color:var(--green);"><i class="fas fa-check-circle"></i></div><div class="stat-label">Delivered</div><div class="stat-value" style="color:var(--green);"><%= stats.deliveredCount %></div></div>
+      <div class="stat-card" style="border-color:#3a1a1a;"><div class="stat-icon" style="background:rgba(224,82,82,0.1);color:var(--red);"><i class="fas fa-times-circle"></i></div><div class="stat-label">Cancelled</div><div class="stat-value" style="color:var(--red);"><%= stats.cancelledCount %></div></div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <form method="GET" action="/admin/orders" id="filterForm">
+      <div class="filter-bar">
+        <div class="filter-grp">
+          <span class="filter-label">Search</span>
+          <input class="filter-input" name="search" value="<%= filters.search %>" placeholder="Order ID..." style="width:200px;"/>
+        </div>
+        <div class="filter-grp">
+          <span class="filter-label">Status</span>
+          <select class="filter-select" name="status">
+            <option value="">All Statuses</option>
+            <% ['Pending','Processing','Shipped','Delivered','Cancelled','Return Requested'].forEach(s => { %>
+              <option value="<%= s %>" <%= filters.status===s?'selected':'' %>><%= s %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="filter-grp">
+          <span class="filter-label">Payment</span>
+          <select class="filter-select" name="payment">
+            <option value="">All Methods</option>
+            <option value="COD"       <%= filters.payment==='COD'      ?'selected':'' %>>COD</option>
+            <option value="Razorpay"  <%= filters.payment==='Razorpay' ?'selected':'' %>>Razorpay</option>
+            <option value="Wallet"    <%= filters.payment==='Wallet'   ?'selected':'' %>>Wallet</option>
+          </select>
+        </div>
+        <div class="filter-grp">
+          <span class="filter-label">Sort By</span>
+          <select class="filter-select" name="sort">
+            <option value="newest"  <%= filters.sort==='newest' ?'selected':'' %>>Newest First</option>
+            <option value="oldest"  <%= filters.sort==='oldest' ?'selected':'' %>>Oldest First</option>
+            <option value="highest" <%= filters.sort==='highest'?'selected':'' %>>Highest Amount</option>
+            <option value="lowest"  <%= filters.sort==='lowest' ?'selected':'' %>>Lowest Amount</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-search"><i class="fas fa-search me-1"></i>SEARCH</button>
+        <% if(filters.search||filters.status||filters.payment||filters.sort!=='newest') { %>
+          <a href="/admin/orders" class="btn-clear"><i class="fas fa-times me-1"></i>CLEAR</a>
+        <% } %>
+      </div>
+    </form>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <span class="table-title"><i class="fas fa-list me-2"></i>ORDERS LIST</span>
+        <span class="count-badge"><%= total %> ORDERS</span>
+      </div>
+
+      <% if(orders.length === 0) { %>
+        <div class="empty-state">
+          <i class="fas fa-shopping-bag"></i>
+          <p style="font-size:13px;letter-spacing:2px;">NO ORDERS FOUND</p>
+          <% if(filters.search||filters.status) { %><a href="/admin/orders" style="color:var(--gold);font-size:11px;letter-spacing:2px;">CLEAR FILTERS</a><% } %>
+        </div>
+      <% } else { %>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ORDER ID</th>
+              <th>CUSTOMER</th>
+              <th>DATE</th>
+              <th>ITEMS</th>
+              <th>AMOUNT</th>
+              <th>PAYMENT</th>
+              <th>STATUS</th>
+              <th>CHANGE STATUS</th>
+              <th>ACTION</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% orders.forEach(order => { %>
+              <tr id="row-<%= order._id %>">
+                <td>
+                  <div class="order-id">#<%= order.orderId %></div>
+                  <div class="order-date"><%= new Date(order.createdAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) %></div>
+                </td>
+                <td>
+                  <div class="user-name"><%= order.user ? order.user.firstName+' '+order.user.lastName : 'Deleted User' %></div>
+                  <div class="user-email"><%= order.user ? order.user.email : '—' %></div>
+                </td>
+                <td style="font-size:11px;color:var(--muted);white-space:nowrap;"><%= new Date(order.createdAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) %></td>
+                <td style="font-size:12px;"><%= order.items.length %> item<%= order.items.length!==1?'s':'' %></td>
+                <td style="font-weight:700;color:var(--gold);">₹<%= order.grandTotal.toLocaleString('en-IN') %></td>
+                <td>
+                  <div style="display:flex;flex-direction:column;gap:4px;">
+                    <span style="font-size:10px;color:#aaa;"><%= order.paymentMethod %></span>
+                    <span class="pay-chip <%= order.paymentStatus==='Paid'?'paid':'' %>"><%= order.paymentStatus.toUpperCase() %></span>
+                  </div>
+                </td>
+                <td>
+                  <span class="s-badge s-<%= order.orderStatus.replace(' ','-') %>" id="badge-<%= order._id %>">
+                    <%= order.orderStatus.toUpperCase() %>
+                  </span>
+                </td>
+                <td>
+                <% if(order.orderStatus === 'Return Requested') { %>
+                    <button onclick="approveReturn('<%= order._id %>')"
+                      style="background:none;border:1px solid #9b59b6;color:#9b59b6;font-family:'Playfair Display',serif;font-size:9px;letter-spacing:1px;padding:6px 10px;cursor:pointer;">
+                      <i class="fas fa-check me-1"></i>APPROVE RETURN
+                    </button>
+                  <% } else if(!['Cancelled'].includes(order.orderStatus)) { %>
+                  <select class="status-select" onchange="updateStatus('<%= order._id %>', this.value, this)" data-current="<%= order.orderStatus %>">
+                    <option value="">— Change —</option>
+                    <% ['Pending','Processing','Shipped','Delivered','Cancelled'].forEach(s => { %>
+                      <option value="<%= s %>" <%= order.orderStatus===s?'selected':'' %>><%= s %></option>
+                    <% }) %>
+                  </select>
+                  <% } else { %>
+                    <span style="font-size:10px;color:var(--dim);letter-spacing:1px;">—</span>
+                  <% } %>
+                </td>
+                <td><a href="/admin/orders/<%= order._id %>" class="btn-view"><i class="fas fa-eye me-1"></i>VIEW</a></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION -->
+      <% if(totalPages > 1) { %>
+        <div class="pagination-wrap">
+          <span class="page-info">Page <%= currentPage %> of <%= totalPages %></span>
+          <div class="page-btns">
+            <a href="?<%= new URLSearchParams({...filters, page: currentPage-1}).toString() %>"
+               class="page-btn <%= currentPage<=1?'disabled':'' %>"><i class="fas fa-chevron-left" style="font-size:9px;"></i></a>
+            <% for(let p=Math.max(1,currentPage-2); p<=Math.min(totalPages,currentPage+2); p++) { %>
+              <a href="?<%= new URLSearchParams({...filters, page: p}).toString() %>"
+                 class="page-btn <%= p===currentPage?'active':'' %>"><%= p %></a>
+            <% } %>
+            <a href="?<%= new URLSearchParams({...filters, page: currentPage+1}).toString() %>"
+               class="page-btn <%= currentPage>=totalPages?'disabled':'' %>"><i class="fas fa-chevron-right" style="font-size:9px;"></i></a>
+          </div>
+        </div>
+      <% } %>
+
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon"><i class="fas fa-exchange-alt" id="confirmIcon"></i></div>
+    <div class="confirm-title" id="confirmTitle">CONFIRM ACTION</div>
+    <div class="confirm-sub" id="confirmSub">Are you sure?</div>
+    <div class="confirm-actions">
+      <button class="btn-confirm-no" onclick="closeConfirmModal()">CANCEL</button>
+      <button class="btn-confirm-yes" id="confirmYesBtn">YES, CONFIRM</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-msg" id="toastMsg"></div>
+
+<script>
+  // Sidebar
+  const hamburger=document.getElementById('hamburger'),sidebar=document.getElementById('sidebar'),overlay=document.getElementById('sidebarOverlay');
+  hamburger.addEventListener('click',()=>{sidebar.classList.toggle('open');overlay.classList.toggle('active');});
+  overlay.addEventListener('click',()=>{sidebar.classList.remove('open');overlay.classList.remove('active');});
+
+  function showToast(msg,isError=false){const t=document.getElementById('toastMsg');t.textContent=msg;t.className='toast-msg'+(isError?' error':'');t.style.display='block';setTimeout(()=>t.style.display='none',3000);}
+
+  const statusColors = {
+    'Pending':    'border-color:#555;color:#888;background:rgba(85,85,85,0.1);',
+    'Processing': 'border-color:#5b8cff;color:#5b8cff;background:rgba(91,140,255,0.08);',
+    'Shipped':    'border-color:#f39c12;color:#f39c12;background:rgba(243,156,18,0.08);',
+    'Delivered':  'border-color:#4caf82;color:#4caf82;background:rgba(76,175,130,0.08);',
+    'Cancelled':  'border-color:#e05252;color:#e05252;background:rgba(224,82,82,0.08);',
+  };
+
+  // ── Custom confirm modal (replaces browser confirm()) ──────────
+  let _confirmCallback = null;
+  let _confirmCancelCallback = null;
+
+  function showConfirm(title, sub, onYes, onCancel) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmSub').textContent = sub;
+    _confirmCallback = onYes;
+    _confirmCancelCallback = onCancel || null;
+    document.getElementById('confirmOverlay').classList.add('show');
+  }
+
+  function closeConfirmModal() {
+    document.getElementById('confirmOverlay').classList.remove('show');
+    if (_confirmCancelCallback) _confirmCancelCallback();
+    _confirmCallback = null;
+    _confirmCancelCallback = null;
+  }
+
+  document.getElementById('confirmYesBtn').addEventListener('click', () => {
+    const cb = _confirmCallback;
+    _confirmCallback = null;
+    _confirmCancelCallback = null;
+    document.getElementById('confirmOverlay').classList.remove('show');
+    if (cb) cb();
+  });
+
+  document.getElementById('confirmOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeConfirmModal();
+  });
+
+  async function approveReturn(orderId) {
+    showConfirm(
+      'APPROVE RETURN?',
+      'Refund will be added to customer wallet. This action cannot be undone.',
+      async () => {
+        try {
+          const res  = await fetch(`/admin/orders/${orderId}/approve-return`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+          });
+          const data = await res.json();
+          if(data.success) {
+            showToast('Return approved — refund processed');
+            setTimeout(() => location.reload(), 1500);
+          } else {
+            showToast(data.message || 'Failed', true);
+          }
+        } catch {
+          showToast('Something went wrong', true);
+        }
+      }
+    );
+  }
+
+  async function updateStatus(orderId, newStatus, selectEl) {
+    if(!newStatus || newStatus === selectEl.dataset.current) return;
+
+    showConfirm(
+      'CHANGE STATUS?',
+      `Order status will be changed to "${newStatus}".`,
+      async () => {
+        try {
+          const res  = await fetch(`/admin/orders/${orderId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus }),
+          });
+          const data = await res.json();
+          if(data.success) {
+            const badge = document.getElementById('badge-'+orderId);
+            badge.textContent = newStatus.toUpperCase();
+            badge.className = 's-badge s-' + newStatus.replace(' ','-');
+            selectEl.dataset.current = newStatus;
+            showToast('Status updated to ' + newStatus);
+            if(newStatus === 'Cancelled') selectEl.style.display = 'none';
+          } else {
+            showToast(data.message || 'Failed to update', true);
+            selectEl.value = selectEl.dataset.current;
+          }
+        } catch {
+          showToast('Something went wrong', true);
+          selectEl.value = selectEl.dataset.current;
+        }
+      },
+      () => {
+        // user cancelled — reset dropdown back to current status
+        selectEl.value = selectEl.dataset.current;
+      }
+    );
+  }
+</script>
+</body>
+</html>

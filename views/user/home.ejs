@@ -375,19 +375,28 @@
 
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="#">HOME</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">SHOP</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">ABOUT</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/home">HOME</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/shop">SHOP</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">ABOUT</a></li>
                 </ul>
 
                 <div class="d-flex align-items-center">
-                    <div class="search-container">
-                        <input type="text" class="search-input" placeholder="SEARCH...">
-                        <i class="fas fa-search search-icon"></i>
-                    </div>
+                   <div class="search-container">
+    <form action="/shop" method="GET" style="display:flex;align-items:center;">
+        <input type="text" name="search" class="search-input" placeholder="SEARCH..." autocomplete="off"/>
+        <button type="submit" style="background:none;border:none;padding:0;cursor:pointer;position:absolute;right:5px;top:50%;transform:translateY(-50%);">
+            <i class="fas fa-search search-icon" style="position:static;transform:none;"></i>
+        </button>
+    </form>
+</div>
                     <div class="d-flex gap-3 align-items-center">
-                        <i class="fa-regular fa-heart" style="cursor:pointer;"></i>
-                        <i class="fa-solid fa-bag-shopping" style="cursor:pointer;"></i>
+                       <a href="/wishlist"><i class="fa-regular fa-heart" style="color:#fff;"></i></a>
+<a href="/cart" style="position:relative;">
+  <i class="fa-solid fa-bag-shopping" style="color:#fff;font-size:16px;"></i>
+  <% if(typeof cartCount !== 'undefined' && cartCount > 0) { %>
+    <span style="position:absolute;top:-8px;right:-8px;background:var(--gold);color:#000;font-size:9px;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;"><%= cartCount %></span>
+  <% } %>
+</a>
 
   <div class="user-dropdown">
   <% if(user) { %>
@@ -397,9 +406,7 @@
       </span>
       <div id="dropdownMenu" class="dropdown-menu-custom">
         <a href="/account" class="dropdown-item-custom">Account</a>
-        <form action="/logout" method="POST">
-          <button type="submit" id="logoutBtn" class="dropdown-item-custom">Logout</button>
-        </form>
+       <button type="button" id="logoutBtn" class="dropdown-item-custom">Logout</button>
       </div>
     </div>
   <% } else { %>
@@ -419,7 +426,7 @@
         <div class="container hero-content">
             <h1>Discover Your <br> <span class="gold-text">Signature Scent</span></h1>
             <p>Crafted in Grasse, bottled for eternity. Experience the world's most luxurious fragrances curated just for you.</p>
-            <button class="btn btn-gold">EXPLORE COLLECTION</button>
+           <a href="/shop" class="btn btn-gold">EXPLORE COLLECTION</a>
         </div>
     </section>
 
@@ -442,133 +449,94 @@
     </section>
 
     <!-- PRODUCTS — 4 CARDS -->
-    <section class="container py-5">
-        <div class="d-flex justify-content-between align-items-end mb-5">
-            <div>
-                <div style="width: 50px; height: 2px; background: var(--gold); margin-bottom: 10px;"></div>
-                <h2 class="h3 m-0" style="letter-spacing: 2px;">POPULAR PERFUMES</h2>
+   <!-- PRODUCTS — 4 CARDS -->
+<section class="container py-5">
+  <div class="d-flex justify-content-between align-items-end mb-5">
+    <div>
+      <div style="width:50px;height:2px;background:var(--gold);margin-bottom:10px;"></div>
+      <h2 class="h3 m-0" style="letter-spacing:2px;">POPULAR PERFUMES</h2>
+    </div>
+    <a href="/shop" class="text-secondary small text-decoration-none" 
+       style="letter-spacing:2px;">VIEW ALL</a>
+  </div>
+
+  <div class="row g-4">
+    <% if(products.length === 0) { %>
+      <p class="text-center text-secondary">No products available</p>
+    <% } %>
+
+    <% products.forEach(product => { %>
+      <% const basePrice = product.volumes?.[0]?.price || 0; %>
+      <% const baseSize  = product.volumes?.[0]?.size  || ''; %>
+    <%
+  const isOut = !product.volumes || product.volumes.length === 0 || 
+    product.volumes.every(v => v.stock === 0);
+%>
+
+      <div class="col-6 col-md-3">
+
+        <!-- ★ KEY FIX: d-flex flex-column h-100 -->
+        <div class="product-card d-flex flex-column h-100">
+
+          <div class="img-wrapper">
+            <% if(isOut) { %>
+              <div class="offer-tag" 
+                style="background:#333;color:#999;">OUT OF STOCK</div>
+            <% } %>
+            <img
+              src="<%= product.images?.[0] || '/images/placeholder.jpg' %>"
+              class="w-100"
+              style="aspect-ratio:1/1.2;object-fit:cover;<%= isOut ? 'filter:grayscale(60%)brightness(0.6)' : '' %>"
+              loading="lazy"
+              alt="<%= product.name %>"
+            />
+          </div>
+
+          <!-- ★ flex-grow-1 makes body fill remaining space -->
+          <div class="product-body flex-grow-1 d-flex flex-column">
+
+            <div class="product-info-row">
+              <div class="text-start">
+                <span class="category-label">
+                  <%= product.category ? product.category.name : '' %>
+                </span>
+                <h3 class="product-name"><%= product.name %></h3>
+              </div>
+              <div class="text-end">
+                <span class="fragrance-type"><%= product.fragranceType %></span>
+              </div>
             </div>
-            <a href="#" class="text-secondary small text-decoration-none" style="letter-spacing: 2px;">VIEW ALL</a>
+
+            <!-- ★ mt-auto pushes price+button to bottom always -->
+            <div class="mt-auto">
+            <div class="price-row">
+  <div>
+    <div style="font-size:10px;color:#555;letter-spacing:1px;">FROM</div>
+    <div class="price">₹<%= basePrice.toLocaleString('en-IN') %></div>
+  </div>
+  <% if(product.volumes && product.volumes.length > 1) { %>
+    <span style="font-size:10px;color:#555;"><%= product.volumes.length %> Variants</span>
+  <% } %>
+</div>
+
+              <% if(!isOut) { %>
+                <a href="/shop/<%= product._id %>" class="view-btn d-block text-center text-decoration-none">
+                  VIEW PRODUCT
+                </a>
+              <% } else { %>
+                <span class="view-btn d-block text-center" 
+                  style="color:#444;border-color:#1a1a1a;cursor:default;">
+                  SOLD OUT
+                </span>
+              <% } %>
+            </div>
+
+          </div>
         </div>
-
-        <div class="row g-4">
-
-            <!-- Card 1 -->
-            <div class="col-6 col-md-3">
-                <div class="product-card">
-                    <div class="img-wrapper">
-                        <div class="offer-tag">20% OFF</div>
-                        <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=600" class="w-100" style="aspect-ratio: 1/1.2; object-fit: cover;">
-                    </div>
-                    <div class="product-body">
-                        <div class="product-info-row">
-                            <div class="text-start">
-                                <span class="category-label">MEN</span>
-                                <h3 class="product-name">Desert Bloom</h3>
-                            </div>
-                            <div class="text-end">
-                                <div class="rating-stars">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                </div>
-                                <span class="fragrance-type">Citrus</span>
-                            </div>
-                        </div>
-                        <div class="price-row">
-                            <div class="price">₹2000</div>
-                            <div class="ml-text">100ML</div>
-                        </div>
-                        <button class="view-btn">VIEW PRODUCT</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 2 -->
-            <div class="col-6 col-md-3">
-                <div class="product-card">
-                    <div class="img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=600" class="w-100" style="aspect-ratio: 1/1.2; object-fit: cover;">
-                    </div>
-                    <div class="product-body">
-                        <div class="product-info-row">
-                            <div class="text-start">
-                                <span class="category-label">UNISEX</span>
-                                <h3 class="product-name">Velvee Oud</h3>
-                            </div>
-                            <div class="text-end">
-                                <div class="rating-stars">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
-                                </div>
-                                <span class="fragrance-type">Woody</span>
-                            </div>
-                        </div>
-                        <div class="price-row">
-                            <div class="price">₹2500</div>
-                            <div class="ml-text">50ML</div>
-                        </div>
-                        <button class="view-btn">VIEW PRODUCT</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 3 -->
-            <div class="col-6 col-md-3">
-                <div class="product-card">
-                    <div class="img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=600" class="w-100" style="aspect-ratio: 1/1.2; object-fit: cover;">
-                    </div>
-                    <div class="product-body">
-                        <div class="product-info-row">
-                            <div class="text-start">
-                                <span class="category-label">WOMEN</span>
-                                <h3 class="product-name">Ocean Mist</h3>
-                            </div>
-                            <div class="text-end">
-                                <div class="rating-stars">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                </div>
-                                <span class="fragrance-type">Floral</span>
-                            </div>
-                        </div>
-                        <div class="price-row">
-                            <div class="price">₹1800</div>
-                            <div class="ml-text">100ML</div>
-                        </div>
-                        <button class="view-btn">VIEW PRODUCT</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 4 — NEW -->
-            <div class="col-6 col-md-3">
-                <div class="product-card">
-                    <div class="img-wrapper">
-                        <div class="offer-tag">NEW</div>
-                        <img src="https://images.unsplash.com/photo-1586495777744-4e6232bf6c44?q=80&w=600" class="w-100" style="aspect-ratio: 1/1.2; object-fit: cover;">
-                    </div>
-                    <div class="product-body">
-                        <div class="product-info-row">
-                            <div class="text-start">
-                                <span class="category-label">WOMEN</span>
-                                <h3 class="product-name">Rose Noir</h3>
-                            </div>
-                            <div class="text-end">
-                                <div class="rating-stars">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                                </div>
-                                <span class="fragrance-type">Oriental</span>
-                            </div>
-                        </div>
-                        <div class="price-row">
-                            <div class="price">₹3200</div>
-                            <div class="ml-text">75ML</div>
-                        </div>
-                        <button class="view-btn">VIEW PRODUCT</button>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </section>
+      </div>
+    <% }) %>
+  </div>
+</section>
 
     <!-- BRAND STORY -->
     <section class="container text-center py-5 my-5">
@@ -636,6 +604,20 @@
             </div>
         </div>
     </footer>
+    <!-- ── LOGOUT CONFIRM MODAL ── -->
+<div id="logoutConfirmOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:9998;opacity:0;pointer-events:none;transition:opacity 0.25s ease;">
+  <div style="background:#0a0a0a;border:1px solid #2a2a2a;padding:36px 32px;max-width:360px;width:90%;text-align:center;">
+    <div style="width:52px;height:52px;border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--gold);font-size:18px;">
+      <i class="fas fa-sign-out-alt"></i>
+    </div>
+    <div style="font-size:14px;letter-spacing:3px;color:#fff;font-weight:600;margin-bottom:8px;">LOGOUT?</div>
+    <div style="font-size:11px;color:#555;letter-spacing:1px;line-height:1.7;margin-bottom:22px;">Are you sure you want to logout of your account?</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeLogoutModal()" style="flex:1;background:transparent;border:1px solid #2a2a2a;color:#666;font-family:var(--font-main);font-size:11px;letter-spacing:2px;padding:14px;cursor:pointer;transition:0.2s;">CANCEL</button>
+      <button id="confirmLogoutBtn" style="flex:1;background:var(--gold);border:none;color:#000;font-family:var(--font-main);font-size:11px;letter-spacing:2px;font-weight:700;padding:14px;cursor:pointer;transition:0.2s;">YES, LOGOUT</button>
+    </div>
+  </div>
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -666,19 +648,33 @@ if (caret && dropdown) {
     });
 }
 
-// LOGOUT
+// LOGOUT — show confirm modal first
 const logoutBtn = document.getElementById("logoutBtn");
 if (logoutBtn) {
-    logoutBtn.addEventListener("click", async (e) => {
+    logoutBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        try {
-            await fetch("/logout", { method: "POST" });
-            window.location.href = "/signin";
-        } catch (err) {
-            console.log(err);
-        }
+        document.getElementById("logoutConfirmOverlay").style.opacity = "1";
+        document.getElementById("logoutConfirmOverlay").style.pointerEvents = "all";
     });
 }
+
+function closeLogoutModal() {
+    document.getElementById("logoutConfirmOverlay").style.opacity = "0";
+    document.getElementById("logoutConfirmOverlay").style.pointerEvents = "none";
+}
+
+document.getElementById("confirmLogoutBtn").addEventListener("click", async () => {
+    try {
+        await fetch("/logout", { method: "POST" });
+        window.location.href = "/signin";
+    } catch (err) {
+        console.log(err);
+    }
+});
+
+document.getElementById("logoutConfirmOverlay").addEventListener("click", function(e) {
+    if (e.target === this) closeLogoutModal();
+});
 </script>
 </body>
 </html>

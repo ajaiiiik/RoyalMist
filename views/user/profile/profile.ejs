@@ -555,8 +555,8 @@ body {
 <div class="top-bar">
     <a class="profile-title" href="#">PROFILE</a>
     <div class="menu">
-        <a href="#">Order History</a>
-        <a href="#">Wallet</a>
+        <a href="/orders">Order History</a>
+        <a href="/wallet">Wallet</a>
         <a href="/addAddress">Add Address</a>
     </div>
     <div class="nav-actions">
@@ -839,6 +839,20 @@ border-radius:2px;
 
 </div>
 
+<div id="logoutConfirmOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:9998;opacity:0;pointer-events:none;transition:opacity 0.25s ease;">
+  <div style="background:#0a0a0a;border:1px solid #2a2a2a;padding:36px 32px;max-width:360px;width:90%;text-align:center;">
+    <div style="width:52px;height:52px;border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--gold);font-size:18px;">
+      <i class="fas fa-sign-out-alt"></i>
+    </div>
+    <div style="font-size:14px;letter-spacing:3px;color:#fff;font-weight:600;margin-bottom:8px;">LOGOUT?</div>
+    <div style="font-size:11px;color:#555;letter-spacing:1px;line-height:1.7;margin-bottom:22px;">Are you sure you want to logout of your account?</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeLogoutModal()" style="flex:1;background:transparent;border:1px solid #333;color:#555;font-family:'Playfair Display',serif;font-size:11px;letter-spacing:2px;padding:14px;cursor:pointer;transition:0.2s;">CANCEL</button>
+      <button id="confirmLogoutBtn" style="flex:1;background:var(--gold);border:none;color:#000;font-family:'Playfair Display',serif;font-size:11px;letter-spacing:2px;font-weight:700;padding:14px;cursor:pointer;transition:0.2s;">YES, LOGOUT</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script>
 const profileWrapper = document.getElementById("profileWrapper");
@@ -945,7 +959,22 @@ document.getElementById("cropSaveBtn").addEventListener("click", async () => {
 });
 
 document.getElementById("logoutBtn").addEventListener("click", () => {
-    window.location.href = "/logout";
+    document.getElementById("logoutConfirmOverlay").style.opacity = "1";
+    document.getElementById("logoutConfirmOverlay").style.pointerEvents = "all";
+});
+
+function closeLogoutModal() {
+    document.getElementById("logoutConfirmOverlay").style.opacity = "0";
+    document.getElementById("logoutConfirmOverlay").style.pointerEvents = "none";
+}
+
+document.getElementById("confirmLogoutBtn").addEventListener("click", () => {
+    fetch("/logout", { method: "POST" })
+        .then(() => window.location.href = "/signin");
+});
+
+document.getElementById("logoutConfirmOverlay").addEventListener("click", function(e) {
+    if (e.target === this) closeLogoutModal();
 });
 
 function showToast(msg, type) {
@@ -1120,7 +1149,11 @@ if (!oldPass) {
     valid = false;
 }
 
-if (!newPass || !validatePassword(newPass)) {
+if (!newPass) {
+    document.getElementById("errNew").textContent = "New password is required";
+    document.getElementById("errNew").style.display = "block";
+    valid = false;
+} else if (!validatePassword(newPass)) {
     document.getElementById("errNew").textContent =
         "Password must be 8+ chars, include uppercase, lowercase & number";
     document.getElementById("errNew").style.display = "block";
@@ -1149,6 +1182,7 @@ if (!newPass || !validatePassword(newPass)) {
             showToast("Password changed successfully", "success");
             closePasswordModal();
         } else {
+              document.getElementById("errOld").textContent = "Incorrect old password";
             document.getElementById("errOld").style.display = "block";
         }
 

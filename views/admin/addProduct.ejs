@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Product — RoyalMist Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+<style>
+:root {
+  --gold: #c4a14d;
+  --gold-light: #d4b05d;
+  --bg: #000;
+  --sidebar-bg: #050505;
+  --card: #0a0a0a;
+  --border: #1a1a1a;
+  --border-dim: #111;
+  --text: #fff;
+  --text-muted: #888;
+  --sidebar-width: 240px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Playfair Display', serif; min-height: 100vh; display: flex; }
+
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-width); background: var(--sidebar-bg);
+  border-right: 1px solid var(--border); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; transition: transform 0.3s ease;
+}
+.sidebar-logo { padding: 28px 24px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+.logo-icon { width: 36px; height: 36px; background: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 18px; clip-path: polygon(0 0, 70% 0, 100% 30%, 100% 100%, 30% 100%, 0 70%); flex-shrink: 0; }
+.logo-text { color: var(--gold); font-size: 13px; letter-spacing: 4px; font-weight: 700; }
+.sidebar-nav { flex: 1; padding: 20px 0; overflow-y: auto; }
+.nav-item { display: flex; align-items: center; gap: 14px; padding: 13px 24px; color: #666; text-decoration: none; font-size: 13px; letter-spacing: 1px; transition: all 0.2s; cursor: pointer; border-left: 3px solid transparent; }
+.nav-item:hover { color: var(--gold); background: rgba(196,161,77,0.15); }
+.nav-item.active { color: var(--gold); border-left-color: var(--gold); background: rgba(196,161,77,0.05); }
+.nav-item i { width: 18px; font-size: 14px; text-align: center; }
+.sidebar-footer { padding: 20px 24px; border-top: 1px solid var(--border); font-size: 10px; letter-spacing: 2px; color: #333; text-align: center; }
+
+/* MAIN */
+.main-content { margin-left: var(--sidebar-width); flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+.top-bar { border-bottom: 1px solid var(--border); padding: 20px 36px; display: flex; align-items: center; justify-content: space-between; gap: 16px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; }
+.page-heading { font-size: 28px; font-weight: 700; letter-spacing: 2px; }
+.btn-back { border: 1px solid #2a2a2a; color: #888; background: transparent; padding: 10px 22px; font-size: 11px; letter-spacing: 2px; font-family: 'Playfair Display', serif; font-weight: 700; cursor: pointer; transition: 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+.btn-back:hover { border-color: var(--gold); color: var(--gold); }
+
+.content-wrap { padding: 36px; flex: 1; }
+.form-card { border: 1px solid var(--border); background: var(--card); padding: 36px; }
+
+/* FORM */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.form-grid.full { grid-template-columns: 1fr; }
+.field { margin-bottom: 0; }
+.field label { display: block; font-size: 10px; letter-spacing: 3px; color: var(--gold); font-weight: 700; margin-bottom: 10px; }
+.field input, .field textarea, .field select {
+  width: 100%; background: #050505; border: 1px solid #2a2a2a; color: #fff;
+  padding: 13px 16px; font-family: 'Playfair Display', serif; font-size: 13px;
+  outline: none; transition: border-color 0.2s; resize: vertical;
+  appearance: none; -webkit-appearance: none;
+}
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--gold); }
+.field input::placeholder, .field textarea::placeholder { color: #444; }
+.field select option { background: #0a0a0a; color: #fff; }
+.field-error { font-size: 12px; color: red; margin-top: 6px; display: none; font-family: 'Montserrat', sans-serif; }
+.field-error.visible { display: block; }
+
+.section-title { font-size: 10px; letter-spacing: 4px; color: var(--gold); font-weight: 700; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-dim); }
+
+/* VOLUMES */
+.volume-row { display: grid; grid-template-columns: 120px 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 12px; }
+.volume-row .field { margin-bottom: 0; }
+.btn-remove-vol { background: none; border: 1px solid #2a2a2a; color: #666; width: 44px; height: 44px; cursor: pointer; font-size: 12px; transition: 0.2s; display: flex; align-items: center; justify-content: center; margin-top: 28px; flex-shrink: 0; }
+.btn-remove-vol:hover { border-color: #c0392b; color: #c0392b; }
+.btn-add-volume { background: none; border: 1px dashed #2a2a2a; color: #666; padding: 10px 20px; font-family: 'Playfair Display', serif; font-size: 11px; letter-spacing: 2px; cursor: pointer; transition: 0.2s; width: 100%; margin-top: 8px; }
+.btn-add-volume:hover { border-color: var(--gold); color: var(--gold); }
+
+/* IMAGE UPLOAD */
+.image-upload-area {
+  border: 2px dashed #2a2a2a; padding: 32px; text-align: center;
+  cursor: pointer; transition: 0.3s; position: relative;
+}
+.image-upload-area:hover { border-color: var(--gold); }
+.image-upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-icon { font-size: 32px; color: #2a2a2a; margin-bottom: 12px; }
+.upload-text { font-size: 12px; color: #555; letter-spacing: 2px; }
+.upload-hint { font-size: 10px; color: #333; letter-spacing: 1px; margin-top: 6px; }
+
+.image-previews { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 16px; }
+.preview-item { position: relative; border: 1px solid #2a2a2a; aspect-ratio: 1; overflow: hidden; }
+.preview-item img { width: 100%; height: 100%; object-fit: cover; }
+.preview-remove { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.8); border: 1px solid #c0392b; color: #c0392b; width: 24px; height: 24px; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+.preview-remove:hover { background: #c0392b; color: #fff; }
+.img-count { font-size: 10px; color: #555; letter-spacing: 2px; margin-top: 10px; }
+.img-count.enough { color: var(--gold); }
+
+/* CROP MODAL */
+.crop-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; align-items: center; justify-content: center; }
+.crop-overlay.active { display: flex; }
+.crop-modal { background: #0a0a0a; border: 1px solid #1a1a1a; width: 90vw; max-width: 700px; max-height: 90vh; display: flex; flex-direction: column; }
+.crop-modal-header { padding: 20px 24px; border-bottom: 1px solid #1a1a1a; display: flex; align-items: center; justify-content: space-between; }
+.crop-modal-title { font-size: 12px; letter-spacing: 3px; color: var(--gold); }
+.crop-modal-body { flex: 1; overflow: hidden; padding: 20px; max-height: 60vh; }
+.crop-modal-body img { max-width: 100%; display: block; }
+.crop-modal-footer { padding: 16px 24px; border-top: 1px solid #1a1a1a; display: flex; gap: 12px; justify-content: flex-end; }
+.btn-crop-cancel { background: none; border: 1px solid #2a2a2a; color: #888; padding: 10px 20px; font-family: 'Playfair Display', serif; font-size: 10px; letter-spacing: 2px; cursor: pointer; transition: 0.2s; }
+.btn-crop-cancel:hover { border-color: var(--gold); color: var(--gold); }
+.btn-crop-done { background: var(--gold); border: 1px solid var(--gold); color: #000; padding: 10px 24px; font-family: 'Playfair Display', serif; font-size: 10px; letter-spacing: 2px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.btn-crop-done:hover { background: var(--gold-light); }
+
+/* FORM ACTIONS */
+.form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-dim); }
+.btn-submit { border: 1px solid var(--gold); color: #000; background: var(--gold); padding: 13px 32px; font-size: 11px; letter-spacing: 2px; font-family: 'Playfair Display', serif; font-weight: 700; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-submit:hover { background: var(--gold-light); }
+.btn-cancel { border: 1px solid #2a2a2a; color: #888; background: transparent; padding: 13px 32px; font-size: 11px; letter-spacing: 2px; font-family: 'Playfair Display', serif; font-weight: 700; cursor: pointer; transition: 0.3s; text-decoration: none; display: inline-flex; align-items: center; }
+.btn-cancel:hover { border-color: var(--gold); color: var(--gold); }
+
+/* TOAST */
+#toast { display: none; position: fixed; top: 24px; left: 50%; transform: translateX(-50%); background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 14px 28px; font-family: 'Playfair Display', serif; font-size: 12px; letter-spacing: 2px; z-index: 9999; }
+
+/* HAMBURGER */
+.hamburger { display: none; background: none; border: 1px solid #2a2a2a; color: var(--gold); width: 38px; height: 38px; cursor: pointer; align-items: center; justify-content: center; font-size: 16px; transition: 0.2s; flex-shrink: 0; }
+.hamburger:hover { border-color: var(--gold); }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.active { display: block; }
+  .main-content { margin-left: 0; }
+  .hamburger { display: flex; }
+  .top-bar { padding: 16px 20px; }
+  .content-wrap { padding: 20px 16px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-card { padding: 20px; }
+}
+@media (max-width: 600px) {
+  .volume-row { grid-template-columns: 1fr 1fr auto; }
+  .page-heading { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">◆</div>
+    <span class="logo-text">ROYALMIST</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item" href="/admin/dashboard"><i class="fa-solid fa-border-all"></i>Dashboard</a>
+    <a class="nav-item active" href="/admin/products"><i class="fa-solid fa-box-open"></i>Products</a>
+    <a class="nav-item" href="/admin/categories"><i class="fa-solid fa-tag"></i>Categories</a>
+    <a class="nav-item" href="/admin/coupons"><i class="fa-solid fa-ticket"></i>Coupons</a>
+    <a class="nav-item" href="/admin/customers"><i class="fa-solid fa-users"></i>Customers</a>
+    <a class="nav-item" href="/admin/orders"><i class="fa-solid fa-bag-shopping"></i>Orders</a>
+    <a class="nav-item" href="/admin/product-offer"><i class="fa-solid fa-percent"></i>Product Offer</a>
+    <a class="nav-item" href="/admin/category-offer"><i class="fa-solid fa-layer-group"></i>Category Offer</a>
+    <a class="nav-item" href="/admin/sales-report"><i class="fa-solid fa-chart-bar"></i>Sales Report</a>
+    <a class="nav-item" href="/admin/logout"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+  </nav>
+  <div class="sidebar-footer">ROYALMIST ADMIN v2.0</div>
+</aside>
+
+<div class="main-content">
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+      <h1 class="page-heading">Add Product</h1>
+    </div>
+    <a href="/admin/products" class="btn-back">
+      <i class="fa-solid fa-arrow-left" style="font-size:10px;"></i> BACK
+    </a>
+  </div>
+
+  <div class="content-wrap">
+    <div class="form-card">
+      <form id="productForm" enctype="multipart/form-data">
+
+        <!-- BASIC INFO -->
+        <div class="section-title">BASIC INFORMATION</div>
+        <div class="form-grid" style="margin-bottom:24px;">
+          <div class="field">
+            <label>PRODUCT NAME</label>
+            <input type="text" id="prodName" placeholder="e.g. Midnight Oud" maxlength="100">
+            <div class="field-error" id="errName">Product name is required.</div>
+          </div>
+          <div class="field">
+            <label>CATEGORY</label>
+            <select id="prodCategory">
+              <option value="">Select category...</option>
+              <% categories.forEach(cat => { %>
+                <option value="<%= cat._id %>"><%= cat.name %></option>
+              <% }) %>
+            </select>
+            <div class="field-error" id="errCategory">Category is required.</div>
+          </div>
+          <div class="field">
+            <label>FRAGRANCE TYPE</label>
+           <select id="prodFragrance">
+  <option value="">Select type...</option>
+  <option value="Citrus">Citrus</option>
+  <option value="Woody">Woody</option>
+  <option value="Floral">Floral</option>
+  <option value="Oriental">Oriental</option>
+  <option value="Aquatic">Aquatic</option>
+  <option value="Spicy">Spicy</option>
+  <option value="Musky">Musky</option>
+  <option value="Fresh">Fresh</option>
+</select>
+            <div class="field-error" id="errFragrance">Fragrance type is required.</div>
+          </div>
+          <div class="field form-grid full" style="grid-column:1/-1;">
+            <label>DESCRIPTION</label>
+            <textarea id="prodDesc" placeholder="Describe the fragrance..." rows="4" maxlength="1000"></textarea>
+          </div>
+        </div>
+
+        <!-- VOLUMES -->
+        <div class="section-title">VOLUMES & PRICING</div>
+        <div id="volumeList"></div>
+        <button type="button" class="btn-add-volume" onclick="addVolume()">
+          <i class="fa-solid fa-plus" style="font-size:9px;"></i> ADD VOLUME
+        </button>
+        <div class="field-error" id="errVolumes" style="margin-top:8px;">Add at least one volume with size and price.</div>
+
+        <!-- IMAGES -->
+        <div class="section-title" style="margin-top:32px;">PRODUCT IMAGES</div>
+        <div class="image-upload-area" id="uploadArea">
+          <input type="file" id="imageFileInput" accept="image/*" multiple>
+          <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          <div class="upload-text">CLICK TO UPLOAD IMAGES</div>
+          <div class="upload-hint">JPG, PNG, WEBP — Max 5MB each — Minimum 3 images</div>
+        </div>
+        <div class="image-previews" id="imagePreviews"></div>
+        <div class="img-count" id="imgCount">0 images selected</div>
+        <div class="field-error" id="errImages">Minimum 3 images required.</div>
+
+        <!-- ACTIONS -->
+        <div class="form-actions">
+          <a href="/admin/products" class="btn-cancel">CANCEL</a>
+          <button type="button" class="btn-submit" onclick="submitProduct()">
+            <i class="fa-solid fa-floppy-disk" style="font-size:10px;"></i> SAVE PRODUCT
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- CROP MODAL -->
+<div class="crop-overlay" id="cropOverlay">
+  <div class="crop-modal">
+    <div class="crop-modal-header">
+      <span class="crop-modal-title">CROP IMAGE</span>
+      <span style="font-size:10px;color:#555;letter-spacing:1px;">Drag to reposition • Scroll to zoom</span>
+    </div>
+    <div class="crop-modal-body">
+      <img id="cropImage" src="" alt="crop">
+    </div>
+    <div class="crop-modal-footer">
+      <button class="btn-crop-cancel" onclick="cancelCrop()">CANCEL</button>
+      <button class="btn-crop-done" onclick="doneCrop()">
+        <i class="fa-solid fa-check" style="font-size:9px;"></i> CROP & ADD
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script>
+// ── SIDEBAR ──
+document.getElementById('hamburger').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('active');
+});
+document.getElementById('sidebarOverlay').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('active');
+});
+
+// ── TOAST ──
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.style.color = type === 'fail' ? '#e74c3c' : 'var(--gold)';
+  t.style.borderColor = type === 'fail' ? '#e74c3c' : 'var(--gold)';
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// ── VOLUMES ──
+let volumeCount = 0;
+
+function addVolume(size = '', price = '', stock = '') {
+  volumeCount++;
+  const id = volumeCount;
+  const div = document.createElement('div');
+  div.className = 'volume-row';
+  div.id = `vol-${id}`;
+  div.innerHTML = `
+    <div class="field">
+      <label>SIZE</label>
+      <input type="text" class="vol-size" placeholder="e.g. 50ml" value="${size}" maxlength="20">
+    </div>
+    <div class="field">
+      <label>PRICE (₹)</label>
+      <input type="number" class="vol-price" placeholder="e.g. 2000" value="${price}" min="0">
+    </div>
+    <div class="field">
+      <label>STOCK</label>
+      <input type="number" class="vol-stock" placeholder="e.g. 10" value="${stock}" min="0">
+    </div>
+    <button type="button" class="btn-remove-vol" onclick="removeVolume(${id})">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  `;
+  document.getElementById('volumeList').appendChild(div);
+}
+
+function removeVolume(id) {
+  const el = document.getElementById(`vol-${id}`);
+  if (el) el.remove();
+}
+
+// Default 3 volumes
+addVolume('50ml', '');
+addVolume('100ml', '');
+addVolume('150ml', '');
+
+document.getElementById('prodName').addEventListener('input', () => {
+  document.getElementById('errName').classList.remove('visible');
+});
+document.getElementById('prodCategory').addEventListener('change', () => {
+  document.getElementById('errCategory').classList.remove('visible');
+});
+document.getElementById('prodFragrance').addEventListener('change', () => {
+  document.getElementById('errFragrance').classList.remove('visible');
+});
+
+
+// ── CROPPER ──
+let cropper = null;
+let pendingFiles = [];
+let croppedBlobs = [];
+let currentFileIndex = 0;
+
+document.getElementById('imageFileInput').addEventListener('change', function(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  pendingFiles = files;
+  currentFileIndex = 0;
+  processNextFile();
+  this.value = '';
+});
+
+function processNextFile() {
+  if (currentFileIndex >= pendingFiles.length) return;
+  const file = pendingFiles[currentFileIndex];
+  const reader = new FileReader();
+  reader.onload = (e) => openCropper(e.target.result);
+  reader.readAsDataURL(file);
+}
+
+function openCropper(src) {
+  const img = document.getElementById('cropImage');
+  img.src = src;
+  document.getElementById('cropOverlay').classList.add('active');
+  if (cropper) { cropper.destroy(); cropper = null; }
+  setTimeout(() => {
+    cropper = new Cropper(img, {
+      aspectRatio: 1,
+      viewMode: 1,
+      autoCropArea: 0.9,
+      movable: true,
+      zoomable: true,
+      rotatable: false,
+      scalable: false,
+      background: false,
+    });
+  }, 100);
+}
+
+function cancelCrop() {
+  if (cropper) { cropper.destroy(); cropper = null; }
+  document.getElementById('cropOverlay').classList.remove('active');
+  pendingFiles = [];
+}
+
+function doneCrop() {
+  if (!cropper) return;
+  cropper.getCroppedCanvas({ width: 800, height: 800, imageSmoothingQuality: 'high' }).toBlob(blob => {
+    croppedBlobs.push(blob);
+    addPreview(blob);
+    updateImgCount();
+    if (cropper) { cropper.destroy(); cropper = null; }
+    document.getElementById('cropOverlay').classList.remove('active');
+    currentFileIndex++;
+    if (currentFileIndex < pendingFiles.length) {
+      setTimeout(processNextFile, 200);
+    }
+  }, 'image/jpeg', 0.9);
+}
+
+function addPreview(blob) {
+  const url = URL.createObjectURL(blob);
+  const idx = croppedBlobs.length - 1;
+  const div = document.createElement('div');
+  div.className = 'preview-item';
+  div.id = `preview-${idx}`;
+  div.innerHTML = `
+    <img src="${url}" alt="preview">
+    <button type="button" class="preview-remove" onclick="removePreview(${idx})">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  `;
+  document.getElementById('imagePreviews').appendChild(div);
+}
+
+function removePreview(idx) {
+  croppedBlobs[idx] = null;
+  const el = document.getElementById(`preview-${idx}`);
+  if (el) el.remove();
+  updateImgCount();
+}
+
+function updateImgCount() {
+  const count = croppedBlobs.filter(b => b !== null).length;
+  const el = document.getElementById('imgCount');
+  el.textContent = `${count} image${count !== 1 ? 's' : ''} selected`;
+  el.className = 'img-count' + (count >= 3 ? ' enough' : '');
+}
+
+// ── VALIDATE ──
+function validate() {
+  let ok = true;
+
+  const name = document.getElementById('prodName').value.trim();
+  const nameErr = document.getElementById('errName');
+  if (!name) { nameErr.classList.add('visible'); ok = false; }
+  else nameErr.classList.remove('visible');
+
+  const cat = document.getElementById('prodCategory').value;
+  const catErr = document.getElementById('errCategory');
+  if (!cat) { catErr.classList.add('visible'); ok = false; }
+  else catErr.classList.remove('visible');
+
+  const frag = document.getElementById('prodFragrance').value;
+  const fragErr = document.getElementById('errFragrance');
+  if (!frag) { fragErr.classList.add('visible'); ok = false; }
+  else fragErr.classList.remove('visible');
+
+  // Volumes
+  const sizes  = document.querySelectorAll('.vol-size');
+  const prices = document.querySelectorAll('.vol-price');
+  const volErr = document.getElementById('errVolumes');
+  let volOk = false;
+  sizes.forEach((s, i) => {
+    if (s.value.trim() && prices[i].value && Number(prices[i].value) >= 0) volOk = true;
+  });
+  if (!volOk) { volErr.classList.add('visible'); ok = false; }
+  else volErr.classList.remove('visible');
+
+  // Images
+  const imgCount = croppedBlobs.filter(b => b !== null).length;
+  const imgErr = document.getElementById('errImages');
+  if (imgCount < 3) { imgErr.classList.add('visible'); ok = false; }
+  else imgErr.classList.remove('visible');
+
+  return ok;
+}
+
+// ── SUBMIT ──
+async function submitProduct() {
+  if (!validate()) return;
+
+const volumes = [];
+const sizes  = document.querySelectorAll('.vol-size');
+const prices = document.querySelectorAll('.vol-price');
+const stocks = document.querySelectorAll('.vol-stock');
+sizes.forEach((s, i) => {
+  if (s.value.trim() && prices[i].value) {
+    volumes.push({ 
+      size:  s.value.trim(), 
+      price: Number(prices[i].value),
+      stock: Number(stocks[i]?.value || 0)
+    });
+  }
+});
+
+  const fd = new FormData();
+  fd.append('name',          document.getElementById('prodName').value.trim());
+  fd.append('description',   document.getElementById('prodDesc').value.trim());
+  fd.append('category',      document.getElementById('prodCategory').value);
+  fd.append('fragranceType', document.getElementById('prodFragrance').value);
+  fd.append('volumes',       JSON.stringify(volumes));
+
+  croppedBlobs.filter(b => b !== null).forEach((blob, i) => {
+    fd.append('images', blob, `product-image-${i}.jpg`);
+  });
+
+  const btn = document.querySelector('.btn-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:10px;"></i> SAVING...';
+
+  try {
+    const res  = await fetch('/admin/products/add', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+      showToast('✓ Product added successfully!');
+      setTimeout(() => window.location.href = '/admin/products', 1500);
+    } else {
+      showToast('✗ ' + (data.message || 'Failed to add product.'), 'fail');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:10px;"></i> SAVE PRODUCT';
+    }
+  } catch (e) {
+    showToast('✗ Server error.', 'fail');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:10px;"></i> SAVE PRODUCT';
+  }
+}
+</script>
+</body>
+</html>

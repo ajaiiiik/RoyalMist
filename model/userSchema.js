@@ -53,8 +53,14 @@ const userSchema = new mongoose.Schema({
   { type: String, 
     default: "" },
     
-  googleId:{
+    googleId:{
     type:String
+  },
+
+  signupMethod: {
+    type: String,
+    enum: ['email', 'google'],
+    default: 'email'
   },
 
   isBlocked: {

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Wallet | Royal Mist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root{--gold:#c4a14d;--gold-dim:rgba(196,161,77,0.10);--dark-bg:#000;--card-bg:#080808;--border:#1a1a1a;--font-main:'Playfair Display',serif;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--dark-bg);color:#fff;font-family:var(--font-main);overflow-x:hidden;}
+    .navbar{background:rgba(0,0,0,0.97);border-bottom:1px solid #222;padding:15px 0;position:sticky;top:0;z-index:1000;}
+    .navbar-brand{color:var(--gold)!important;letter-spacing:4px;font-weight:700;text-decoration:none;}
+    .nav-link{color:#fff!important;font-size:12px;letter-spacing:2px;}
+    .user-dropdown{position:relative;z-index:2000;}
+    .dropdown-menu-custom{position:absolute;top:100%;right:0;background:#0a0a0a;border:1px solid #222;min-width:160px;z-index:3000;display:none;box-shadow:0 10px 25px rgba(0,0,0,0.5);}
+    .dropdown-menu-custom.show{display:block;}
+    .dropdown-item-custom{color:#fff;background:none;border:none;text-decoration:none;display:block;padding:10px 15px;width:100%;text-align:left;font-family:var(--font-main);font-size:13px;cursor:pointer;}
+    .dropdown-item-custom:hover{color:var(--gold);background:#111;}
+    .breadcrumb-wrap{background:#080808;border-bottom:1px solid #111;padding:12px 0;}
+    .bc-item{font-size:11px;letter-spacing:2px;color:#555;text-decoration:none;}
+    .bc-item:hover{color:var(--gold);}
+    .bc-sep{color:#333;margin:0 8px;font-size:8px;}
+    .page-header{background:linear-gradient(180deg,#080808 0%,#000 100%);border-bottom:1px solid #111;padding:32px 0 22px;}
+    .gold-line{width:40px;height:2px;background:var(--gold);margin-bottom:10px;}
+    .wallet-card{background:linear-gradient(135deg,#0a0a0a 0%,#111 50%,#0a0a0a 100%);border:1px solid var(--gold);padding:32px;position:relative;overflow:hidden;margin-bottom:24px;}
+    .wallet-label{font-size:10px;letter-spacing:3px;color:#666;margin-bottom:10px;}
+    .wallet-balance{font-size:3rem;font-weight:700;color:var(--gold);line-height:1;margin-bottom:6px;}
+    .wallet-sub{font-size:11px;color:#444;letter-spacing:1px;}
+    .wallet-icon{position:absolute;top:28px;right:28px;width:48px;height:48px;background:var(--gold-dim);border:1px solid rgba(196,161,77,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--gold);}
+    .add-money-card{background:var(--card-bg);border:1px solid var(--border);padding:24px;margin-bottom:24px;}
+    .card-label{font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:18px;}
+    .amount-presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+    .preset-btn{background:transparent;border:1px solid #2a2a2a;color:#888;font-family:var(--font-main);font-size:12px;letter-spacing:1px;padding:8px 16px;cursor:pointer;transition:all 0.2s;}
+    .preset-btn:hover,.preset-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);}
+    .amount-input-wrap{display:flex;margin-bottom:16px;}
+    .rupee-prefix{background:#0a0a0a;border:1px solid #222;border-right:none;color:var(--gold);font-size:16px;font-weight:700;padding:11px 14px;display:flex;align-items:center;}
+    .amount-input{flex:1;background:#000;border:1px solid #222;border-left:none;color:#fff;font-family:var(--font-main);font-size:16px;font-weight:600;padding:11px 14px;outline:none;transition:border-color 0.2s;}
+    .amount-input:focus{border-color:var(--gold);}
+    .amount-input::placeholder{color:#333;font-size:13px;}
+    .btn-add-money{width:100%;background:var(--gold);border:none;color:#000;font-family:var(--font-main);font-size:12px;letter-spacing:3px;font-weight:700;padding:14px;cursor:pointer;transition:all 0.3s;}
+    .btn-add-money:hover{background:#b38f3d;}
+    .btn-add-money:disabled{background:#222;color:#555;cursor:not-allowed;}
+    .amount-note{font-size:10px;color:#444;letter-spacing:1px;margin-top:8px;text-align:center;}
+    .transactions-card{background:var(--card-bg);border:1px solid var(--border);}
+    .txn-header{padding:18px 22px;border-bottom:1px solid #111;display:flex;justify-content:space-between;align-items:center;}
+    .txn-item{display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid #0d0d0d;transition:background 0.15s;}
+    .txn-item:last-child{border-bottom:none;}
+    .txn-item:hover{background:#0d0d0d;}
+    .txn-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+    .txn-icon.credit{background:rgba(76,175,130,0.1);border:1px solid rgba(76,175,130,0.2);color:#4caf82;}
+    .txn-icon.debit{background:rgba(224,82,82,0.1);border:1px solid rgba(224,82,82,0.2);color:#e05252;}
+    .txn-info{flex:1;min-width:0;}
+    .txn-desc{font-size:13px;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .txn-date{font-size:10px;color:#555;letter-spacing:1px;}
+    .txn-amount{font-size:15px;font-weight:700;flex-shrink:0;}
+    .txn-amount.credit{color:#4caf82;}
+    .txn-amount.debit{color:#e05252;}
+    .empty-txn{text-align:center;padding:50px 20px;}
+    .empty-txn i{font-size:36px;color:#1a1a1a;margin-bottom:16px;display:block;}
+    .empty-txn p{font-size:12px;color:#333;letter-spacing:1px;}
+    .toast-msg{position:fixed;bottom:28px;right:24px;background:#0a0a0a;border:1px solid var(--gold);color:var(--gold);font-size:12px;letter-spacing:1px;padding:12px 20px;z-index:9999;display:none;}
+    .toast-msg.error{border-color:#c0392b;color:#c0392b;}
+    @media(max-width:768px){.wallet-balance{font-size:2.2rem;}.wallet-card{padding:22px;}}
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="/home"><i class="fas fa-gem me-2" style="color:var(--gold)"></i>ROYALMIST</a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"><i class="fas fa-bars text-white"></i></button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link" href="/home">HOME</a></li>
+        <li class="nav-item"><a class="nav-link" href="/shop">SHOP</a></li>
+        <li class="nav-item"><a class="nav-link" href="/about">ABOUT</a></li>
+      </ul>
+      <div class="d-flex gap-3 align-items-center">
+        <a href="/wishlist"><i class="fa-regular fa-heart" style="color:#fff"></i></a>
+        <a href="/cart" style="position:relative;">
+  <i class="fa-solid fa-bag-shopping" style="color:#fff;font-size:16px;"></i>
+  <% if(typeof cartCount !== 'undefined' && cartCount > 0) { %>
+    <span style="position:absolute;top:-8px;right:-8px;background:var(--gold);color:#000;font-size:9px;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;"><%= cartCount %></span>
+  <% } %>
+</a>
+        <div class="user-dropdown">
+          <% if(user) { %>
+            <span id="userIcon" style="cursor:pointer;color:#fff;font-size:13px;letter-spacing:1px;"><%= user.firstName %> <i class="fa fa-caret-down"></i></span>
+            <div id="dropdownMenu" class="dropdown-menu-custom">
+              <a href="/account" class="dropdown-item-custom">Account</a>
+              <a href="/orders" class="dropdown-item-custom">Order History</a>
+              <a href="/wallet" class="dropdown-item-custom" style="color:var(--gold);">My Wallet</a>
+              <button id="logoutBtn" class="dropdown-item-custom">Logout</button>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="breadcrumb-wrap">
+  <div class="container d-flex align-items-center">
+    <a href="/home" class="bc-item">HOME</a><span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:8px;"></i></span>
+    <a href="/account" class="bc-item">ACCOUNT</a><span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:8px;"></i></span>
+    <span class="bc-item active">MY WALLET</span>
+  </div>
+</div>
+<div class="page-header">
+  <div class="container">
+    <div class="gold-line"></div>
+    <h1 style="font-size:1.5rem;letter-spacing:4px;font-weight:600;">MY WALLET</h1>
+    <p style="font-size:11px;letter-spacing:2px;color:#444;margin-top:6px;">MANAGE YOUR ROYAL MIST BALANCE</p>
+  </div>
+</div>
+<div class="container py-4 py-md-5">
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="wallet-card">
+        <div class="wallet-icon"><i class="fas fa-wallet"></i></div>
+        <div class="wallet-label">AVAILABLE BALANCE</div>
+        <div class="wallet-balance" id="walletBalance">&#8377;<%= balance.toLocaleString('en-IN') %></div>
+        <div class="wallet-sub">ROYAL MIST WALLET</div>
+      </div>
+      <div class="add-money-card">
+        <div class="card-label"><i class="fas fa-plus-circle me-2"></i>ADD MONEY</div>
+        <div class="amount-presets">
+          <button class="preset-btn" onclick="setAmount(100)">&#8377;100</button>
+          <button class="preset-btn" onclick="setAmount(250)">&#8377;250</button>
+          <button class="preset-btn" onclick="setAmount(500)">&#8377;500</button>
+          <button class="preset-btn" onclick="setAmount(1000)">&#8377;1000</button>
+          <button class="preset-btn" onclick="setAmount(2000)">&#8377;2000</button>
+        </div>
+        <div class="amount-input-wrap">
+          <div class="rupee-prefix">&#8377;</div>
+          <input type="number" class="amount-input" id="addAmount" placeholder="Enter amount" min="1" max="50000" oninput="clearPresets()"/>
+        </div>
+        <button class="btn-add-money" id="addMoneyBtn" onclick="initiatePayment()">
+          <i class="fas fa-bolt me-2"></i>ADD MONEY
+        </button>
+        <div class="amount-note">Min &#8377;1 &nbsp;&middot;&nbsp; Max &#8377;50,000 per transaction</div>
+      </div>
+      <div style="background:var(--card-bg);border:1px solid var(--border);padding:18px 22px;">
+        <div style="font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:14px;">WALLET BENEFITS</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><i class="fas fa-bolt" style="color:var(--gold);font-size:12px;"></i><span style="font-size:11px;color:#666;letter-spacing:1px;">Instant checkout</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><i class="fas fa-undo" style="color:var(--gold);font-size:12px;"></i><span style="font-size:11px;color:#666;letter-spacing:1px;">Auto refund on cancellation</span></div>
+        <div style="display:flex;align-items:center;gap:10px;"><i class="fas fa-shield-alt" style="color:var(--gold);font-size:12px;"></i><span style="font-size:11px;color:#666;letter-spacing:1px;">Secure transactions</span></div>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="transactions-card">
+        <div class="txn-header">
+          <span style="font-size:11px;letter-spacing:3px;color:var(--gold);"><i class="fas fa-history me-2"></i>TRANSACTION HISTORY</span>
+          <span style="font-size:11px;color:#444;letter-spacing:1px;"><%= transactions.length %> transactions</span>
+        </div>
+        <% if(transactions.length === 0) { %>
+          <div class="empty-txn"><i class="fas fa-receipt"></i><p>NO TRANSACTIONS YET</p></div>
+        <% } else { %>
+          <% transactions.forEach(txn => { %>
+            <div class="txn-item">
+              <div class="txn-icon <%= txn.type %>">
+                <i class="fas fa-arrow-<%= txn.type === 'credit' ? 'down' : 'up' %>"></i>
+              </div>
+              <div class="txn-info">
+                <div class="txn-desc"><%= txn.description || (txn.type === 'credit' ? 'Money added' : 'Payment made') %></div>
+                <div class="txn-date"><%= new Date(txn.createdAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) %> &nbsp;&middot;&nbsp; <%= new Date(txn.createdAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) %></div>
+              </div>
+              <div class="txn-amount <%= txn.type %>"><%= txn.type === 'credit' ? '+' : '-' %>&#8377;<%= txn.amount.toLocaleString('en-IN') %></div>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+<footer style="border-top:1px solid #222;padding:30px 0 20px;margin-top:20px;">
+  <div class="container text-center"><p class="text-secondary mb-0" style="font-size:11px;letter-spacing:1px;">&#169; 2026 ROYAL MIST FRAGRANCES. ALL RIGHTS RESERVED.</p></div>
+</footer>
+<div class="toast-msg" id="toastMsg"></div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const userIcon=document.getElementById("userIcon"),dropdownMenu=document.getElementById("dropdownMenu");
+if(userIcon&&dropdownMenu){userIcon.addEventListener("click",e=>{e.stopPropagation();dropdownMenu.classList.toggle("show");});window.addEventListener("click",()=>dropdownMenu.classList.remove("show"));}
+document.getElementById("logoutBtn")?.addEventListener("click",async()=>{await fetch("/logout",{method:"POST"});window.location.href="/signin";});
+function showToast(msg,isError=false){const t=document.getElementById("toastMsg");t.textContent=msg;t.className="toast-msg"+(isError?" error":"");t.style.display="block";setTimeout(()=>t.style.display="none",3500);}
+function setAmount(val){document.getElementById("addAmount").value=val;document.querySelectorAll(".preset-btn").forEach(b=>b.classList.remove("active"));event.target.classList.add("active");}
+function clearPresets(){document.querySelectorAll(".preset-btn").forEach(b=>b.classList.remove("active"));}
+async function initiatePayment(){
+  const amount=parseFloat(document.getElementById("addAmount").value);
+  if(!amount||amount<1){showToast("Enter a valid amount",true);return;}
+  if(amount>50000){showToast("Maximum Rs.50,000 per transaction",true);return;}
+  const btn=document.getElementById("addMoneyBtn");
+  btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin me-2"></i>OPENING PAYMENT...';
+  try{
+    const res=await fetch("/wallet/create-order",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({amount})});
+    const data=await res.json();
+    if(!data.success){showToast(data.message||"Failed",true);btn.disabled=false;btn.innerHTML='<i class="fas fa-bolt me-2"></i>ADD MONEY';return;}
+    const options={
+      key:data.key,amount:data.amount,currency:"INR",name:"Royal Mist",description:"Add money to wallet",order_id:data.razorpayOrderId,theme:{color:"#c4a14d"},
+      handler:async function(response){
+        btn.innerHTML='<i class="fas fa-spinner fa-spin me-2"></i>VERIFYING...';
+        try{
+          const vRes=await fetch("/wallet/verify-payment",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({razorpayOrderId:response.razorpay_order_id,razorpayPaymentId:response.razorpay_payment_id,razorpaySignature:response.razorpay_signature,amount:data.amount})});
+          const vData=await vRes.json();
+          if(vData.success){showToast(vData.message);document.getElementById("walletBalance").textContent="Rs."+vData.newBalance.toLocaleString("en-IN");document.getElementById("addAmount").value="";setTimeout(()=>location.reload(),2000);}
+          else showToast(vData.message||"Verification failed",true);
+        }catch{showToast("Something went wrong",true);}
+        finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-bolt me-2"></i>ADD MONEY';}
+      },
+      modal:{ondismiss:function(){btn.disabled=false;btn.innerHTML='<i class="fas fa-bolt me-2"></i>ADD MONEY';}}
+    };
+    new Razorpay(options).open();
+  }catch{showToast("Something went wrong",true);btn.disabled=false;btn.innerHTML='<i class="fas fa-bolt me-2"></i>ADD MONEY';}
+}
+</script>
+</body>
+</html>

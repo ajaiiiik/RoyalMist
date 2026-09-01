@@ -29,13 +29,11 @@ const signupService = async (data, req) => {
     errors.email = "Invalid email format";
   }
 
-  if (!phoneNumber) {
+ if (!phoneNumber) {
     errors.phoneNumber = "Phone number is required";
-  } else if (!/^\d+$/.test(phoneNumber)) {
-    errors.phoneNumber = "Phone number must contain only numbers";
-  } else if (phoneNumber.length !== 10) {
-    errors.phoneNumber = "Phone number must be exactly 10 digits";
-  }
+} else if (!/^[6-9]\d{9}$/.test(phoneNumber)) {
+    errors.phoneNumber = "Phone number must start with 6-9 and be 10 digits";
+}
 
   const passwordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
@@ -369,6 +367,16 @@ const updateProfileService = async (data, req) => {
 // SEND EMAIL CHANGE OTP SERVICE
 const sendEmailChangeOtpService = async (data, req) => {
     const { newEmail } = data;
+    const user = await User.findById(req.session.user.id);
+    
+    // ── GOOGLE USER CHECK ──
+    if (user.googleId || user.signupMethod === 'google') {
+        throw { 
+            message: "Google users cannot change email",
+            googleUser: true 
+        };
+    }
+
     const emailNormalized = newEmail.trim().toLowerCase();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -403,6 +411,16 @@ const sendEmailChangeOtpService = async (data, req) => {
 
 // VERIFY EMAIL CHANGE OTP SERVICE
 const verifyEmailChangeOtpService = async (data, req) => {
+    const user = await User.findById(req.session.user.id);
+    
+    // ── GOOGLE USER CHECK ──
+    if (user.googleId || user.signupMethod === 'google') {
+        throw { 
+            message: "Google users cannot change email",
+            googleUser: true 
+        };
+    }
+
     const { otp } = data;
     const newEmail = req.session.pendingEmail;
 

@@ -4,6 +4,8 @@ const passport = require("passport")
 const multer = require("multer");
 const path = require("path");
 const { isAuthenticated,requireSignupSession } = require("../middleware/auth");
+const Product = require("../model/productSchema");
+
 
 const {
   signupController,
@@ -24,8 +26,53 @@ updateAddressController,
 changePasswordController,
 forgotPasswordController,
 verifyForgotOtpController,
-resetPasswordController
+resetPasswordController,
+  orderHistoryController,
+  cancelOrderController
 } = require("../controller/user/userController");
+
+const { getShopController,getProductDetailsController } = require("../controller/user/shopController");
+const { contactUsController } = require("../controller/user/contactController");
+
+
+const {
+  getCartController,
+  addToCartController,
+  updateCartController,
+  removeFromCartController,
+} = require("../controller/user/cartController");
+
+
+const { postReviewController, deleteReviewController } = require("../controller/user/reviewController");
+
+const {
+  getWishlistController,
+  addToWishlistController,
+  removeFromWishlistController,
+  moveToCartController 
+} = require("../controller/user/wishlistController");
+
+
+const {
+  getCheckoutController,
+  createRazorpayOrderController,
+  placeOrderController,
+  getOrderSuccessController,
+} = require("../controller/user/checkoutController");
+
+const {
+  applyCouponController,
+  removeCouponController,
+} = require("../controller/user/couponController");
+
+
+const { orderDetailController,cancelOrderItemController, returnOrderItemController, downloadInvoiceController } = require("../controller/user/orderController");
+
+const { getWalletController, createWalletOrderController, verifyWalletPaymentController } = require("../controller/user/walletController");
+
+
+
+
 
 
 
@@ -64,10 +111,26 @@ router.get("/auth/google/callback",
   })
 }
 );
-router.get("/home",isAuthenticated, (req,res)=>{
- const user = req.session.user || req.user|| null;
-  res.render("user/home", { user });
-})
+router.get("/home", isAuthenticated, async (req, res) => {
+  try {
+    const user = req.session.user || req.user || null;
+
+    const products = await Product.find({ 
+      isActive: true,      // blocked hide
+      isDeleted: false     // deleted hide
+    })
+    .populate("category", "name")
+    .sort({ createdAt: -1 }) // newest first
+    .limit(4)               
+    .lean();
+
+    res.render("user/home", { user, products });
+
+  } catch (err) {
+    console.log(err);
+    res.send("Error loading home");
+  }
+});
 router.get("/editProfile", isAuthenticated, (req, res) => {
   const user = req.session.user || null;
   res.render("user/profile/editProfile", { user });
@@ -86,6 +149,31 @@ router.get("/forgot-password", (req, res) => {
 router.get("/account", isAuthenticated, accountController);
 router.get("/addAddress", isAuthenticated, addAddressController);
 router.get("/getAddress/:id", isAuthenticated, getAddressController);
+router.get("/orders", isAuthenticated, orderHistoryController);
+
+
+
+
+
+//SHOP
+router.get("/shop",           getShopController);
+router.get("/shop/men",       getShopController);
+router.get("/shop/women",     getShopController);
+router.get("/shop/unisex",    getShopController);
+router.get("/shop/:id",       getProductDetailsController);
+
+
+// ABOUT
+router.get("/about", (req, res) => {
+  const user = req.session.user || null;
+  const cartCount = req.session.cartCount || 0;
+  res.render("user/about", { user, cartCount });
+});
+
+router.post("/contact-us",contactUsController);
+
+
+
 // Forgot password OTP page
 router.get("/forgot-otp", (req, res) => {
   res.render("user/otp");
@@ -134,6 +222,53 @@ router.post("/clear-otp-session", requireSignupSession,(req, res) => {
 
 router.post("/reset-password", resetPasswordController);
 
+
+
+//review
+router.post  ("/shop/:id/review", isAuthenticated, postReviewController);
+router.delete("/shop/:id/review", isAuthenticated, deleteReviewController);
+
+
+
+
+
+//CART
+router.get ("/cart",        isAuthenticated, getCartController);
+router.post("/cart/add",    isAuthenticated, addToCartController);
+router.post("/cart/update", isAuthenticated, updateCartController);
+router.post("/cart/remove", isAuthenticated, removeFromCartController);
+
+
+router.get ("/wishlist",        isAuthenticated, getWishlistController);
+router.post("/wishlist/add",    isAuthenticated, addToWishlistController);
+router.post("/wishlist/remove", isAuthenticated, removeFromWishlistController);
+router.post("/wishlist/move-to-cart", isAuthenticated, moveToCartController);
+
+
+
+
+
+router.get ("/checkout",                isAuthenticated, getCheckoutController);
+router.post("/checkout/place-order",    isAuthenticated, placeOrderController);
+router.post("/checkout/razorpay-order", isAuthenticated, createRazorpayOrderController);
+router.get ("/order-success",           isAuthenticated, getOrderSuccessController);
+
+
+
+router.post("/orders/:id/cancel-item", isAuthenticated, cancelOrderItemController);
+router.post("/orders/:id/return-item", isAuthenticated, returnOrderItemController);
+router.get ("/orders/invoice/:id",     isAuthenticated, downloadInvoiceController);
+router.get ("/orders/:id",             isAuthenticated, orderDetailController);
+
+// Coupon
+router.post("/cart/apply-coupon",  isAuthenticated, applyCouponController);
+router.post("/cart/remove-coupon", isAuthenticated, removeCouponController);
+
+
+//wallet
+router.get ("/wallet",                isAuthenticated, getWalletController);
+router.post("/wallet/create-order",   isAuthenticated, createWalletOrderController);
+router.post("/wallet/verify-payment", isAuthenticated, verifyWalletPaymentController);
 
 
 

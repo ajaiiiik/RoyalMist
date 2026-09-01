@@ -1,4 +1,7 @@
       const User = require("../../model/userSchema");
+      const Order = require("../../model/orderSchema");
+      const Wallet  = require("../../model/walletSchema");
+const Product = require("../../model/productSchema");
       const bcrypt = require("bcrypt")
       const {
          signupService,
@@ -190,8 +193,8 @@ const saveAddressController = async (req, res) => {
             city, state, country, zipCode, addressType
         });
 
-        await user.save();
-        res.json({ success: true });
+      await user.save();
+        res.json({ success: true, addressIndex: user.addresses.length - 1 });
 
     } catch (err) {
         console.error("Add address error:", err);
@@ -204,8 +207,8 @@ const deleteAddressController = async (req, res) => {
     try {
         const user = await User.findById(req.session.user.id);
         user.addresses.pull({ _id: req.params.id });
-        await user.save();
-        res.json({ success: true });
+       await user.save();
+        res.json({ success: true, addressIndex: user.addresses.length - 1 });
     } catch (err) {
         res.json({ success: false, message: "Something went wrong" });
     }
@@ -224,13 +227,46 @@ const getAddressController = async (req, res) => {
 
 const updateAddressController = async (req, res) => {
     try {
+        if (!req.session.user) 
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+
+        const { fullName, addressLine1, addressLine2, 
+                city, state, country, zipCode, addressType } = req.body;
+
+        // Basic validation
+        if (!fullName || !addressLine1 || !city || !state || !zipCode) {
+            return res.json({ success: false, message: "All required fields must be filled" });
+        }
+
         const user = await User.findById(req.session.user.id);
+        if (!user) 
+            return res.json({ success: false, message: "User not found" });
+
         const address = user.addresses.id(req.params.id);
-        if (!address) return res.json({ success: false, message: "Address not found" });
-        Object.assign(address, req.body);
+        if (!address) 
+            return res.json({ success: false, message: "Address not found" });
+
+        // Only allowed fields update — no Object.assign(address, req.body)
+        address.fullName     = fullName.trim();
+        address.addressLine1 = addressLine1.trim();
+        address.addressLine2 = addressLine2?.trim() || "";
+        address.city         = city.trim();
+        address.state        = state.trim();
+        address.country      = country || "IN";
+        address.zipCode      = zipCode.trim();
+        address.addressType  = addressType || "home";
+
         await user.save();
-        res.json({ success: true });
+
+        // Find updated index to return
+        const updatedIndex = user.addresses.findIndex(
+            a => a._id.toString() === req.params.id
+        );
+
+        res.json({ success: true, addressIndex: updatedIndex });
+
     } catch (err) {
+        console.error("Update address error:", err);
         res.json({ success: false, message: "Something went wrong" });
     }
 };
@@ -332,6 +368,66 @@ const resetPasswordController = async (req, res) => {
 
 
 
+const orderHistoryController = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const user   = req.session.user;
+    const search = req.query.search || "";
+
+    const query = { user: userId };
+    if (search) query.orderId = { $regex: search, $options: "i" };
+
+    const orders = await Order.find(query)
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.render("user/profile/orderHistory", { user, orders, searchQuery: search });
+  } catch (err) {
+    console.error("Order history error:", err);
+    res.status(500).send("Server error");
+  }
+};
+
+
+
+//cancel order
+const cancelOrderController = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, user: req.session.user.id });
+    if (!order) return res.json({ success: false, message: "Order not found" });
+    if (!['Pending','Processing'].includes(order.orderStatus))
+      return res.json({ success: false, message: "This order cannot be cancelled" });
+
+    order.orderStatus  = "Cancelled";
+    order.cancelReason = req.body.reason || "No reason provided";
+    order.cancelledAt  = new Date();
+
+    // Refund to wallet if paid online or via wallet
+    if (order.paymentStatus === "Paid") {
+      let wallet = await Wallet.findOneAndUpdate(
+        { user: req.session.user.id },
+        { $inc: { balance: order.grandTotal }, $push: { transactions: { type: "credit", amount: order.grandTotal, description: "Order cancellation refund - " + order.orderId } } },
+        { upsert: true, new: true }
+      );
+    }
+
+   // Restore stock per variant
+    for (const item of order.items) {
+      await Product.findOneAndUpdate(
+        { _id: item.product, "volumes.size": item.size },
+        { $inc: { "volumes.$.stock": item.quantity } }
+      );
+    }
+
+    await order.save();
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Cancel order error:", err);
+    res.json({ success: false, message: "Something went wrong" });
+  }
+};
+
+
 
 
       module.exports = { signupController, 
@@ -353,5 +449,7 @@ const resetPasswordController = async (req, res) => {
     forgotPasswordController,
     verifyForgotOtpController,
     resetPasswordController ,
+    orderHistoryController ,
+    cancelOrderController 
 
   };

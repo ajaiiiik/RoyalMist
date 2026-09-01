@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Confirmed | Royal Mist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root {
+      --gold: #c4a14d;
+      --dark-bg: #000000;
+      --font-main: 'Playfair Display', serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--dark-bg); color: #fff; font-family: var(--font-main); overflow-x: hidden; }
+
+    /* ── NAVBAR ── */
+    .navbar { background: rgba(0,0,0,0.97); border-bottom: 1px solid #222; padding: 15px 0; position: sticky; top: 0; z-index: 1000; }
+    .navbar-brand { color: var(--gold) !important; letter-spacing: 4px; font-weight: 700; }
+    .nav-link { color: #fff !important; font-size: 12px; letter-spacing: 2px; }
+    .user-dropdown { position: relative; z-index: 2000; }
+    .dropdown-menu-custom { position: absolute; top: 100%; right: 0; background: #0a0a0a; border: 1px solid #222; min-width: 160px; z-index: 3000; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .dropdown-menu-custom.show { display: block; }
+    .dropdown-item-custom { color: #fff; background: none; border: none; text-decoration: none; display: block; padding: 10px 15px; width: 100%; text-align: left; font-family: var(--font-main); font-size: 13px; cursor: pointer; }
+    .dropdown-item-custom:hover { color: var(--gold); background: #111; }
+
+    /* ── STEPS ── */
+    .steps-bar { background: #050505; border-bottom: 1px solid #111; padding: 20px 0; }
+    .step { display: flex; align-items: center; gap: 10px; }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #444; flex-shrink: 0; }
+    .step-num.done { border-color: var(--gold); background: var(--gold); color: #000; }
+    .step-label { font-size: 10px; letter-spacing: 2px; color: #444; }
+    .step-label.done { color: var(--gold); }
+    .step-divider { flex: 1; height: 1px; background: #1a1a1a; margin: 0 12px; }
+    .step-divider.done { background: var(--gold); opacity: 0.3; }
+
+    /* ── SUCCESS HERO ── */
+    .success-hero {
+      text-align: center;
+      padding: 70px 20px 50px;
+    }
+    .check-circle {
+      width: 80px; height: 80px; border-radius: 50%;
+      border: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      animation: popIn 0.5s ease;
+    }
+    @keyframes popIn {
+      0%   { transform: scale(0.6); opacity: 0; }
+      80%  { transform: scale(1.08); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .success-title { font-size: 2rem; letter-spacing: 4px; font-weight: 700; margin-bottom: 10px; }
+    .success-sub { font-size: 12px; color: #555; letter-spacing: 2px; margin-bottom: 6px; }
+    .order-id-badge {
+      display: inline-block;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-size: 13px;
+      letter-spacing: 3px;
+      padding: 6px 20px;
+      margin-top: 12px;
+      font-weight: 600;
+    }
+
+    /* ── DETAILS CARD ── */
+    .detail-card {
+      background: #080808;
+      border: 1px solid #1a1a1a;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .detail-title {
+      font-size: 10px; letter-spacing: 3px; color: var(--gold);
+      margin-bottom: 18px; text-transform: uppercase;
+    }
+
+    /* Order items */
+    .order-item { display: flex; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid #0f0f0f; }
+    .order-item:last-child { border-bottom: none; }
+    .order-item-img { width: 56px; height: 62px; object-fit: cover; border: 1px solid #1a1a1a; flex-shrink: 0; }
+    .order-item-name { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+    .order-item-meta { font-size: 11px; color: #555; letter-spacing: 1px; }
+    .order-item-price { font-size: 13px; color: var(--gold); font-weight: 600; margin-left: auto; flex-shrink: 0; }
+
+    /* Address details */
+    .addr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .addr-field label { font-size: 10px; letter-spacing: 2px; color: #444; margin-bottom: 5px; display: block; }
+    .addr-field span { font-size: 13px; color: #ddd; }
+
+    /* Price breakdown */
+    .price-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; border-bottom: 1px solid #0f0f0f; }
+    .price-row:last-child { border-bottom: none; }
+    .price-label { color: #555; letter-spacing: 1px; font-size: 11px; }
+    .price-value { color: #fff; font-weight: 500; }
+    .price-total-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0 0; margin-top: 8px; border-top: 1px solid #2a2a2a; }
+
+    /* Status badge */
+    .status-badge {
+      display: inline-block;
+      border: 1px solid #2a2a2a;
+      font-size: 10px; letter-spacing: 2px;
+      padding: 4px 14px; text-transform: uppercase;
+    }
+    .status-pending  { border-color: #5a4a1a; color: var(--gold); background: rgba(196,161,77,0.06); }
+    .status-cod      { border-color: #2a2a2a; color: #888; }
+
+    /* CTA buttons */
+    .btn-gold-fill {
+      background: var(--gold); color: #000; border: none;
+      font-family: var(--font-main); font-size: 12px; letter-spacing: 3px;
+      font-weight: 700; padding: 14px 32px; cursor: pointer; transition: 0.2s;
+      text-decoration: none; display: inline-block; text-align: center;
+    }
+    .btn-gold-fill:hover { background: #b38f3d; color: #000; }
+    .btn-outline {
+      background: transparent; border: 1px solid #2a2a2a; color: #888;
+      font-family: var(--font-main); font-size: 11px; letter-spacing: 2px;
+      padding: 14px 28px; cursor: pointer; transition: 0.2s;
+      text-decoration: none; display: inline-block; text-align: center;
+    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+    @media (max-width: 576px) {
+      .addr-grid { grid-template-columns: 1fr; }
+      .success-title { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAVBAR ════════════════════════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="/home">
+      <i class="fas fa-gem me-2" style="color:var(--gold)"></i>ROYALMIST
+    </a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <i class="fas fa-bars text-white"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link" href="/home">HOME</a></li>
+        <li class="nav-item"><a class="nav-link" href="/shop">SHOP</a></li>
+      </ul>
+      <div class="d-flex gap-3 align-items-center">
+        <a href="/wishlist"><i class="fa-regular fa-heart" style="cursor:pointer;color:#fff"></i></a>
+        <a href="/cart"><i class="fa-solid fa-bag-shopping" style="color:#fff;font-size:16px;"></i></a>
+        <div class="user-dropdown">
+          <% if(user) { %>
+            <span id="userIcon" style="cursor:pointer;color:#fff;font-size:13px;letter-spacing:1px;">
+              <%= user.firstName %> <i class="fa fa-caret-down"></i>
+            </span>
+            <div id="dropdownMenu" class="dropdown-menu-custom">
+              <a href="/account" class="dropdown-item-custom">Account</a>
+              <button id="logoutBtn" class="dropdown-item-custom">Logout</button>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ STEPS BAR ═════════════════════════════════════════════════ -->
+<div class="steps-bar">
+  <div class="container">
+    <div class="d-flex align-items-center">
+      <div class="step">
+        <div class="step-num done"><i class="fas fa-check" style="font-size:9px;"></i></div>
+        <span class="step-label done">CART</span>
+      </div>
+      <div class="step-divider done"></div>
+      <div class="step">
+        <div class="step-num done"><i class="fas fa-check" style="font-size:9px;"></i></div>
+        <span class="step-label done">CHECKOUT</span>
+      </div>
+      <div class="step-divider done"></div>
+      <div class="step">
+        <div class="step-num done"><i class="fas fa-check" style="font-size:9px;"></i></div>
+        <span class="step-label done">CONFIRMATION</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUCCESS HERO ══════════════════════════════════════════════ -->
+<div class="success-hero">
+  <div class="check-circle">
+    <i class="fas fa-check" style="color:var(--gold);font-size:28px;"></i>
+  </div>
+  <h1 class="success-title">ORDER CONFIRMED</h1>
+  <p class="success-sub">THANK YOU FOR YOUR PURCHASE</p>
+  <p class="success-sub">A CONFIRMATION WILL BE SENT TO YOUR EMAIL</p>
+  <div class="order-id-badge"><%= order.orderId %></div>
+</div>
+
+<!-- ══ ORDER DETAILS ═════════════════════════════════════════════ -->
+<div class="container pb-5" style="max-width: 820px;">
+
+  <div class="row g-4">
+
+    <!-- Left col -->
+    <div class="col-lg-7">
+
+      <!-- Items -->
+      <div class="detail-card">
+        <div class="detail-title"><i class="fas fa-box me-2"></i>ITEMS ORDERED</div>
+        <% order.items.forEach(item => { %>
+          <div class="order-item">
+            <img
+              src="<%= item.image || '/images/placeholder.jpg' %>"
+              class="order-item-img"
+              alt="<%= item.name %>"
+            />
+            <div class="flex-grow-1">
+              <div class="order-item-name"><%= item.name %></div>
+              <div class="order-item-meta"><%= item.size %> · QTY <%= item.quantity %></div>
+            </div>
+            <div class="order-item-price">₹<%= (item.price * item.quantity).toLocaleString('en-IN') %></div>
+          </div>
+        <% }) %>
+      </div>
+
+      <!-- Shipping address -->
+      <div class="detail-card">
+        <div class="detail-title"><i class="fas fa-map-marker-alt me-2"></i>DELIVERY ADDRESS</div>
+        <div style="margin-bottom:12px;">
+          <span class="status-badge status-pending" style="font-size:9px;letter-spacing:2px;padding:3px 10px;border-radius:0;">
+            <%= order.shippingAddress.addressType ? order.shippingAddress.addressType.toUpperCase() : 'HOME' %>
+          </span>
+        </div>
+        <div class="addr-grid">
+          <div class="addr-field">
+            <label>NAME</label>
+            <span><%= order.shippingAddress.fullName %></span>
+          </div>
+          <div class="addr-field">
+            <label>CITY</label>
+            <span><%= order.shippingAddress.city %></span>
+          </div>
+          <div class="addr-field" style="grid-column: 1 / -1;">
+            <label>ADDRESS</label>
+            <span>
+              <%= order.shippingAddress.addressLine1 %>
+              <% if(order.shippingAddress.addressLine2) { %>, <%= order.shippingAddress.addressLine2 %><% } %>
+            </span>
+          </div>
+          <div class="addr-field">
+            <label>STATE</label>
+            <span><%= order.shippingAddress.state %></span>
+          </div>
+          <div class="addr-field">
+            <label>PIN CODE</label>
+            <span><%= order.shippingAddress.zipCode %></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right col -->
+    <div class="col-lg-5">
+
+      <!-- Price breakdown -->
+      <div class="detail-card">
+        <div class="detail-title"><i class="fas fa-receipt me-2"></i>PRICE DETAILS</div>
+
+        <div class="price-row">
+          <span class="price-label">SUBTOTAL</span>
+          <span class="price-value">₹<%= order.totalAmount.toLocaleString('en-IN') %></span>
+        </div>
+        <div class="price-row">
+          <span class="price-label">DELIVERY</span>
+          <span class="price-value" style="color:<%= order.deliveryCharge === 0 ? '#5cb85c' : '#fff' %>">
+            <%= order.deliveryCharge === 0 ? 'FREE' : '₹' + order.deliveryCharge %>
+          </span>
+        </div>
+        <div class="price-total-row">
+          <span style="font-size:12px;letter-spacing:2px;color:#888;">GRAND TOTAL</span>
+          <span style="font-size:22px;font-weight:700;color:var(--gold);">₹<%= order.grandTotal.toLocaleString('en-IN') %></span>
+        </div>
+      </div>
+
+      <!-- Payment & Status -->
+      <div class="detail-card">
+        <div class="detail-title"><i class="fas fa-credit-card me-2"></i>PAYMENT & STATUS</div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #0f0f0f;">
+          <span style="font-size:11px;color:#555;letter-spacing:1px;">PAYMENT</span>
+          <span class="status-badge status-cod"><%= order.paymentMethod %></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #0f0f0f;">
+          <span style="font-size:11px;color:#555;letter-spacing:1px;">PAYMENT STATUS</span>
+          <span class="status-badge status-pending"><%= order.paymentStatus %></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+          <span style="font-size:11px;color:#555;letter-spacing:1px;">ORDER STATUS</span>
+          <span class="status-badge status-pending"><%= order.orderStatus %></span>
+        </div>
+      </div>
+
+      <!-- CTAs -->
+      <div class="d-flex flex-column gap-3">
+        <a href="/shop" class="btn-gold-fill" style="width:100%;">
+          <i class="fas fa-gem me-2"></i>CONTINUE SHOPPING
+        </a>
+        <a href="/orders" class="btn-outline" style="width:100%;">
+          <i class="fas fa-list me-2"></i>VIEW MY ORDERS
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════════ -->
+<footer style="border-top:1px solid #222;padding:30px 0 20px;margin-top:20px;">
+  <div class="container" style="text-align:center;">
+    <p class="text-secondary mb-0" style="font-size:11px;letter-spacing:1px;">
+      © 2026 ROYAL MIST FRAGRANCES. ALL RIGHTS RESERVED.
+    </p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const userIcon     = document.getElementById("userIcon");
+  const dropdownMenu = document.getElementById("dropdownMenu");
+  if (userIcon && dropdownMenu) {
+    userIcon.addEventListener("click", e => { e.stopPropagation(); dropdownMenu.classList.toggle("show"); });
+    window.addEventListener("click", () => dropdownMenu.classList.remove("show"));
+  }
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      await fetch("/logout", { method: "POST" });
+      window.location.href = "/signin";
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<form method="GET" action="/shop" id="filterForm">
+
+  <%# preserve search + sort %>
+  <% if(filters.search) { %>
+    <input type="hidden" name="search" value="<%= filters.search %>">
+  <% } %>
+  <% if(filters.sort) { %>
+    <input type="hidden" name="sort" value="<%= filters.sort %>">
+  <% } %>
+
+  <div class="filter-title">
+    <i class="fas fa-sliders-h me-2"></i>REFINE
+  </div>
+
+
+  
+
+  <!-- ── CATEGORY ── -->
+  <div class="filter-section">
+    <div class="filter-section-title">CATEGORY</div>
+
+    <button type="submit" name="category" value=""
+      class="cat-pill <%= !filters.category ? 'active' : '' %>">
+      All
+    </button>
+
+    <% categories.forEach(cat => { %>
+      <button type="submit" name="category" value="<%= cat._id %>"
+        class="cat-pill <%= filters.category === cat._id.toString() ? 'active' : '' %>">
+        <%= cat.name %>
+      </button>
+    <% }) %>
+  </div>
+
+  <!-- ── FRAGRANCE TYPE ── -->
+  <div class="filter-section">
+    <div class="filter-section-title">FRAGRANCE TYPE</div>
+
+    <% fragranceTypes.forEach(type => { %>
+      <button type="submit" name="fragranceType" value="<%= type %>"
+        class="frag-pill <%= filters.fragranceType === type ? 'active' : '' %>">
+        <%= type %>
+      </button>
+    <% }) %>
+
+    <% if(filters.fragranceType) { %>
+      <br/>
+      <button type="submit" name="fragranceType" value=""
+        class="frag-pill mt-2" style="border-color:#c0392b;color:#c0392b;">
+        <i class="fas fa-times me-1"></i>Clear
+      </button>
+    <% } %>
+  </div>
+
+  <!-- ── PRICE RANGE ── -->
+  <div class="filter-section">
+    <div class="filter-section-title">PRICE RANGE</div>
+
+    <div style="display:flex; gap:8px; margin-bottom:10px;">
+      <div style="flex:1;">
+        <label style="font-size:9px;letter-spacing:1px;color:#555;display:block;margin-bottom:4px;">MIN</label>
+        <input
+          type="number"
+          name="minPrice"
+          class="price-input"
+          placeholder="₹ 0"
+          value="<%= filters.minPrice %>"
+          min="0"
+          style="width:100%;"
+        />
+      </div>
+      <div style="flex:1;">
+        <label style="font-size:9px;letter-spacing:1px;color:#555;display:block;margin-bottom:4px;">MAX</label>
+        <input
+          type="number"
+          name="maxPrice"
+          class="price-input"
+          placeholder="₹ 9999"
+          value="<%= filters.maxPrice %>"
+          min="0"
+          style="width:100%;"
+        />
+      </div>
+    </div>
+
+    <button type="submit" class="btn-apply-price">
+      <i class="fas fa-check me-1"></i>APPLY
+    </button>
+  </div>
+
+  <!-- ── CLEAR ALL ── -->
+  <a href="/shop" class="btn-clear-filters d-block text-center text-decoration-none">
+    <i class="fas fa-times me-1"></i>CLEAR ALL
+  </a>
+
+</form>

@@ -1,5 +1,6 @@
 require("dotenv").config();
 
+const { MongoStore } = require("connect-mongo")
 const express = require("express");
 const path = require("path");
 const session = require("express-session")
@@ -12,9 +13,9 @@ const adminRoutes = require("./router/adminRouter");
 
 const app = express();
 
-
 //DATABASE 
 connectDB();
+
 
 
 //MIDDLEWARE
@@ -34,6 +35,10 @@ app.use(
     secret: process.env.SESSION_SECRET || "mysecretkey",
     resave: false,
     saveUninitialized: false,
+   store: new MongoStore({       
+  mongoUrl: process.env.MONGO_URI,
+  ttl: 24 * 60 * 60          
+}),
     cookie :{
       maxAge:24*60*60*1000,
       httpOnly:true,
@@ -45,15 +50,31 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+
+
+const Cart = require("./model/cartSchema");
+app.use(async (req, res, next) => {
+  try {
+    if (req.session && req.session.user) {
+      const cart = await Cart.findOne({ user: req.session.user.id });
+      res.locals.cartCount = cart
+        ? cart.items.reduce((sum, i) => sum + i.quantity, 0)
+        : 0;
+    } else {
+      res.locals.cartCount = 0;
+    }
+  } catch {
+    res.locals.cartCount = 0;
+  }
+  next();
+});
+
+
+
+
 // ROUTES
 app.use('/',userRoutes);
-app.use('/admin', adminRoutes); 
-
-
-
-app.get("/", (req, res) => {
-  res.redirect("/signup");
-});
+app.use('/admin', adminRoutes);
 
 
 //SERVER 

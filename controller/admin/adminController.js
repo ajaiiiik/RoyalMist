@@ -18,7 +18,7 @@ const adminSigninController = async (req, res) => {
   }
 };
 
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 5;
 
 const getCustomersController = async (req, res) => {
   try {
@@ -89,9 +89,52 @@ const unblockUserController = async (req, res) => {
 };
 
 
+const getDashboardController = async (req, res) => {
+  try {
+    const Order   = require("../../model/orderSchema");
+    const now     = new Date();
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
+    const [
+      totalCustomers,
+      totalOrders,
+      monthlyOrders,
+      allOrders,
+    ] = await Promise.all([
+      User.countDocuments({ role: { $ne: "admin" } }),
+      Order.countDocuments({}),
+      Order.find({ createdAt: { $gte: firstOfMonth }, orderStatus: { $nin: ["Cancelled"] } }).lean(),
+      Order.find({ orderStatus: { $nin: ["Cancelled"] } }).lean(),
+    ]);
+
+    const totalRevenue    = allOrders.reduce((s, o) => s + o.grandTotal, 0);
+    const monthlyRevenue  = monthlyOrders.reduce((s, o) => s + o.grandTotal, 0);
+
+    const [delivered, pending, shipped, cancelled] = await Promise.all([
+      Order.countDocuments({ orderStatus: "Delivered" }),
+      Order.countDocuments({ orderStatus: "Pending" }),
+      Order.countDocuments({ orderStatus: { $in: ["Shipped", "Processing"] } }),
+      Order.countDocuments({ orderStatus: "Cancelled" }),
+    ]);
+
+    res.render("admin/dashboard", {
+      totalCustomers,
+      totalOrders,
+      totalRevenue,
+      monthlyRevenue,
+      delivered,
+      pending,
+      shipped,
+      cancelled,
+    });
+  } catch (err) {
+    console.error("getDashboardController error:", err);
+    res.status(500).send("Server error");
+  }
+};
 module.exports = { 
   adminSigninController,
+    getDashboardController, 
   getCustomersController,
   blockUserController,
   unblockUserController

@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order History | Royal Mist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root {
+      --gold: #c4a14d;
+      --gold-dim: rgba(196,161,77,0.10);
+      --dark-bg: #000;
+      --card-bg: #080808;
+      --border: #1a1a1a;
+      --border-light: #111;
+      --font-main: 'Playfair Display', serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--dark-bg); color: #fff; font-family: var(--font-main); overflow-x: hidden; }
+
+    /* ── NAVBAR ── */
+    .navbar { background: rgba(0,0,0,0.97); border-bottom: 1px solid #222; padding: 15px 0; position: sticky; top: 0; z-index: 1000; }
+    .navbar-brand { color: var(--gold) !important; letter-spacing: 4px; font-weight: 700; text-decoration: none; }
+    .nav-link { color: #fff !important; font-size: 12px; letter-spacing: 2px; }
+    .user-dropdown { position: relative; z-index: 2000; }
+    .dropdown-menu-custom { position: absolute; top: 100%; right: 0; background: #0a0a0a; border: 1px solid #222; min-width: 160px; z-index: 3000; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .dropdown-menu-custom.show { display: block; }
+    .dropdown-item-custom { color: #fff; background: none; border: none; text-decoration: none; display: block; padding: 10px 15px; width: 100%; text-align: left; font-family: var(--font-main); font-size: 13px; cursor: pointer; }
+    .dropdown-item-custom:hover { color: var(--gold); background: #111; }
+
+    /* ── BREADCRUMB ── */
+    .breadcrumb-wrap { background: #080808; border-bottom: 1px solid #111; padding: 12px 0; }
+    .bc-item { font-size: 11px; letter-spacing: 2px; color: #555; text-decoration: none; transition: color 0.2s; }
+    .bc-item:hover { color: var(--gold); }
+    .bc-item.active { color: #888; }
+    .bc-sep { color: #333; margin: 0 8px; font-size: 8px; }
+
+    /* ── PAGE HEADER ── */
+    .page-header { background: linear-gradient(180deg,#080808 0%,#000 100%); border-bottom: 1px solid #111; padding: 32px 0 22px; }
+    .gold-line { width: 40px; height: 2px; background: var(--gold); margin-bottom: 10px; }
+    .page-title { font-size: 1.5rem; letter-spacing: 4px; font-weight: 600; }
+    .page-subtitle { font-size: 11px; letter-spacing: 2px; color: #444; margin-top: 6px; }
+
+    /* ── FILTER BAR ── */
+    .filter-bar { background: #050505; border-bottom: 1px solid #111; padding: 14px 0; }
+    .filter-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+    .filter-scroll::-webkit-scrollbar { display: none; }
+    .filter-btn { flex-shrink: 0; background: transparent; border: 1px solid #222; color: #555; font-family: var(--font-main); font-size: 10px; letter-spacing: 2px; padding: 7px 16px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .filter-btn:hover { border-color: #444; color: #aaa; }
+    .filter-btn.active { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+    /* ── ORDERS COUNT ── */
+    .orders-count { font-size: 11px; letter-spacing: 2px; color: #444; }
+    .orders-count span { color: var(--gold); }
+
+    /* ── ORDER CARD ── */
+    .order-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+      transition: border-color 0.25s;
+      overflow: hidden;
+    }
+    .order-card:hover { border-color: #2a2a2a; }
+
+    /* Header */
+    .order-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border-light);
+      gap: 12px; flex-wrap: wrap;
+    }
+    .order-id-wrap { display: flex; flex-direction: column; gap: 4px; }
+    .order-id { font-size: 13px; font-weight: 600; letter-spacing: 1px; }
+    .order-date { font-size: 10px; color: #444; letter-spacing: 1px; }
+    .order-header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+    /* Badges */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 9px; letter-spacing: 2px; padding: 5px 10px;
+      border: 1px solid; font-weight: 600; white-space: nowrap;
+    }
+    .status-badge i { font-size: 8px; }
+    .status-Pending    { border-color: #555;    color: #888;    background: rgba(85,85,85,0.08); }
+    .status-Processing { border-color: #4a90d9; color: #4a90d9; background: rgba(74,144,217,0.08); }
+    .status-Shipped    { border-color: #f39c12; color: #f39c12; background: rgba(243,156,18,0.08); }
+    .status-Delivered  { border-color: #27ae60; color: #27ae60; background: rgba(39,174,96,0.08); }
+    .status-Cancelled  { border-color: #c0392b; color: #c0392b; background: rgba(192,57,43,0.08); }
+    .status-Return-Requested { border-color: #9b59b6; color: #9b59b6; background: rgba(155,89,182,0.08); }
+
+    .pay-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 9px; letter-spacing: 1px; padding: 5px 10px;
+      border: 1px solid #1a1a1a; color: #555; background: transparent; white-space: nowrap;
+    }
+    .pay-badge.paid { border-color: #1a3a2a; color: #27ae60; }
+
+    /* Items section */
+    .order-items-wrap { padding: 14px 20px; border-bottom: 1px solid var(--border-light); }
+    .order-item-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 10px 0; border-bottom: 1px solid #0d0d0d;
+    }
+    .order-item-row:first-child { padding-top: 0; }
+    .order-item-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .item-img {
+      width: 52px; height: 60px; object-fit: cover;
+      border: 1px solid var(--border); flex-shrink: 0; background: #0d0d0d;
+    }
+    .item-info { flex: 1; min-width: 0; }
+    .item-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+    .item-meta { font-size: 10px; color: #555; letter-spacing: 1px; }
+    .item-price { font-size: 13px; color: var(--gold); font-weight: 600; flex-shrink: 0; white-space: nowrap; }
+
+    /* Collapsed: show only first 2 */
+    .items-collapsed .order-item-row:nth-child(n+3) { display: none; }
+    .show-more-btn {
+      background: none; border: none; color: #444; font-family: var(--font-main);
+      font-size: 10px; letter-spacing: 2px; cursor: pointer;
+      padding: 8px 0 0; display: block; transition: color 0.2s;
+    }
+    .show-more-btn:hover { color: var(--gold); }
+
+    /* Footer */
+    .order-card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; gap: 12px; flex-wrap: wrap;
+    }
+    .order-totals { display: flex; flex-direction: column; gap: 3px; }
+    .total-label { font-size: 9px; letter-spacing: 2px; color: #444; }
+    .total-amount { font-size: 18px; font-weight: 700; color: var(--gold); }
+    .saved-badge { font-size: 10px; color: #27ae60; letter-spacing: 1px; }
+
+    .order-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-action {
+      background: transparent; border: 1px solid #222; color: #888;
+      font-family: var(--font-main); font-size: 10px; letter-spacing: 2px;
+      padding: 8px 16px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-action:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-action.primary { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+    .btn-action.primary:hover { background: rgba(196,161,77,0.2); }
+    .btn-action.danger { border-color: #3a1a1a; color: #c0392b; }
+    .btn-action.danger:hover { border-color: #c0392b; background: rgba(192,57,43,0.08); }
+
+    /* ── EMPTY STATE ── */
+    .empty-orders {
+      text-align: center; padding: 80px 20px;
+      border: 1px dashed var(--border); background: #050505;
+    }
+    .empty-icon { font-size: 42px; color: #1a1a1a; margin-bottom: 20px; display: block; }
+    .empty-title { font-size: 16px; letter-spacing: 3px; color: #333; margin-bottom: 10px; }
+    .empty-sub { font-size: 11px; letter-spacing: 2px; color: #2a2a2a; margin-bottom: 28px; }
+    .btn-shop {
+      display: inline-block; background: var(--gold); color: #000;
+      font-family: var(--font-main); font-size: 11px; letter-spacing: 3px; font-weight: 700;
+      padding: 13px 32px; text-decoration: none; transition: all 0.3s; border: none; cursor: pointer;
+    }
+    .btn-shop:hover { background: #b38f3d; color: #000; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(196,161,77,0.2); }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.9); z-index: 2000;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      background: #0a0a0a; border: 1px solid #2a2a2a;
+      padding: 32px; width: 100%; max-width: 440px;
+      animation: modalIn 0.25s ease;
+    }
+    @keyframes modalIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-title { font-size: 12px; letter-spacing: 3px; color: var(--gold); margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid #1a1a1a; }
+    .modal-label { font-size: 10px; letter-spacing: 2px; color: var(--gold); margin-bottom: 8px; display: block; }
+    .modal-select {
+      width: 100%; padding: 11px 13px; background: #000; border: 1px solid #222;
+      color: #fff; font-family: var(--font-main); font-size: 13px; outline: none;
+      appearance: none; -webkit-appearance: none; margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+    .modal-select:focus { border-color: var(--gold); }
+    .modal-select option { background: #111; }
+    .modal-textarea {
+      width: 100%; padding: 11px 13px; background: #000; border: 1px solid #222;
+      color: #fff; font-family: var(--font-main); font-size: 13px; outline: none;
+      resize: vertical; min-height: 80px; margin-bottom: 20px; transition: border-color 0.2s;
+    }
+    .modal-textarea:focus { border-color: var(--gold); }
+    .modal-textarea::placeholder { color: #333; }
+    .modal-error { font-size: 10px; color: #c0392b; letter-spacing: 1px; margin-bottom: 14px; display: none; }
+    .modal-actions { display: flex; gap: 10px; }
+    .modal-confirm {
+      flex: 1; padding: 12px; background: #c0392b; color: #fff; border: none;
+      font-family: var(--font-main); font-size: 11px; letter-spacing: 2px; cursor: pointer; transition: 0.2s;
+    }
+    .modal-confirm:hover { background: #e74c3c; }
+    .modal-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+    .modal-cancel-btn {
+      padding: 12px 20px; background: transparent; border: 1px solid #2a2a2a;
+      color: #555; font-family: var(--font-main); font-size: 11px; letter-spacing: 2px; cursor: pointer; transition: 0.2s;
+    }
+    .modal-cancel-btn:hover { color: #fff; border-color: #555; }
+
+    /* ── TOAST ── */
+    .toast-msg {
+      position: fixed; top: 28px; right: 24px;
+      background: #0a0a0a; border: 1px solid var(--gold); color: var(--gold);
+      font-size: 12px; letter-spacing: 1px; padding: 12px 20px;
+      z-index: 9999; display: none; animation: slideUp 0.3s ease;
+      max-width: calc(100vw - 48px);
+    }
+    .toast-msg.error { border-color: #c0392b; color: #c0392b; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .page-title { font-size: 1.2rem; letter-spacing: 3px; }
+      .order-card-header { padding: 12px 14px; }
+      .order-items-wrap { padding: 12px 14px; }
+      .order-card-footer { padding: 12px 14px; }
+      .item-img { width: 44px; height: 52px; }
+      .item-name { font-size: 12px; }
+      .total-amount { font-size: 16px; }
+      .btn-action { font-size: 9px; padding: 7px 12px; }
+      .modal-box { padding: 22px 16px; }
+    }
+    @media (max-width: 480px) {
+      .order-header-right { gap: 6px; }
+      .order-actions { width: 100%; }
+      .btn-action { flex: 1; text-align: center; justify-content: center; display: inline-flex; align-items: center; }
+      .order-totals { width: 100%; }
+      .order-card-footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="/home"><i class="fas fa-gem me-2" style="color:var(--gold)"></i>ROYALMIST</a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <i class="fas fa-bars text-white"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link" href="/home">HOME</a></li>
+        <li class="nav-item"><a class="nav-link" href="/shop">SHOP</a></li>
+      </ul>
+      <div class="d-flex gap-3 align-items-center">
+        <a href="/wishlist"><i class="fa-regular fa-heart" style="cursor:pointer;color:#fff"></i></a>
+      <a href="/cart" style="position:relative;">
+  <i class="fa-solid fa-bag-shopping" style="color:#fff;font-size:16px;"></i>
+  <% if(typeof cartCount !== 'undefined' && cartCount > 0) { %>
+    <span style="position:absolute;top:-8px;right:-8px;background:var(--gold);color:#000;font-size:9px;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;"><%= cartCount %></span>
+  <% } %>
+</a>
+        <div class="user-dropdown">
+          <% if(user) { %>
+            <span id="userIcon" style="cursor:pointer;color:#fff;font-size:13px;letter-spacing:1px;">
+              <%= user.firstName %> <i class="fa fa-caret-down"></i>
+            </span>
+            <div id="dropdownMenu" class="dropdown-menu-custom">
+              <a href="/account" class="dropdown-item-custom">Account</a>
+              <a href="/orders" class="dropdown-item-custom" style="color:var(--gold);">Order History</a>
+              <button id="logoutBtn" class="dropdown-item-custom">Logout</button>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb-wrap">
+  <div class="container d-flex align-items-center">
+    <a href="/home" class="bc-item">HOME</a>
+    <span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:8px;"></i></span>
+    <a href="/account" class="bc-item">ACCOUNT</a>
+    <span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:8px;"></i></span>
+    <span class="bc-item active">ORDER HISTORY</span>
+  </div>
+</div>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="container">
+    <div class="gold-line"></div>
+    <h1 class="page-title">MY ORDERS</h1>
+    <p class="page-subtitle">TRACK AND MANAGE YOUR PURCHASES</p>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="container">
+    <div class="filter-scroll">
+      <button class="filter-btn active" onclick="filterOrders('all', this)">ALL ORDERS</button>
+      <button class="filter-btn" onclick="filterOrders('Pending', this)">PENDING</button>
+      <button class="filter-btn" onclick="filterOrders('Processing', this)">PROCESSING</button>
+      <button class="filter-btn" onclick="filterOrders('Shipped', this)">SHIPPED</button>
+      <button class="filter-btn" onclick="filterOrders('Delivered', this)">DELIVERED</button>
+      <button class="filter-btn" onclick="filterOrders('Cancelled', this)">CANCELLED</button>
+      <button class="filter-btn" onclick="filterOrders('Return Requested', this)">RETURN REQUESTED</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container py-4 py-md-5">
+
+  <% if (orders.length === 0) { %>
+    <!-- Empty State -->
+    <div class="empty-orders">
+      <i class="fas fa-box-open empty-icon"></i>
+      <div class="empty-title">NO ORDERS YET</div>
+      <div class="empty-sub">YOUR ORDER HISTORY WILL APPEAR HERE</div>
+      <a href="/shop" class="btn-shop">EXPLORE FRAGRANCES</a>
+    </div>
+
+  <% } else { %>
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div class="orders-count">
+        SHOWING <span id="visibleCount"><%= orders.length %></span> OF <span><%= orders.length %></span> ORDERS
+      </div>
+    </div>
+
+    <div id="ordersContainer">
+      <% orders.forEach((order) => { %>
+        <div class="order-card" data-status="<%= order.orderStatus %>">
+
+          <!-- CARD HEADER -->
+          <div class="order-card-header">
+            <div class="order-id-wrap">
+              <div class="order-id">
+                <i class="fas fa-hashtag" style="color:var(--gold);font-size:10px;margin-right:4px;"></i>
+                <%= order.orderId %>
+              </div>
+              <div class="order-date">
+                <i class="far fa-calendar-alt" style="margin-right:4px;font-size:9px;"></i>
+                <%= new Date(order.createdAt).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) %>
+              </div>
+            </div>
+            <div class="order-header-right">
+              <span class="pay-badge <%= order.paymentStatus === 'Paid' ? 'paid' : '' %>">
+                <i class="fas fa-<%= order.paymentStatus === 'Paid' ? 'check-circle' : 'clock' %>" style="font-size:8px;"></i>
+                <%= order.paymentMethod %> &nbsp;·&nbsp; <%= order.paymentStatus.toUpperCase() %>
+              </span>
+              <span class="status-badge status-<%= order.orderStatus %>">
+                <% if (order.orderStatus === 'Pending')    { %><i class="fas fa-hourglass-half"></i><% } %>
+                <% if (order.orderStatus === 'Processing') { %><i class="fas fa-cog"></i><% } %>
+                <% if (order.orderStatus === 'Shipped')    { %><i class="fas fa-truck"></i><% } %>
+                <% if (order.orderStatus === 'Delivered')  { %><i class="fas fa-check-circle"></i><% } %>
+                <% if (order.orderStatus === 'Cancelled')  { %><i class="fas fa-times-circle"></i><% } %>
+                <% if (order.orderStatus === 'Return Requested') { %><i class="fas fa-undo"></i><% } %>
+                <%= order.orderStatus.toUpperCase() %>
+              </span>
+            </div>
+          </div>
+
+          <!-- ITEMS -->
+          <div class="order-items-wrap">
+            <div class="items-list items-collapsed" id="items-<%= order.orderId %>">
+              <% order.items.forEach((item) => { %>
+                <div class="order-item-row">
+                  <img
+                    src="<%= item.image && item.image !== '' ? item.image : '/images/placeholder.jpg' %>"
+                    class="item-img"
+                    alt="<%= item.name %>"
+                    onerror="this.src='/images/placeholder.jpg'"
+                  />
+                  <div class="item-info">
+                    <div class="item-name"><%= item.name %></div>
+                    <div class="item-meta"><%= item.size %> &nbsp;·&nbsp; QTY <%= item.quantity %></div>
+                  </div>
+                  <div class="item-price">₹<%= (item.price * item.quantity).toLocaleString('en-IN') %></div>
+                </div>
+              <% }) %>
+            </div>
+            <% if (order.items.length > 2) { %>
+              <button
+                class="show-more-btn"
+                id="showbtn-<%= order.orderId %>"
+                onclick="toggleItems('<%= order.orderId %>', <%= order.items.length %>)"
+              >
+                <i class="fas fa-chevron-down" style="margin-right:5px;font-size:8px;"></i>
+                VIEW ALL <%= order.items.length %> ITEMS
+              </button>
+            <% } %>
+          </div>
+
+          <!-- CARD FOOTER -->
+          <div class="order-card-footer">
+            <div class="order-totals">
+              <div class="total-label">GRAND TOTAL</div>
+              <div class="total-amount">₹<%= order.grandTotal.toLocaleString('en-IN') %></div>
+              <% if (order.discount > 0) { %>
+                <div class="saved-badge">
+                  <i class="fas fa-tag" style="font-size:8px;"></i>
+                  SAVED ₹<%= order.discount.toLocaleString('en-IN') %>
+                </div>
+              <% } %>
+            </div>
+            <div class="order-actions">
+  <a href="/orders/<%= order._id %>" class="btn-action primary">
+    <i class="fas fa-eye" style="margin-right:5px;font-size:9px;"></i>DETAILS
+  </a>
+  <% if (order.orderStatus === 'Delivered') { %>
+  <button class="btn-action primary" onclick="window.location.href='/shop'">
+    <i class="fas fa-redo" style="margin-right:5px;font-size:9px;"></i>BUY AGAIN
+  </button>
+  <!-- ← ADD RETURN BUTTON -->
+  <% if(!order.returnRequested) { %>
+    <button class="btn-action return-btn"
+      data-id="<%= order._id %>"
+      data-label="<%= order.orderId %>"
+      style="border-color:#9b59b6;color:#9b59b6;">
+      <i class="fas fa-undo" style="margin-right:5px;font-size:9px;"></i>RETURN
+    </button>
+  <% } else { %>
+    <button class="btn-action" disabled 
+      style="border-color:#2a1a3a;color:#6a3a8a;cursor:not-allowed;">
+      <i class="fas fa-undo" style="margin-right:5px;font-size:9px;"></i>
+      <%= order.returnStatus === 'Approved' ? 'RETURN APPROVED' : 
+          order.returnStatus === 'Rejected' ? 'RETURN REJECTED' : 
+          'RETURN REQUESTED' %>
+    </button>
+  <% } %>
+<% } %>
+              <% if (order.orderStatus === 'Cancelled' && order.cancelReason) { %>
+                <button class="btn-action" onclick="showCancelReason(this)" data-reason="<%= order.cancelReason %>">
+                  <i class="fas fa-info-circle" style="margin-right:5px;font-size:9px;"></i>REASON
+                </button>
+              <% } %>
+            </div>
+          </div>
+
+        </div><!-- /.order-card -->
+      <% }) %>
+    </div><!-- /#ordersContainer -->
+
+    <!-- No filter results -->
+    <div id="noFilterResults" style="display:none;">
+      <div class="empty-orders">
+        <i class="fas fa-filter empty-icon"></i>
+        <div class="empty-title">NO ORDERS FOUND</div>
+        <div class="empty-sub">NO ORDERS MATCH THIS STATUS</div>
+      </div>
+    </div>
+
+  <% } %>
+</div>
+
+<!-- FOOTER -->
+<footer style="border-top:1px solid #222;padding:30px 0 20px;margin-top:20px;">
+  <div class="container text-center">
+    <p class="text-secondary mb-0" style="font-size:11px;letter-spacing:1px;">
+      © 2026 ROYAL MIST FRAGRANCES. ALL RIGHTS RESERVED.
+    </p>
+  </div>
+</footer>
+
+
+
+<!-- RETURN MODAL -->
+<div class="modal-overlay" id="returnModal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <i class="fas fa-undo me-2"></i>REQUEST RETURN
+    </div>
+    <label class="modal-label">REASON FOR RETURN</label>
+    <select class="modal-select" id="returnReasonSelect">
+      <option value="">— Select a reason —</option>
+      <option value="Product damaged">Product damaged</option>
+      <option value="Wrong product delivered">Wrong product delivered</option>
+      <option value="Product not as described">Product not as described</option>
+      <option value="Changed my mind">Changed my mind</option>
+      <option value="Other">Other</option>
+    </select>
+    <div class="modal-error" id="returnModalError">
+      Please select a reason to continue.
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel-btn" onclick="closeReturnModal()">
+        CANCEL
+      </button>
+      <button class="modal-confirm" id="confirmReturnBtn" 
+        onclick="confirmReturn()"
+        style="background:#9b59b6;">
+        <i class="fas fa-undo me-1"></i>REQUEST RETURN
+      </button>
+    </div>
+  </div>
+</div>
+<!-- CANCEL MODAL -->
+<div class="modal-overlay" id="cancelModal">
+  <div class="modal-box">
+    <div class="modal-title"><i class="fas fa-times-circle me-2"></i>CANCEL ORDER</div>
+    <label class="modal-label">REASON FOR CANCELLATION</label>
+    <select class="modal-select" id="cancelReasonSelect" onchange="handleReasonChange()">
+      <option value="">— Select a reason —</option>
+      <option value="Changed my mind">Changed my mind</option>
+      <option value="Ordered by mistake">Ordered by mistake</option>
+      <option value="Found a better price">Found a better price</option>
+      <option value="Delivery taking too long">Delivery taking too long</option>
+      <option value="Product no longer needed">Product no longer needed</option>
+      <option value="Other">Other (specify below)</option>
+    </select>
+    <div id="otherReasonWrap" style="display:none;">
+      <label class="modal-label">PLEASE SPECIFY</label>
+      <textarea class="modal-textarea" id="otherReasonText" placeholder="Describe your reason..."></textarea>
+    </div>
+    <div class="modal-error" id="cancelModalError">Please select a reason to continue.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel-btn" onclick="closeCancelModal()">KEEP ORDER</button>
+      <button class="modal-confirm" id="confirmCancelBtn" onclick="confirmCancel()">
+        <i class="fas fa-times me-1"></i>CANCEL ORDER
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- REASON INFO MODAL -->
+<div class="modal-overlay" id="reasonModal">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-title"><i class="fas fa-info-circle me-2"></i>CANCELLATION REASON</div>
+    <p id="reasonText" style="font-size:13px;color:#aaa;letter-spacing:1px;line-height:1.8;margin-bottom:24px;"></p>
+    <button class="modal-cancel-btn" style="width:100%;" onclick="document.getElementById('reasonModal').classList.remove('active')">
+      CLOSE
+    </button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-msg" id="toastMsg"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ── Navbar dropdown ──
+  const userIcon     = document.getElementById("userIcon");
+  const dropdownMenu = document.getElementById("dropdownMenu");
+  if (userIcon && dropdownMenu) {
+    userIcon.addEventListener("click", e => { e.stopPropagation(); dropdownMenu.classList.toggle("show"); });
+    window.addEventListener("click", () => dropdownMenu.classList.remove("show"));
+  }
+  document.getElementById("logoutBtn")?.addEventListener("click", async () => {
+    await fetch("/logout", { method: "POST" });
+    window.location.href = "/signin";
+  });
+
+  // ── Toast ──
+  function showToast(msg, isError = false) {
+    const t = document.getElementById("toastMsg");
+    t.textContent = msg;
+    t.className = "toast-msg" + (isError ? " error" : "");
+    t.style.display = "block";
+    setTimeout(() => t.style.display = "none", 3500);
+  }
+
+  // ── Filter orders by status ──
+  function filterOrders(status, btn) {
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    const cards = document.querySelectorAll(".order-card");
+    let visible = 0;
+    cards.forEach(card => {
+      const show = status === "all" || card.dataset.status === status;
+      card.style.display = show ? "block" : "none";
+      if (show) visible++;
+    });
+    const noResults = document.getElementById("noFilterResults");
+    if (noResults) noResults.style.display = visible === 0 ? "block" : "none";
+    const countEl = document.getElementById("visibleCount");
+    if (countEl) countEl.textContent = visible;
+  }
+
+  // ── Toggle show more items ──
+  function toggleItems(orderId, total) {
+    const list      = document.getElementById("items-" + orderId);
+    const btn       = document.getElementById("showbtn-" + orderId);
+    const collapsed = list.classList.toggle("items-collapsed");
+    btn.innerHTML   = collapsed
+      ? `<i class="fas fa-chevron-down" style="margin-right:5px;font-size:8px;"></i>VIEW ALL ${total} ITEMS`
+      : `<i class="fas fa-chevron-up"   style="margin-right:5px;font-size:8px;"></i>SHOW LESS`;
+  }
+
+
+
+  // ── Return modal ──
+let pendingReturnId    = null;
+let pendingReturnLabel = null;
+
+// Event delegation for return buttons
+document.getElementById("ordersContainer")?.addEventListener("click", function(e) {
+  const btn = e.target.closest(".return-btn");
+  if (!btn) return;
+  pendingReturnId    = btn.dataset.id;
+  pendingReturnLabel = btn.dataset.label;
+  document.getElementById("returnReasonSelect").value       = "";
+  document.getElementById("returnModalError").style.display = "none";
+  document.getElementById("returnModal").classList.add("active");
+});
+
+function closeReturnModal() {
+  document.getElementById("returnModal").classList.remove("active");
+  pendingReturnId = pendingReturnLabel = null;
+}
+
+async function confirmReturn() {
+  const reason = document.getElementById("returnReasonSelect").value;
+
+  if (!reason) {
+    document.getElementById("returnModalError").style.display = "block";
+    return;
+  }
+
+  const btn = document.getElementById("confirmReturnBtn");
+  btn.disabled    = true;
+  btn.textContent = "REQUESTING...";
+
+  try {
+    const res  = await fetch("/orders/return/" + pendingReturnId, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ reason }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast("Return request submitted for order " + pendingReturnLabel);
+      closeReturnModal();
+      setTimeout(() => location.reload(), 1800);
+    } else {
+      showToast(data.message || "Failed to request return", true);
+    }
+  } catch {
+    showToast("Something went wrong. Please try again.", true);
+  } finally {
+    btn.disabled    = false;
+    btn.innerHTML   = '<i class="fas fa-undo me-1"></i>REQUEST RETURN';
+  }
+}
+
+// Close return modal on backdrop click
+document.getElementById("returnModal")?.addEventListener("click", function(e) {
+  if (e.target === this) closeReturnModal();
+});
+
+  // ── Cancel modal ──
+  let pendingCancelId    = null;
+let pendingCancelLabel = null;
+
+// Event delegation for cancel buttons
+document.getElementById("ordersContainer")?.addEventListener("click", function(e) {
+  const btn = e.target.closest(".cancel-btn");
+  if (!btn) return;
+  pendingCancelId    = btn.dataset.id;
+  pendingCancelLabel = btn.dataset.label;
+  document.getElementById("cancelReasonSelect").value          = "";
+  document.getElementById("otherReasonWrap").style.display     = "none";
+  document.getElementById("otherReasonText").value             = "";
+  document.getElementById("cancelModalError").style.display    = "none";
+  document.getElementById("cancelModal").classList.add("active");
+});
+  function closeCancelModal() {
+    document.getElementById("cancelModal").classList.remove("active");
+    pendingCancelId = pendingCancelLabel = null;
+  }
+
+  function handleReasonChange() {
+    const val = document.getElementById("cancelReasonSelect").value;
+    document.getElementById("otherReasonWrap").style.display  = val === "Other" ? "block" : "none";
+    document.getElementById("cancelModalError").style.display = "none";
+  }
+
+  async function confirmCancel() {
+    const select      = document.getElementById("cancelReasonSelect").value;
+    const otherText   = document.getElementById("otherReasonText").value.trim();
+    const finalReason = select === "Other" ? (otherText || "Other") : select;
+
+    if (!select) {
+      document.getElementById("cancelModalError").style.display = "block";
+      return;
+    }
+
+    const btn = document.getElementById("confirmCancelBtn");
+    btn.disabled    = true;
+    btn.textContent = "CANCELLING...";
+
+    try {
+      const res  = await fetch("/orders/cancel/" + pendingCancelId, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ reason: finalReason }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        showToast("Order " + pendingCancelLabel + " cancelled successfully");
+        closeCancelModal();
+        setTimeout(() => location.reload(), 1800);
+      } else {
+        showToast(data.message || "Failed to cancel order", true);
+      }
+    } catch {
+      showToast("Something went wrong. Please try again.", true);
+    } finally {
+      btn.disabled    = false;
+      btn.innerHTML   = '<i class="fas fa-times me-1"></i>CANCEL ORDER';
+    }
+  }
+
+  // Close modals on backdrop click
+  document.getElementById("cancelModal").addEventListener("click", function(e) {
+    if (e.target === this) closeCancelModal();
+  });
+  document.getElementById("reasonModal").addEventListener("click", function(e) {
+    if (e.target === this) this.classList.remove("active");
+  });
+
+  // ── Show cancel reason ──
+  function showCancelReason(btn) {
+    const reason = btn.getAttribute("data-reason");
+    document.getElementById("reasonText").textContent = reason;
+    document.getElementById("reasonModal").classList.add("active");
+  }
+</script>
+</body>
+</html>

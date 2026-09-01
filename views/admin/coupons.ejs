@@ -1,0 +1,507 @@
+<%# views/admin/coupons.ejs %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Coupons | Royal Mist Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root{--gold:#c4a14d;--gold-dim:rgba(196,161,77,0.12);--bg:#000;--sidebar-bg:#050505;--card:#0a0a0a;--border:#1a1a1a;--text:#fff;--muted:#888;--dim:#555;--sidebar-w:240px;--green:#4caf82;--red:#e05252;--orange:#f39c12;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Playfair Display',serif;min-height:100vh;display:flex;}
+    .sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--sidebar-bg);border-right:1px solid #111;display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;transition:transform 0.3s;}
+    .sidebar-logo{display:flex;align-items:center;gap:10px;padding:28px 24px 24px;border-bottom:1px solid #111;}
+    .logo-icon{width:36px;height:36px;background:var(--gold);clip-path:polygon(0 0,70% 0,100% 30%,100% 100%,30% 100%,0 70%);flex-shrink:0;}
+    .logo-text{font-size:13px;font-weight:700;letter-spacing:4px;color:var(--gold);}
+    .nav-menu{flex:1;padding:20px 0;overflow-y:auto;}
+    .nav-item{display:flex;align-items:center;gap:14px;padding:13px 24px;color:#666;text-decoration:none;font-size:13px;letter-spacing:1px;transition:all 0.2s;border-left:3px solid transparent;}
+    .nav-item:hover{color:var(--gold);background:var(--gold-dim);}
+    .nav-item.active{color:var(--gold);border-left-color:var(--gold);background:var(--gold-dim);}
+    .nav-item i{width:18px;text-align:center;font-size:13px;}
+    .sidebar-footer{padding:20px 24px;border-top:1px solid #111;font-size:10px;letter-spacing:2px;color:#333;text-align:center;}
+    .main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 36px;border-bottom:1px solid #111;background:var(--bg);position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:12px;}
+    .topbar-title{font-size:26px;font-weight:700;letter-spacing:1px;}
+    .hamburger{display:none;background:none;border:1px solid #222;color:var(--muted);padding:7px 10px;cursor:pointer;font-size:16px;}
+    .btn-add{background:var(--gold);border:none;color:#000;font-family:'Playfair Display',serif;font-size:11px;letter-spacing:2px;font-weight:700;padding:10px 22px;cursor:pointer;transition:0.2s;display:inline-flex;align-items:center;gap:8px;}
+    .btn-add:hover{background:#b38f3d;}
+    .content{padding:28px 36px;flex:1;}
+    /* STAT CARDS */
+    .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+    .stat-card{background:var(--card);border:1px solid var(--border);padding:18px 16px;}
+    .stat-icon{width:34px;height:34px;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:14px;margin-bottom:12px;}
+    .stat-label{font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;}
+    .stat-value{font-size:22px;font-weight:700;}
+    /* TABLE CARD */
+    .table-card{background:var(--card);border:1px solid var(--border);overflow:hidden;}
+    .table-header{padding:20px 28px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+    .table-title{font-size:11px;letter-spacing:3px;color:var(--gold);}
+    /* SEARCH */
+    .search-wrap{position:relative;display:flex;align-items:center;}
+    .search-wrap input{background:#000;border:1px solid #222;color:#fff;font-family:'Playfair Display',serif;font-size:12px;padding:9px 36px 9px 14px;outline:none;width:240px;transition:border-color 0.2s;letter-spacing:1px;}
+    .search-wrap input:focus{border-color:var(--gold);}
+    .search-wrap input::placeholder{color:#444;}
+    .search-clear{position:absolute;right:10px;background:none;border:none;color:#555;font-size:13px;cursor:pointer;display:none;}
+    .search-clear.visible{display:block;}
+    .search-clear:hover{color:var(--gold);}
+    /* TABLE */
+    table{width:100%;border-collapse:collapse;}
+    thead tr{background:#050505;border-bottom:1px solid var(--border);}
+    th{padding:12px 18px;font-size:9px;letter-spacing:2px;color:var(--muted);text-align:left;white-space:nowrap;}
+    tbody tr{border-bottom:1px solid #0d0d0d;transition:background 0.15s;}
+    tbody tr:hover{background:#0f0f0f;}
+    tbody tr:last-child{border-bottom:none;}
+    td{padding:16px 18px;font-size:12px;vertical-align:middle;}
+    .coupon-code{font-size:14px;font-weight:700;letter-spacing:2px;color:var(--gold);}
+    .coupon-desc{font-size:10px;color:var(--dim);letter-spacing:1px;margin-top:3px;}
+    /* DISCOUNT BADGE */
+    .disc-badge{display:inline-block;font-size:12px;font-weight:700;color:#fff;}
+    .disc-sub{font-size:10px;color:var(--dim);letter-spacing:1px;margin-top:2px;}
+    /* STATUS */
+    .status-chip{display:inline-flex;align-items:center;gap:5px;font-size:9px;letter-spacing:1px;padding:4px 10px;border:1px solid;font-weight:600;}
+    .chip-active  {border-color:#1a3a2a;color:var(--green);background:rgba(76,175,130,0.06);}
+    .chip-inactive{border-color:#3a1a1a;color:var(--red);  background:rgba(224,82,82,0.06);}
+    .chip-expired {border-color:#2a2a00;color:var(--orange);background:rgba(243,156,18,0.06);}
+    /* ACTION BTNS */
+    .action-wrap{display:flex;gap:7px;flex-wrap:wrap;}
+    .btn-action{background:transparent;border:1px solid #2a2a2a;color:#888;font-family:'Playfair Display',serif;font-size:9px;letter-spacing:1px;padding:6px 12px;cursor:pointer;transition:0.2s;white-space:nowrap;}
+    .btn-action:hover{border-color:var(--gold);color:var(--gold);}
+    .btn-toggle-on {border-color:#1a3a2a;color:var(--green);}
+    .btn-toggle-on:hover{background:rgba(76,175,130,0.1);}
+    .btn-toggle-off{border-color:#3a1a00;color:var(--orange);}
+    .btn-toggle-off:hover{background:rgba(243,156,18,0.1);}
+    .btn-del{border-color:#3a1a1a;color:var(--red);}
+    .btn-del:hover{background:rgba(224,82,82,0.1);}
+    /* PAGINATION */
+    .pagination-wrap{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px;}
+    .page-info{font-size:11px;color:var(--muted);}
+    .page-btns{display:flex;gap:6px;}
+    .page-btn{background:transparent;border:1px solid #2a2a2a;color:#666;font-family:'Playfair Display',serif;font-size:11px;padding:6px 12px;cursor:pointer;transition:0.2s;text-decoration:none;display:inline-block;}
+    .page-btn:hover{border-color:var(--gold);color:var(--gold);}
+    .page-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);}
+    .page-btn.disabled{opacity:0.3;pointer-events:none;}
+    /* EMPTY */
+    .empty-state{text-align:center;padding:60px 20px;color:var(--dim);}
+    .empty-state i{font-size:40px;color:#1a1a1a;margin-bottom:16px;display:block;}
+    /* MODAL */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:2000;align-items:center;justify-content:center;padding:20px;}
+    .modal-overlay.active{display:flex;}
+    .modal-box{background:#0a0a0a;border:1px solid #2a2a2a;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;animation:modalIn 0.25s ease;}
+    @keyframes modalIn{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .modal-head{padding:22px 28px;border-bottom:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center;}
+    .modal-title{font-size:12px;letter-spacing:3px;color:var(--gold);}
+    .modal-close{background:none;border:1px solid #2a2a2a;color:#666;width:28px;height:28px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:0.2s;}
+    .modal-close:hover{border-color:var(--gold);color:var(--gold);}
+    .modal-body{padding:24px 28px;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+    .form-row.full{grid-template-columns:1fr;}
+    .form-grp{display:flex;flex-direction:column;gap:7px;}
+    .form-grp label{font-size:9px;letter-spacing:2px;color:var(--gold);}
+    .form-grp input,.form-grp select,.form-grp textarea{background:#000;border:1px solid #222;color:#fff;font-family:'Playfair Display',serif;font-size:13px;padding:10px 12px;outline:none;transition:border-color 0.2s;appearance:none;}
+    .form-grp input:focus,.form-grp select:focus,.form-grp textarea:focus{border-color:var(--gold);}
+    .form-grp input::placeholder,.form-grp textarea::placeholder{color:#333;}
+    .form-grp select option{background:#111;}
+    .field-hint{font-size:10px;color:var(--dim);letter-spacing:1px;}
+    .field-err{font-size:10px;color:var(--red);letter-spacing:1px;display:none;}
+    .modal-footer{padding:16px 28px;border-top:1px solid #1a1a1a;display:flex;gap:10px;justify-content:flex-end;}
+    .btn-save{background:var(--gold);border:none;color:#000;font-family:'Playfair Display',serif;font-size:10px;letter-spacing:2px;font-weight:700;padding:11px 24px;cursor:pointer;transition:0.2s;}
+    .btn-save:hover{background:#b38f3d;}
+    .btn-cancel-modal{background:transparent;border:1px solid #2a2a2a;color:#666;font-family:'Playfair Display',serif;font-size:10px;letter-spacing:2px;padding:11px 20px;cursor:pointer;transition:0.2s;}
+    .btn-cancel-modal:hover{color:#fff;border-color:#555;}
+    /* CONFIRM */
+    .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:3000;align-items:center;justify-content:center;padding:20px;}
+    .confirm-overlay.active{display:flex;}
+    .confirm-box{background:#0a0a0a;border:1px solid #2a2a2a;padding:36px 32px;max-width:380px;width:100%;text-align:center;animation:modalIn 0.25s ease;}
+    .confirm-icon{font-size:32px;color:var(--red);margin-bottom:16px;}
+    .confirm-title{font-size:13px;letter-spacing:3px;color:var(--gold);margin-bottom:10px;}
+    .confirm-msg{font-size:12px;color:#888;letter-spacing:1px;line-height:1.7;margin-bottom:26px;}
+    .confirm-actions{display:flex;gap:12px;}
+    .confirm-yes{flex:1;padding:12px;background:var(--red);color:#fff;border:none;font-family:'Playfair Display',serif;font-size:10px;letter-spacing:2px;cursor:pointer;transition:0.2s;}
+    .confirm-yes:hover{background:#c0392b;}
+    .confirm-no{flex:1;padding:12px;background:transparent;border:1px solid #2a2a2a;color:#666;font-family:'Playfair Display',serif;font-size:10px;letter-spacing:2px;cursor:pointer;transition:0.2s;}
+    .confirm-no:hover{color:#fff;border-color:#555;}
+    /* TOAST */
+    .toast-msg{position:fixed;bottom:28px;right:24px;background:#0a0a0a;border:1px solid var(--gold);color:var(--gold);font-size:12px;letter-spacing:1px;padding:12px 20px;z-index:9999;display:none;}
+    .toast-msg.error{border-color:var(--red);color:var(--red);}
+    /* OVERLAY */
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99;}
+    .sidebar-overlay.active{display:block;}
+    @media(max-width:900px){.main{margin-left:0;}.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}.hamburger{display:flex;align-items:center;}.content{padding:16px;}.topbar{padding:16px;}.stat-row{grid-template-columns:1fr 1fr;}.form-row{grid-template-columns:1fr;}}
+    @media(max-width:500px){.stat-row{grid-template-columns:1fr;}.search-wrap input{width:180px;}}
+  </style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+        <span class="logo-text"><i class="fas fa-gem me-2" style="color:var(--gold)"></i>ROYALMIST</span>
+    </div>
+  <nav class="nav-menu">
+    <a class="nav-item" href="/admin/dashboard"><i class="fa-solid fa-border-all"></i><span>Dashboard</span></a>
+    <a class="nav-item" href="/admin/products"><i class="fa-solid fa-box-open"></i><span>Products</span></a>
+    <a class="nav-item" href="/admin/categories"><i class="fa-solid fa-tag"></i><span>Categories</span></a>
+    <a class="nav-item active" href="/admin/coupons"><i class="fa-solid fa-ticket"></i><span>Coupons</span></a>
+    <a class="nav-item" href="/admin/customers"><i class="fa-solid fa-users"></i><span>Customers</span></a>
+    <a class="nav-item" href="/admin/orders"><i class="fa-solid fa-bag-shopping"></i><span>Orders</span></a>
+    <a class="nav-item" href="/admin/inventory"><i class="fa-solid fa-warehouse"></i><span>Inventory</span></a>
+    <a class="nav-item" href="/admin/product-offer"><i class="fa-solid fa-percent"></i><span>Product Offer</span></a>
+    <a class="nav-item" href="/admin/category-offer"><i class="fa-solid fa-layer-group"></i><span>Category Offer</span></a>
+    <a class="nav-item" href="/admin/sales-report"><i class="fa-solid fa-chart-bar"></i><span>Sales Report</span></a>
+    <a class="nav-item" href="/admin/logout"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+  </nav>
+  <div class="sidebar-footer">ROYALMIST ADMIN v2.0</div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button>
+      <h1 class="topbar-title">Coupons</h1>
+    </div>
+    <button class="btn-add" onclick="openAddModal()">
+      <i class="fas fa-plus" style="font-size:10px;"></i>ADD COUPON
+    </button>
+  </div>
+
+  <div class="content">
+
+    <!-- STAT CARDS -->
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-ticket-alt"></i></div><div class="stat-label">Total Coupons</div><div class="stat-value"><%= stats.total %></div></div>
+      <div class="stat-card" style="border-color:#1a3a2a;"><div class="stat-icon" style="background:rgba(76,175,130,0.1);color:var(--green);"><i class="fas fa-check-circle"></i></div><div class="stat-label">Active</div><div class="stat-value" style="color:var(--green);"><%= stats.active %></div></div>
+      <div class="stat-card" style="border-color:#3a2a00;"><div class="stat-icon" style="background:rgba(243,156,18,0.1);color:var(--orange);"><i class="fas fa-clock"></i></div><div class="stat-label">Expired</div><div class="stat-value" style="color:var(--orange);"><%= stats.expired %></div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-label">Used</div><div class="stat-value"><%= stats.used %></div></div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="table-header">
+        <span class="table-title"><i class="fas fa-ticket-alt me-2"></i>COUPON LIST</span>
+        <form method="GET" action="/admin/coupons" id="searchForm">
+          <div class="search-wrap">
+            <input type="text" name="search" id="searchInput" value="<%= filters.search %>" placeholder="Search coupon code..."/>
+            <button type="button" class="search-clear <%= filters.search ? 'visible' : '' %>" id="clearBtn"><i class="fas fa-times"></i></button>
+          </div>
+        </form>
+      </div>
+
+      <% if(coupons.length === 0) { %>
+        <div class="empty-state">
+          <i class="fas fa-ticket-alt"></i>
+          <p style="font-size:13px;letter-spacing:2px;">NO COUPONS FOUND</p>
+          <% if(filters.search) { %><a href="/admin/coupons" style="color:var(--gold);font-size:11px;letter-spacing:2px;">CLEAR SEARCH</a><% } %>
+        </div>
+      <% } else { %>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>CODE</th>
+              <th>DISCOUNT</th>
+              <th>MIN ORDER</th>
+              <th>USAGE</th>
+              <th>EXPIRY</th>
+              <th>STATUS</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% coupons.forEach(coupon => { %>
+              <%
+                const now = new Date();
+                const isExpired = new Date(coupon.expiryDate) <= now;
+                const chipClass = isExpired ? 'chip-expired' : coupon.isActive ? 'chip-active' : 'chip-inactive';
+                const chipLabel = isExpired ? 'EXPIRED' : coupon.isActive ? 'ACTIVE' : 'INACTIVE';
+              %>
+              <tr>
+                <td>
+                  <div class="coupon-code"><%= coupon.code %></div>
+                  <% if(coupon.description) { %><div class="coupon-desc"><%= coupon.description %></div><% } %>
+                </td>
+                <td>
+                  <div class="disc-badge">
+                    <% if(coupon.discountType === 'percentage') { %>
+                      <%= coupon.discountValue %>% OFF
+                      <% if(coupon.maxDiscount) { %><div class="disc-sub">MAX ₹<%= coupon.maxDiscount %></div><% } %>
+                    <% } else { %>
+                      ₹<%= coupon.discountValue %> OFF
+                    <% } %>
+                  </div>
+                </td>
+                <td style="color:var(--muted);font-size:11px;">₹<%= coupon.minOrderAmount.toLocaleString('en-IN') %></td>
+                <td>
+                  <div style="font-size:12px;"><%= coupon.totalUsed %> used</div>
+                  <div style="font-size:10px;color:var(--dim);"><%= coupon.usageLimit ? coupon.usageLimit + ' limit' : 'Unlimited' %></div>
+                </td>
+                <td style="font-size:11px;color:var(--muted);white-space:nowrap;">
+                  <%= new Date(coupon.expiryDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) %>
+                </td>
+                <td><span class="status-chip <%= chipClass %>"><%= chipLabel %></span></td>
+                <td>
+                  <div class="action-wrap">
+                    <button class="btn-action" onclick="openEditModal('<%= coupon._id %>')">
+                      <i class="fas fa-pen"></i> EDIT
+                    </button>
+                    <% if(!isExpired) { %>
+                      <button class="btn-action <%= coupon.isActive ? 'btn-toggle-off' : 'btn-toggle-on' %>"
+                        onclick="toggleCoupon('<%= coupon._id %>', '<%= coupon.isActive %>')">
+                        <i class="fas fa-<%= coupon.isActive ? 'pause' : 'play' %>"></i>
+                        <%= coupon.isActive ? 'DEACTIVATE' : 'ACTIVATE' %>
+                      </button>
+                    <% } %>
+                    <button class="btn-action btn-del" onclick="confirmDelete('<%= coupon._id %>', '<%= coupon.code %>')">
+                      <i class="fas fa-trash"></i> DELETE
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <% if(totalPages > 1) { %>
+        <div class="pagination-wrap">
+          <span class="page-info">Page <%= currentPage %> of <%= totalPages %></span>
+          <div class="page-btns">
+            <a href="?<%= new URLSearchParams({...filters, page: currentPage-1}).toString() %>" class="page-btn <%= currentPage<=1?'disabled':'' %>"><i class="fas fa-chevron-left" style="font-size:9px;"></i></a>
+            <% for(let p=Math.max(1,currentPage-2);p<=Math.min(totalPages,currentPage+2);p++){ %>
+              <a href="?<%= new URLSearchParams({...filters,page:p}).toString() %>" class="page-btn <%= p===currentPage?'active':'' %>"><%= p %></a>
+            <% } %>
+            <a href="?<%= new URLSearchParams({...filters, page: currentPage+1}).toString() %>" class="page-btn <%= currentPage>=totalPages?'disabled':'' %>"><i class="fas fa-chevron-right" style="font-size:9px;"></i></a>
+          </div>
+        </div>
+      <% } %>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="couponModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="modalTitle">ADD COUPON</span>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editCouponId"/>
+      <div class="form-row">
+        <div class="form-grp">
+          <label>COUPON CODE *</label>
+          <input type="text" id="fCode" placeholder="e.g. SAVE20" maxlength="20" style="text-transform:uppercase;"/>
+          <span class="field-err" id="errCode">Code is required</span>
+        </div>
+        <div class="form-grp">
+          <label>DISCOUNT TYPE *</label>
+          <select id="fType" onchange="toggleMaxDiscount()">
+            <option value="percentage">Percentage (%)</option>
+            <option value="flat">Flat Amount (₹)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-grp">
+          <label>DISCOUNT VALUE *</label>
+          <input type="number" id="fValue" placeholder="e.g. 20" min="1"/>
+          <span class="field-err" id="errValue">Value is required</span>
+        </div>
+        <div class="form-grp" id="maxDiscountWrap">
+          <label>MAX DISCOUNT (₹) <span style="color:var(--dim);font-size:9px;">Optional</span></label>
+          <input type="number" id="fMaxDiscount" placeholder="e.g. 200" min="1"/>
+          <span class="field-hint">Only for percentage type</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-grp">
+          <label>MIN ORDER AMOUNT (₹)</label>
+          <input type="number" id="fMinOrder" placeholder="e.g. 999" min="0"/>
+        </div>
+        <div class="form-grp">
+          <label>EXPIRY DATE *</label>
+          <input type="date" id="fExpiry"/>
+          <span class="field-err" id="errExpiry">Expiry date is required</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-grp">
+          <label>TOTAL USAGE LIMIT <span style="color:var(--dim);font-size:9px;">Optional</span></label>
+          <input type="number" id="fUsageLimit" placeholder="Leave blank = unlimited" min="1"/>
+        </div>
+        <div class="form-grp">
+          <label>PER USER LIMIT</label>
+          <input type="number" id="fPerUser" placeholder="1" min="1" value="1"/>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-grp">
+          <label>DESCRIPTION <span style="color:var(--dim);font-size:9px;">Optional</span></label>
+          <input type="text" id="fDesc" placeholder="e.g. Welcome offer for new users" maxlength="100"/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel-modal" onclick="closeModal()">CANCEL</button>
+      <button class="btn-save" id="saveBtn" onclick="saveCoupon()">
+        <i class="fas fa-check me-1"></i>SAVE COUPON
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon"><i class="fas fa-triangle-exclamation"></i></div>
+    <div class="confirm-title">DELETE COUPON</div>
+    <p class="confirm-msg" id="confirmMsg"></p>
+    <div class="confirm-actions">
+      <button class="confirm-no" onclick="closeConfirm()">CANCEL</button>
+      <button class="confirm-yes" id="confirmYesBtn">DELETE</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-msg" id="toastMsg"></div>
+
+<script>
+  // Sidebar
+  const hamburger=document.getElementById('hamburger'),sidebar=document.getElementById('sidebar'),overlay=document.getElementById('sidebarOverlay');
+  hamburger?.addEventListener('click',()=>{sidebar.classList.toggle('open');overlay.classList.toggle('active');});
+  overlay?.addEventListener('click',()=>{sidebar.classList.remove('open');overlay.classList.remove('active');});
+
+  // Search
+  const searchInput=document.getElementById('searchInput'),clearBtn=document.getElementById('clearBtn');
+  let searchTimer;
+  searchInput?.addEventListener('input',function(){
+    clearBtn.classList.toggle('visible',this.value.length>0);
+    clearTimeout(searchTimer);
+    searchTimer=setTimeout(()=>document.getElementById('searchForm').submit(),500);
+  });
+  clearBtn?.addEventListener('click',()=>{searchInput.value='';clearBtn.classList.remove('visible');window.location.href='/admin/coupons';});
+
+  function showToast(msg,isError=false){const t=document.getElementById('toastMsg');t.textContent=msg;t.className='toast-msg'+(isError?' error':'');t.style.display='block';setTimeout(()=>t.style.display='none',3000);}
+
+  function toggleMaxDiscount(){
+    const type=document.getElementById('fType').value;
+    document.getElementById('maxDiscountWrap').style.opacity=type==='percentage'?'1':'0.4';
+    if(type==='flat') document.getElementById('fMaxDiscount').value='';
+  }
+
+  function openAddModal(){
+    document.getElementById('editCouponId').value='';
+    document.getElementById('modalTitle').textContent='ADD COUPON';
+    document.getElementById('fCode').value='';
+    document.getElementById('fType').value='percentage';
+    document.getElementById('fValue').value='';
+    document.getElementById('fMaxDiscount').value='';
+    document.getElementById('fMinOrder').value='';
+    document.getElementById('fExpiry').value='';
+    document.getElementById('fUsageLimit').value='';
+    document.getElementById('fPerUser').value='1';
+    document.getElementById('fDesc').value='';
+    ['errCode','errValue','errExpiry'].forEach(id=>document.getElementById(id).style.display='none');
+    toggleMaxDiscount();
+    document.getElementById('couponModal').classList.add('active');
+  }
+
+  async function openEditModal(id){
+    try{
+      const res=await fetch(`/admin/coupons/${id}`);
+      const data=await res.json();
+      if(!data.success){showToast('Failed to load coupon',true);return;}
+      const c=data.coupon;
+      document.getElementById('editCouponId').value=id;
+      document.getElementById('modalTitle').textContent='EDIT COUPON';
+      document.getElementById('fCode').value=c.code;
+      document.getElementById('fType').value=c.discountType;
+      document.getElementById('fValue').value=c.discountValue;
+      document.getElementById('fMaxDiscount').value=c.maxDiscount||'';
+      document.getElementById('fMinOrder').value=c.minOrderAmount||'';
+      document.getElementById('fExpiry').value=new Date(c.expiryDate).toISOString().split('T')[0];
+      document.getElementById('fUsageLimit').value=c.usageLimit||'';
+      document.getElementById('fPerUser').value=c.perUserLimit||1;
+      document.getElementById('fDesc').value=c.description||'';
+      ['errCode','errValue','errExpiry'].forEach(id=>document.getElementById(id).style.display='none');
+      toggleMaxDiscount();
+      document.getElementById('couponModal').classList.add('active');
+    }catch{showToast('Something went wrong',true);}
+  }
+
+  function closeModal(){document.getElementById('couponModal').classList.remove('active');}
+
+  async function saveCoupon(){
+    const code=document.getElementById('fCode').value.trim();
+    const type=document.getElementById('fType').value;
+    const value=document.getElementById('fValue').value.trim();
+    const expiry=document.getElementById('fExpiry').value;
+    let valid=true;
+    ['errCode','errValue','errExpiry'].forEach(id=>document.getElementById(id).style.display='none');
+    if(!code){document.getElementById('errCode').style.display='block';valid=false;}
+    if(!value){document.getElementById('errValue').style.display='block';valid=false;}
+    if(!expiry){document.getElementById('errExpiry').style.display='block';valid=false;}
+    if(!valid)return;
+
+    const editId=document.getElementById('editCouponId').value;
+    const url=editId?`/admin/coupons/edit/${editId}`:'/admin/coupons/add';
+    const payload={
+      code,discountType:type,discountValue:value,
+      maxDiscount:document.getElementById('fMaxDiscount').value,
+      minOrderAmount:document.getElementById('fMinOrder').value||0,
+      expiryDate:expiry,
+      usageLimit:document.getElementById('fUsageLimit').value,
+      perUserLimit:document.getElementById('fPerUser').value||1,
+      description:document.getElementById('fDesc').value,
+    };
+
+    const btn=document.getElementById('saveBtn');
+    btn.disabled=true;btn.textContent='SAVING...';
+    try{
+      const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const data=await res.json();
+      if(data.success){showToast(data.message);closeModal();setTimeout(()=>location.reload(),1200);}
+      else{showToast(data.message||'Failed',true);}
+    }catch{showToast('Something went wrong',true);}
+    finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-check me-1"></i>SAVE COUPON';}
+  }
+
+  async function toggleCoupon(id,isActive){
+    const action=isActive==='true'?'deactivate':'activate';
+    if(!confirm(`${action.toUpperCase()} this coupon?`))return;
+    try{
+      const res=await fetch(`/admin/coupons/toggle/${id}`,{method:'PATCH'});
+      const data=await res.json();
+      if(data.success){showToast(data.message);setTimeout(()=>location.reload(),1000);}
+      else showToast(data.message||'Failed',true);
+    }catch{showToast('Something went wrong',true);}
+  }
+
+  let pendingDeleteId=null;
+  function confirmDelete(id,code){
+    pendingDeleteId=id;
+    document.getElementById('confirmMsg').innerHTML=`Are you sure you want to delete coupon <strong style="color:var(--gold)">${code}</strong>? This cannot be undone.`;
+    document.getElementById('confirmOverlay').classList.add('active');
+  }
+  function closeConfirm(){pendingDeleteId=null;document.getElementById('confirmOverlay').classList.remove('active');}
+
+  document.getElementById('confirmYesBtn').addEventListener('click',async function(){
+    if(!pendingDeleteId)return;
+    this.textContent='DELETING...';this.disabled=true;
+    try{
+      const res=await fetch(`/admin/coupons/delete/${pendingDeleteId}`,{method:'DELETE'});
+      const data=await res.json();
+      closeConfirm();
+      if(data.success){showToast(data.message);setTimeout(()=>location.reload(),1200);}
+      else showToast(data.message||'Failed',true);
+    }catch{closeConfirm();showToast('Something went wrong',true);}
+    finally{this.textContent='DELETE';this.disabled=false;}
+  });
+
+  document.getElementById('confirmOverlay').addEventListener('click',function(e){if(e.target===this)closeConfirm();});
+  document.getElementById('couponModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+  document.getElementById('fCode').addEventListener('input',function(){this.value=this.value.toUpperCase();});
+</script>
+</body>
+</html>

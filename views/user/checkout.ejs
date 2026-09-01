@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout | Royal Mist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root { --gold: #c4a14d; --dark-bg: #000; --font-main: 'Playfair Display', serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--dark-bg); color: #fff; font-family: var(--font-main); overflow-x: hidden; }
+    .navbar { background: rgba(0,0,0,0.97); border-bottom: 1px solid #222; padding: 15px 0; position: sticky; top: 0; z-index: 1000; }
+    .navbar-brand { color: var(--gold) !important; letter-spacing: 4px; font-weight: 700; }
+    .nav-link { color: #fff !important; font-size: 12px; letter-spacing: 2px; }
+    .user-dropdown { position: relative; z-index: 2000; }
+    .dropdown-menu-custom { position: absolute; top: 100%; right: 0; background: #0a0a0a; border: 1px solid #222; min-width: 160px; z-index: 3000; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .dropdown-menu-custom.show { display: block; }
+    .dropdown-item-custom { color: #fff; background: none; border: none; text-decoration: none; display: block; padding: 10px 15px; width: 100%; text-align: left; font-family: var(--font-main); font-size: 13px; cursor: pointer; }
+    .dropdown-item-custom:hover { color: var(--gold); background: #111; }
+    .breadcrumb-wrap { background: #080808; border-bottom: 1px solid #111; padding: 12px 0; }
+    .bc-item { font-size: 11px; letter-spacing: 2px; color: #555; text-decoration: none; }
+    .bc-item:hover { color: var(--gold); }
+    .bc-item.active { color: #888; }
+    .bc-sep { color: #333; margin: 0 8px; font-size: 9px; }
+    .steps-bar { background: #050505; border-bottom: 1px solid #111; padding: 20px 0; }
+    .step { display: flex; align-items: center; gap: 10px; }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #444; flex-shrink: 0; }
+    .step-num.active { border-color: var(--gold); color: var(--gold); background: rgba(196,161,77,0.08); }
+    .step-num.done { border-color: #2a2a2a; background: #111; color: #555; }
+    .step-label { font-size: 10px; letter-spacing: 2px; color: #444; }
+    .step-label.active { color: var(--gold); }
+    .step-divider { flex: 1; height: 1px; background: #1a1a1a; margin: 0 12px; }
+    .page-header { background: linear-gradient(180deg,#080808 0%,#000 100%); border-bottom: 1px solid #111; padding: 30px 0 20px; }
+    .gold-line { width: 40px; height: 2px; background: var(--gold); margin-bottom: 10px; }
+    .section-label { font-size: 10px; letter-spacing: 3px; color: var(--gold); margin-bottom: 18px; text-transform: uppercase; }
+    .address-card { background: #080808; border: 1px solid #1a1a1a; padding: 18px; margin-bottom: 12px; cursor: pointer; transition: border-color 0.2s; position: relative; }
+    .address-card:hover { border-color: #333; }
+    .address-card.selected { border-color: var(--gold); background: rgba(196,161,77,0.04); }
+    .address-card input[type="radio"] { display: none; }
+    .addr-type-badge { display: inline-block; border: 1px solid #2a2a2a; color: #555; font-size: 9px; letter-spacing: 2px; padding: 2px 8px; margin-bottom: 8px; text-transform: uppercase; }
+    .address-card.selected .addr-type-badge { border-color: var(--gold); color: var(--gold); }
+    .addr-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .addr-line { font-size: 12px; color: #666; line-height: 1.6; }
+    .addr-check { position: absolute; top: 18px; right: 18px; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 9px; color: transparent; transition: all 0.2s; }
+    .address-card.selected .addr-check { border-color: var(--gold); background: var(--gold); color: #000; }
+    .btn-add-address { width: 100%; background: transparent; border: 1px dashed #2a2a2a; color: #555; font-family: var(--font-main); font-size: 11px; letter-spacing: 2px; padding: 14px; cursor: pointer; transition: all 0.2s; text-align: center; margin-bottom: 24px; }
+    .btn-add-address:hover { border-color: var(--gold); color: var(--gold); }
+    .add-address-form { background: #060606; border: 1px solid #1a1a1a; padding: 24px; margin-bottom: 24px; display: none; }
+    .add-address-form.show { display: block; }
+    .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
+    .form-row .form-grp { flex: 1; min-width: 0; }
+    .form-grp label { font-size: 10px; letter-spacing: 2px; color: var(--gold); display: block; margin-bottom: 7px; }
+    .form-grp input, .form-grp select { width: 100%; padding: 11px 13px; background: #000; border: 1px solid #222; color: #fff; font-family: var(--font-main); font-size: 13px; outline: none; transition: border-color 0.2s; appearance: none; -webkit-appearance: none; }
+    .form-grp input::placeholder { color: #333; }
+    .form-grp input:focus, .form-grp select:focus { border-color: var(--gold); }
+    .form-grp select option { background: #111; color: #fff; }
+    .select-wrap { position: relative; }
+    .select-wrap::after { content: '›'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%) rotate(90deg); color: var(--gold); font-size: 15px; pointer-events: none; }
+    .field-error { font-size: 10px; color: #c0392b; margin-top: 4px; display: none; letter-spacing: 1px; }
+    input:-webkit-autofill, input:-webkit-autofill:focus { -webkit-box-shadow: 0 0 0 1000px #000 inset !important; -webkit-text-fill-color: #fff !important; }
+    .btn-save-addr { background: var(--gold); color: #000; border: none; font-family: var(--font-main); font-size: 11px; letter-spacing: 2px; font-weight: 700; padding: 12px 28px; cursor: pointer; transition: 0.2s; }
+    .btn-save-addr:hover { background: #b38f3d; }
+    .btn-cancel-addr { background: transparent; border: 1px solid #2a2a2a; color: #666; font-family: var(--font-main); font-size: 11px; letter-spacing: 2px; padding: 12px 24px; cursor: pointer; transition: 0.2s; margin-left: 10px; }
+    .btn-cancel-addr:hover { border-color: #555; color: #888; }
+    .payment-option { background: #080808; border: 1px solid #1a1a1a; padding: 16px 18px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.2s; display: flex; align-items: center; gap: 14px; }
+    .payment-option:hover { border-color: #333; }
+    .payment-option.selected { border-color: var(--gold); background: rgba(196,161,77,0.04); }
+    .payment-option input[type="radio"] { display: none; }
+    .pay-icon { width: 36px; height: 36px; border: 1px solid #2a2a2a; display: flex; align-items: center; justify-content: center; color: #555; font-size: 14px; flex-shrink: 0; }
+    .payment-option.selected .pay-icon { border-color: var(--gold); color: var(--gold); }
+    .pay-label { font-size: 13px; font-weight: 500; }
+    .pay-sub { font-size: 11px; color: #555; letter-spacing: 1px; margin-top: 2px; }
+    .pay-check { margin-left: auto; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 8px; color: transparent; transition: all 0.2s; flex-shrink: 0; }
+    .payment-option.selected .pay-check { border-color: var(--gold); background: var(--gold); color: #000; }
+    .wallet-info { background: #060606; border: 1px solid #1a1a1a; border-top: none; padding: 12px 16px; margin-top: -10px; margin-bottom: 10px; display: none; }
+    .wallet-info.show { display: block; }
+    .wallet-balance-text { font-size: 12px; color: #888; letter-spacing: 1px; }
+    .wallet-balance-amount { color: var(--gold); font-weight: 600; }
+    .wallet-insufficient { font-size: 11px; color: #c0392b; letter-spacing: 1px; margin-top: 6px; display: none; }
+    .summary-box { background: #080808; border: 1px solid #1a1a1a; padding: 25px; position: sticky; top: 90px; }
+    .summary-title { font-size: 11px; letter-spacing: 3px; color: var(--gold); margin-bottom: 18px; }
+    .order-item { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid #0f0f0f; }
+    .order-item:last-of-type { border-bottom: none; }
+    .order-item-img { width: 52px; height: 58px; object-fit: cover; border: 1px solid #1a1a1a; flex-shrink: 0; }
+    .order-item-name { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+    .order-item-meta { font-size: 10px; color: #555; letter-spacing: 1px; }
+    .order-item-price { font-size: 13px; color: var(--gold); font-weight: 600; margin-left: auto; flex-shrink: 0; }
+    .summary-divider { border: none; border-top: 1px solid #111; margin: 16px 0; }
+    .summary-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 12px; }
+    .summary-label { color: #555; letter-spacing: 1px; font-size: 11px; }
+    .summary-value { color: #fff; font-weight: 500; }
+    .fee-info { font-size: 9px; color: #333; letter-spacing: 1px; margin-top: 2px; }
+    .summary-total { display: flex; justify-content: space-between; align-items: center; padding: 16px 0 20px; border-top: 1px solid #2a2a2a; margin-top: 4px; }
+    .total-label { font-size: 12px; letter-spacing: 2px; color: #888; }
+    .total-amount { font-size: 22px; font-weight: 700; color: var(--gold); }
+    .btn-place-order { width: 100%; background: var(--gold); border: none; color: #000; font-family: var(--font-main); font-size: 12px; letter-spacing: 3px; font-weight: 700; padding: 16px; cursor: pointer; transition: all 0.3s; }
+    .btn-place-order:hover { background: #b38f3d; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(196,161,77,0.25); }
+    .btn-place-order:disabled { background: #222; color: #555; cursor: not-allowed; transform: none; box-shadow: none; }
+    .no-addr { text-align: center; padding: 30px 20px; border: 1px dashed #1a1a1a; margin-bottom: 16px; }
+    .no-addr i { font-size: 28px; color: #1a1a1a; margin-bottom: 12px; display: block; }
+    .no-addr p { font-size: 12px; color: #444; letter-spacing: 1px; }
+    .toast-msg { position: fixed; top: 30px; right: 30px; background: #0a0a0a; border: 1px solid var(--gold); color: var(--gold); font-size: 12px; letter-spacing: 1px; padding: 12px 20px; z-index: 9999; display: none; animation: slideUp 0.3s ease; }
+    .toast-msg.error { border-color: #c0392b; color: #c0392b; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @media (max-width: 768px) { .form-row { flex-direction: column; gap: 14px; } }
+
+    /* ── Order Confirm Modal ───────────────────────────────────── */
+    .confirm-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9998; opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .confirm-overlay.show { opacity: 1; pointer-events: all; }
+    .confirm-box {
+      background: #080808; border: 1px solid #2a2a2a;
+      padding: 36px 32px; max-width: 390px; width: 90%;
+      text-align: center;
+      animation: confirmSlide 0.3s ease;
+    }
+    @keyframes confirmSlide {
+      from { transform: translateY(28px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .confirm-icon {
+      width: 56px; height: 56px; border: 1px solid var(--gold);
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; margin: 0 auto 18px;
+      color: var(--gold); font-size: 20px;
+    }
+    .confirm-title {
+      font-size: 14px; letter-spacing: 3px; color: #fff;
+      font-weight: 600; margin-bottom: 8px;
+    }
+    .confirm-sub {
+      font-size: 11px; color: #555; letter-spacing: 1px;
+      line-height: 1.7; margin-bottom: 6px;
+    }
+    .confirm-amount {
+      font-size: 26px; color: var(--gold); font-weight: 700;
+      margin: 16px 0 10px;
+    }
+    .confirm-amount span {
+      font-size: 10px; color: #444; letter-spacing: 2px;
+      display: block; margin-bottom: 6px; font-weight: 400;
+    }
+    .confirm-payment-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      border: 1px solid #1a1a1a; color: #555; font-size: 9px;
+      letter-spacing: 2px; padding: 5px 12px; margin: 10px 0 22px;
+    }
+    .confirm-payment-badge i { color: var(--gold); }
+    .confirm-note {
+      font-size: 10px; color: #2e2e2e; letter-spacing: 1px;
+      margin-bottom: 22px; line-height: 1.6;
+    }
+    .confirm-actions { display: flex; gap: 10px; }
+    .btn-confirm-yes {
+      flex: 1; background: var(--gold); border: none; color: #000;
+      font-family: var(--font-main); font-size: 11px; letter-spacing: 2px;
+      font-weight: 700; padding: 14px; cursor: pointer; transition: 0.2s;
+    }
+    .btn-confirm-yes:hover { background: #b38f3d; }
+    .btn-confirm-no {
+      flex: 1; background: transparent; border: 1px solid #2a2a2a;
+      color: #666; font-family: var(--font-main); font-size: 11px;
+      letter-spacing: 2px; padding: 14px; cursor: pointer; transition: 0.2s;
+    }
+    .btn-confirm-no:hover { border-color: #555; color: #aaa; }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="/home"><i class="fas fa-gem me-2" style="color:var(--gold)"></i>ROYALMIST</a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"><i class="fas fa-bars text-white"></i></button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link" href="/home">HOME</a></li>
+        <li class="nav-item"><a class="nav-link" href="/shop">SHOP</a></li>
+      </ul>
+      <div class="d-flex gap-3 align-items-center">
+        <a href="/wishlist"><i class="fa-regular fa-heart" style="cursor:pointer;color:#fff"></i></a>
+        <a href="/cart" style="position:relative;">
+          <i class="fa-solid fa-bag-shopping" style="color:#fff;font-size:16px;"></i>
+          <% if(cartCount > 0) { %>
+            <span style="position:absolute;top:-8px;right:-8px;background:var(--gold);color:#000;font-size:9px;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;"><%= cartCount %></span>
+          <% } %>
+        </a>
+        <div class="user-dropdown">
+          <% if(user) { %>
+            <span id="userIcon" style="cursor:pointer;color:#fff;font-size:13px;letter-spacing:1px;"><%= user.firstName %> <i class="fa fa-caret-down"></i></span>
+            <div id="dropdownMenu" class="dropdown-menu-custom">
+              <a href="/account" class="dropdown-item-custom">Account</a>
+              <button id="logoutBtn" class="dropdown-item-custom">Logout</button>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb-wrap">
+  <div class="container d-flex align-items-center">
+    <a href="/home" class="bc-item">HOME</a><span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:8px;"></i></span>
+    <a href="/cart" class="bc-item">CART</a><span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:8px;"></i></span>
+    <span class="bc-item active">CHECKOUT</span>
+  </div>
+</div>
+
+<!-- STEPS -->
+<div class="steps-bar">
+  <div class="container">
+    <div class="d-flex align-items-center">
+      <div class="step"><div class="step-num done"><i class="fas fa-check" style="font-size:9px;"></i></div><span class="step-label">CART</span></div>
+      <div class="step-divider"></div>
+      <div class="step"><div class="step-num active">2</div><span class="step-label active">CHECKOUT</span></div>
+      <div class="step-divider"></div>
+      <div class="step"><div class="step-num">3</div><span class="step-label">CONFIRMATION</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="container"><div class="gold-line"></div><h1 style="font-size:1.6rem;letter-spacing:4px;font-weight:600;">CHECKOUT</h1></div>
+</div>
+
+<!-- MAIN -->
+<div class="container py-5">
+  <div class="row g-4">
+
+    <!-- LEFT -->
+    <div class="col-lg-7">
+
+      <!-- Address -->
+      <div class="mb-4">
+        <div class="section-label"><i class="fas fa-map-marker-alt me-2"></i>DELIVERY ADDRESS</div>
+        <% if(addresses.length === 0) { %>
+          <div class="no-addr"><i class="fas fa-map-marked-alt"></i><p>NO SAVED ADDRESSES</p></div>
+        <% } else { %>
+          <% addresses.forEach((addr, i) => { %>
+            <label class="address-card <%= i === 0 ? 'selected' : '' %>" id="addr-card-<%= i %>" onclick="selectAddress(<%= i %>)">
+              <input type="radio" name="addressIndex" value="<%= i %>" <%= i === 0 ? 'checked' : '' %>>
+              <div class="addr-type-badge"><%= addr.addressType || 'HOME' %></div>
+              <div class="addr-name"><%= addr.fullName %></div>
+              <div class="addr-line"><%= addr.addressLine1 %><% if(addr.addressLine2) { %>, <%= addr.addressLine2 %><% } %><br/><%= addr.city %>, <%= addr.state %> — <%= addr.zipCode %></div>
+              <div class="addr-check"><i class="fas fa-check"></i></div>
+            </label>
+          <% }) %>
+        <% } %>
+
+        <button class="btn-add-address" id="toggleAddressFormBtn" onclick="toggleAddressForm()"><i class="fas fa-plus me-2"></i>ADD NEW ADDRESS</button>
+
+        <div class="add-address-form" id="addAddressForm">
+          <div class="section-label mb-3"><i class="fas fa-edit me-2"></i>NEW ADDRESS</div>
+          <div class="form-row">
+            <div class="form-grp"><label>Full Name</label><input id="nFullName" type="text" placeholder="Enter full name"/><div class="field-error" id="errNFullName">Full name is required</div></div>
+            <div class="form-grp"><label>Address Type</label><div class="select-wrap"><select id="nAddrType"><option value="home">Home</option><option value="work">Work</option><option value="other">Other</option></select></div></div>
+          </div>
+          <div class="form-row"><div class="form-grp" style="flex:2;"><label>Address Line 1</label><input id="nAddr1" type="text" placeholder="Street address"/><div class="field-error" id="errNAddr1">Required</div></div></div>
+          <div class="form-row"><div class="form-grp" style="flex:2;"><label>Address Line 2 <span style="color:#333;font-size:9px;">(Optional)</span></label><input id="nAddr2" type="text" placeholder="Apartment, suite, etc."/></div></div>
+          <div class="form-row">
+            <div class="form-grp"><label>City</label><input id="nCity" type="text" placeholder="City"/><div class="field-error" id="errNCity">Required</div></div>
+            <div class="form-grp"><label>State</label><input id="nState" type="text" placeholder="State"/><div class="field-error" id="errNState">Required</div></div>
+          </div>
+          <div class="form-row">
+            <div class="form-grp"><label>Country</label><div class="select-wrap"><select id="nCountry"><option value="IN">India</option><option value="US">United States</option><option value="GB">United Kingdom</option><option value="AE">UAE</option><option value="SG">Singapore</option></select></div></div>
+            <div class="form-grp"><label>ZIP / PIN</label><input id="nZip" type="text" placeholder="Zip code" maxlength="10"/><div class="field-error" id="errNZip">Valid ZIP required</div></div>
+          </div>
+          <div class="d-flex align-items-center mt-2">
+            <button type="button" class="btn-save-addr" id="saveAddrBtn" onclick="saveNewAddress()">SAVE & SELECT</button>
+            <button type="button" class="btn-cancel-addr" onclick="toggleAddressForm()">CANCEL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="mb-4">
+        <div class="section-label"><i class="fas fa-credit-card me-2"></i>PAYMENT METHOD</div>
+
+        <div class="payment-option selected" id="pay-cod" onclick="selectPayment('COD')">
+          <input type="radio" name="paymentMethod" value="COD" checked/>
+          <div class="pay-icon"><i class="fas fa-money-bill-wave"></i></div>
+          <div><div class="pay-label">Cash on Delivery</div><div class="pay-sub">PAY WHEN YOUR ORDER ARRIVES</div></div>
+          <div class="pay-check"><i class="fas fa-check"></i></div>
+        </div>
+
+        <div class="payment-option" id="pay-razorpay" onclick="selectPayment('Razorpay')">
+          <input type="radio" name="paymentMethod" value="Razorpay"/>
+          <div class="pay-icon"><i class="fas fa-bolt"></i></div>
+          <div><div class="pay-label">Online Payment</div><div class="pay-sub">UPI · CARD · NET BANKING · WALLET</div></div>
+          <div class="pay-check"><i class="fas fa-check"></i></div>
+        </div>
+
+        <div class="payment-option" id="pay-wallet" onclick="selectPayment('Wallet')">
+          <input type="radio" name="paymentMethod" value="Wallet"/>
+          <div class="pay-icon"><i class="fas fa-wallet"></i></div>
+          <div>
+            <div class="pay-label">Royal Mist Wallet</div>
+            <div class="pay-sub">BALANCE: ₹<%= walletBalance ? walletBalance.toLocaleString('en-IN') : '0' %></div>
+          </div>
+          <div class="pay-check"><i class="fas fa-check"></i></div>
+        </div>
+
+        <div class="wallet-info" id="walletInfo">
+          <div class="wallet-balance-text">Available: <span class="wallet-balance-amount">₹<%= walletBalance ? walletBalance.toLocaleString('en-IN') : '0' %></span></div>
+          <div class="wallet-insufficient" id="walletInsufficient"><i class="fas fa-exclamation-triangle me-1"></i>Insufficient wallet balance for this order</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Summary -->
+    <div class="col-lg-5">
+      <div class="summary-box">
+        <div class="summary-title"><i class="fas fa-receipt me-2"></i>ORDER SUMMARY</div>
+
+        <% cartItems.forEach(item => { %>
+          <div class="order-item">
+            <img src="<%= item.product.images && item.product.images[0] ? item.product.images[0] : '/images/placeholder.jpg' %>" class="order-item-img" alt="<%= item.product.name %>"/>
+            <div class="flex-grow-1">
+              <div class="order-item-name"><%= item.product.name %></div>
+              <div class="order-item-meta"><%= item.size %> · QTY <%= item.quantity %></div>
+            </div>
+            <div class="order-item-price">₹<%= (item.price * item.quantity).toLocaleString('en-IN') %></div>
+          </div>
+        <% }) %>
+
+        <hr class="summary-divider"/>
+
+        <div class="summary-row"><span class="summary-label">SUBTOTAL</span><span class="summary-value">₹<%= totalAmount.toLocaleString('en-IN') %></span></div>
+        <div class="summary-row">
+          <span class="summary-label">SERVICE FEE<div class="fee-info">2% OF SUBTOTAL (MAX ₹99)</div></span>
+          <span class="summary-value">₹<%= serviceFee.toLocaleString('en-IN') %></span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">DELIVERY</span>
+          <span class="summary-value" style="color:<%= deliveryCharge === 0 ? '#5cb85c' : '#fff' %>"><%= deliveryCharge === 0 ? 'FREE' : '₹' + deliveryCharge %></span>
+        </div>
+        <% if(discount > 0) { %>
+          <div class="summary-row">
+            <span class="summary-label">DISCOUNT <% if(couponCode) { %><span style="color:var(--gold);font-size:9px;letter-spacing:1px;">(<%= couponCode %>)</span><% } %></span>
+            <span class="summary-value" style="color:#5cb85c;">-₹<%= discount.toLocaleString('en-IN') %></span>
+          </div>
+        <% } %>
+
+        <div class="summary-total">
+          <div><div class="total-label">GRAND TOTAL</div><div style="font-size:10px;color:#444;letter-spacing:1px;">Inc. all taxes</div></div>
+          <div class="total-amount">₹<%= grandTotal.toLocaleString('en-IN') %></div>
+        </div>
+
+        <button class="btn-place-order" id="placeOrderBtn" onclick="placeOrder()">
+          <i class="fas fa-lock me-2"></i>PLACE ORDER
+        </button>
+
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid #111;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;"><i class="fas fa-shield-alt" style="color:var(--gold);font-size:11px;"></i><span style="font-size:10px;color:#555;letter-spacing:1px;">SECURE CHECKOUT</span></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;"><i class="fas fa-undo" style="color:var(--gold);font-size:11px;"></i><span style="font-size:10px;color:#555;letter-spacing:1px;">7-DAY EASY RETURNS</span></div>
+          <div style="display:flex;align-items:center;gap:8px;"><i class="fas fa-shipping-fast" style="color:var(--gold);font-size:11px;"></i><span style="font-size:10px;color:#555;letter-spacing:1px;">FREE DELIVERY ABOVE ₹1999</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer style="border-top:1px solid #222;padding:30px 0 20px;margin-top:40px;">
+  <div class="container" style="text-align:center;"><p class="text-secondary mb-0" style="font-size:11px;letter-spacing:1px;">© 2026 ROYAL MIST FRAGRANCES. ALL RIGHTS RESERVED.</p></div>
+</footer>
+
+<!-- ── CONFIRM ORDER MODAL ─────────────────────────────────────── -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon"><i class="fas fa-bag-shopping"></i></div>
+    <div class="confirm-title">CONFIRM YOUR ORDER</div>
+    <div class="confirm-sub">Are you sure you want to place this order?</div>
+    <div class="confirm-amount">
+      <span>TOTAL PAYABLE</span>
+      ₹<%= grandTotal.toLocaleString('en-IN') %>
+    </div>
+    <div class="confirm-payment-badge" id="confirmPaymentBadge">
+      <i class="fas fa-money-bill-wave"></i>
+      <span id="confirmPaymentLabel">CASH ON DELIVERY</span>
+    </div>
+    <div class="confirm-note">Items cannot be modified after placing the order</div>
+    <div class="confirm-actions">
+      <button class="btn-confirm-no" onclick="closeConfirm()">CANCEL</button>
+      <button class="btn-confirm-yes" onclick="confirmPlaceOrder()">YES, PLACE ORDER</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- TOAST -->
+<div class="toast-msg" id="toastMsg"></div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  let selectedAddressIndex = <%= addresses.length > 0 ? 0 : -1 %>;
+  let selectedPayment      = "COD";
+  const grandTotal         = <%= grandTotal %>;
+  const walletBalance      = <%= walletBalance || 0 %>;
+  const couponCode         = "<%= couponCode || '' %>";
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById("toastMsg");
+    t.textContent = msg;
+    t.className = "toast-msg" + (isError ? " error" : "");
+    t.style.display = "block";
+    setTimeout(() => t.style.display = "none", 3000);
+  }
+
+  // Navbar dropdown
+  const userIcon = document.getElementById("userIcon");
+  const dropdownMenu = document.getElementById("dropdownMenu");
+  if (userIcon && dropdownMenu) {
+    userIcon.addEventListener("click", e => { e.stopPropagation(); dropdownMenu.classList.toggle("show"); });
+    window.addEventListener("click", () => dropdownMenu.classList.remove("show"));
+  }
+  document.getElementById("logoutBtn")?.addEventListener("click", async () => {
+    await fetch("/logout", { method: "POST" });
+    window.location.href = "/signin";
+  });
+
+  // Close confirm modal on backdrop click
+  document.getElementById("confirmOverlay").addEventListener("click", function(e) {
+    if (e.target === this) closeConfirm();
+  });
+
+  function selectAddress(index) {
+    document.querySelectorAll(".address-card").forEach(c => c.classList.remove("selected"));
+    const card = document.getElementById("addr-card-" + index);
+    if (card) { card.classList.add("selected"); card.querySelector("input[type=radio]").checked = true; }
+    selectedAddressIndex = index;
+  }
+
+  function selectPayment(method) {
+    document.querySelectorAll(".payment-option").forEach(p => p.classList.remove("selected"));
+    document.getElementById("pay-" + method.toLowerCase()).classList.add("selected");
+    selectedPayment = method;
+    const walletInfo = document.getElementById("walletInfo");
+    const walletInsufficient = document.getElementById("walletInsufficient");
+    const btn = document.getElementById("placeOrderBtn");
+    if (method === "Wallet") {
+      walletInfo.classList.add("show");
+      if (walletBalance < grandTotal) {
+        walletInsufficient.style.display = "block";
+        btn.disabled = true;
+      } else {
+        walletInsufficient.style.display = "none";
+        btn.disabled = false;
+      }
+    } else {
+      walletInfo.classList.remove("show");
+      btn.disabled = false;
+    }
+  }
+
+  function toggleAddressForm() {
+    const form = document.getElementById("addAddressForm");
+    form.classList.toggle("show");
+    const btn = document.getElementById("toggleAddressFormBtn");
+    btn.innerHTML = form.classList.contains("show")
+      ? '<i class="fas fa-times me-2"></i>CANCEL'
+      : '<i class="fas fa-plus me-2"></i>ADD NEW ADDRESS';
+    if (!form.classList.contains("show")) clearAddressForm();
+  }
+
+  function clearAddressForm() {
+    ["nFullName","nAddr1","nAddr2","nCity","nState","nZip"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+    ["errNFullName","errNAddr1","errNCity","errNState","errNZip"].forEach(id =>
+      document.getElementById(id).style.display = "none"
+    );
+  }
+
+  async function saveNewAddress() {
+    const fullName = document.getElementById("nFullName").value.trim();
+    const addr1    = document.getElementById("nAddr1").value.trim();
+    const addr2    = document.getElementById("nAddr2").value.trim();
+    const city     = document.getElementById("nCity").value.trim();
+    const state    = document.getElementById("nState").value.trim();
+    const zip      = document.getElementById("nZip").value.trim();
+    const country  = document.getElementById("nCountry").value;
+    const addrType = document.getElementById("nAddrType").value;
+    let valid = true;
+    const setErr = (id, show) => document.getElementById(id).style.display = show ? "block" : "none";
+    ["errNFullName","errNAddr1","errNCity","errNState","errNZip"].forEach(id => setErr(id, false));
+    if (!fullName) { setErr("errNFullName", true); valid = false; }
+    if (!addr1)    { setErr("errNAddr1", true); valid = false; }
+    if (!city)     { setErr("errNCity", true); valid = false; }
+    if (!state)    { setErr("errNState", true); valid = false; }
+    if (!zip || !/^[a-zA-Z0-9\s\-]{3,10}$/.test(zip)) { setErr("errNZip", true); valid = false; }
+    if (!valid) return;
+    const btn = document.getElementById("saveAddrBtn");
+    btn.disabled = true; btn.textContent = "SAVING...";
+    try {
+      const res  = await fetch("/addAddress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fullName, addressLine1: addr1, addressLine2: addr2, city, state, country, zipCode: zip, addressType: addrType })
+      });
+      const data = await res.json();
+      if (!data.success) { showToast(data.message || "Failed to save", true); return; }
+      showToast("Address saved");
+      const newIndex = data.addressIndex;
+      document.querySelectorAll(".address-card").forEach(c => c.classList.remove("selected"));
+      const typeLabel = { home:"HOME", work:"WORK", other:"OTHER" };
+      const newCard = document.createElement("label");
+      newCard.className = "address-card selected";
+      newCard.id = "addr-card-" + newIndex;
+      newCard.setAttribute("onclick", `selectAddress(${newIndex})`);
+      newCard.innerHTML = `<input type="radio" name="addressIndex" value="${newIndex}" checked/>
+        <div class="addr-type-badge">${typeLabel[addrType]||"OTHER"}</div>
+        <div class="addr-name">${fullName}</div>
+        <div class="addr-line">${addr1}${addr2?", "+addr2:""}<br/>${city}, ${state} — ${zip}</div>
+        <div class="addr-check"><i class="fas fa-check"></i></div>`;
+      document.getElementById("toggleAddressFormBtn").before(newCard);
+      selectedAddressIndex = newIndex;
+      document.getElementById("addAddressForm").classList.remove("show");
+      document.getElementById("toggleAddressFormBtn").innerHTML = '<i class="fas fa-plus me-2"></i>ADD NEW ADDRESS';
+      clearAddressForm();
+    } catch {
+      showToast("Something went wrong", true);
+    } finally {
+      btn.disabled = false; btn.textContent = "SAVE & SELECT";
+    }
+  }
+
+  // ── Payment label map for confirm modal ─────────────────────────
+  const paymentLabels = {
+    COD:      { icon: "fa-money-bill-wave", label: "CASH ON DELIVERY"  },
+    Razorpay: { icon: "fa-bolt",            label: "ONLINE PAYMENT"    },
+    Wallet:   { icon: "fa-wallet",          label: "ROYAL MIST WALLET" },
+  };
+
+  // ── PLACE ORDER — opens confirm modal ───────────────────────────
+  function placeOrder() {
+    if (selectedAddressIndex < 0) {
+      showToast("Please select a delivery address", true);
+      return;
+    }
+    if (selectedPayment === "Wallet" && walletBalance < grandTotal) {
+      showToast("Insufficient wallet balance", true);
+      return;
+    }
+
+    // Update modal badge with selected payment
+    const pm = paymentLabels[selectedPayment] || paymentLabels.COD;
+    document.getElementById("confirmPaymentLabel").textContent = pm.label;
+    document.getElementById("confirmPaymentBadge").querySelector("i").className = "fas " + pm.icon;
+
+    // Show confirm modal
+    document.getElementById("confirmOverlay").classList.add("show");
+  }
+
+  function closeConfirm() {
+    document.getElementById("confirmOverlay").classList.remove("show");
+  }
+
+  async function confirmPlaceOrder() {
+    closeConfirm();
+    if (selectedPayment === "Razorpay") {
+      await initiateRazorpay();
+    } else {
+      await submitOrder();
+    }
+  }
+
+  // ── Submit order (COD / Wallet) ──────────────────────────────────
+  async function submitOrder(razorpayData = null) {
+    const btn = document.getElementById("placeOrderBtn");
+    btn.disabled = true; btn.textContent = "PLACING ORDER...";
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+
+    try {
+      const res = await fetch("/checkout/place-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          addressIndex: selectedAddressIndex,
+          paymentMethod: selectedPayment,
+          couponCode: couponCode || null,
+          razorpayData
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+      const data = await res.json();
+      if (!data.success) {
+        showToast(data.message, true);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-lock me-2"></i>PLACE ORDER';
+        return;
+      }
+      window.location.href = "/order-success?orderId=" + data.orderId;
+    } catch (err) {
+      clearTimeout(timeout);
+      showToast(err.name === "AbortError" ? "Request timed out. Please try again." : "Something went wrong. Please try again.", true);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-lock me-2"></i>PLACE ORDER';
+    }
+  }
+
+  // ── Razorpay ─────────────────────────────────────────────────────
+  async function initiateRazorpay() {
+    const btn = document.getElementById("placeOrderBtn");
+    btn.disabled = true; btn.textContent = "OPENING PAYMENT...";
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    try {
+      const res = await fetch(`/checkout/razorpay-order${couponCode ? '?coupon=' + couponCode : ''}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+      const data = await res.json();
+      if (!data.success) {
+        showToast(data.message || "Payment init failed", true);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-lock me-2"></i>PLACE ORDER';
+        return;
+      }
+      const options = {
+        key:         data.key,
+        amount:      data.amount,
+        currency:    "INR",
+        name:        "Royal Mist",
+        description: "Luxury Fragrance Order",
+        order_id:    data.razorpayOrderId,
+        theme:       { color: "#c4a14d" },
+        method:      { upi: true, card: true, netbanking: true, wallet: true, emi: false },
+        handler: async function(response) {
+          btn.disabled = true; btn.textContent = "PLACING ORDER...";
+          await submitOrder({
+            razorpayOrderId:   response.razorpay_order_id,
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpaySignature: response.razorpay_signature
+          });
+        },
+        modal: {
+          ondismiss: function() {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-lock me-2"></i>PLACE ORDER';
+          }
+        }
+      };
+      new Razorpay(options).open();
+    } catch (err) {
+      clearTimeout(timeout);
+      showToast(err.name === "AbortError" ? "Request timed out. Please try again." : "Payment error. Try again.", true);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-lock me-2"></i>PLACE ORDER';
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,23 +1,31 @@
-const User = require("../model/userSchema"); 
+const User = require("../model/userSchema");
+const Cart = require("../model/cartSchema"); // ← NEW
 
 const isAuthenticated = async (req, res, next) => {
   if (!req.isAuthenticated() && !req.session.user) {
     return res.redirect("/signin");
   }
 
-  try { 
+  try {
     const userId = req.session.user?._id || req.session.user?.id || req.user?._id;
 
     if (userId) {
+      res.locals.cartCount = 0; // ← NEW default
+
       const user = await User.findById(userId).select("isBlocked");
 
-      // is Blocked ? blocked means → session destroy → signin redirect
       if (!user || user.isBlocked) {
-        req.session.destroy(() => {
-          res.redirect("/signin");
+        req.session.user = null;
+        return req.session.save(() => {
+          return res.redirect("/signin?blocked=true");
         });
-        return;
       }
+
+      // ← NEW: cart count for navbar badge
+      const cart = await Cart.findOne({ user: userId });
+      res.locals.cartCount = cart
+        ? cart.items.reduce((sum, i) => sum + i.quantity, 0)
+        : 0;
     }
   } catch (err) {
     console.error("isAuthenticated middleware error:", err);

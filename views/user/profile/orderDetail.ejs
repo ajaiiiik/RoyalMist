@@ -1,0 +1,531 @@
+<%#
+  views/user/profile/orderDetail.ejs
+  Order Detail Page - full breakdown, return request, invoice download
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order <%= order.orderId %> | Royal Mist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root { --gold:#c4a14d; --gold-dim:rgba(196,161,77,0.08); --dark-bg:#000; --card-bg:#080808; --border:#1a1a1a; --font-main:'Playfair Display',serif; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--dark-bg);color:#fff;font-family:var(--font-main);overflow-x:hidden;}
+    .navbar{background:rgba(0,0,0,0.97);border-bottom:1px solid #222;padding:15px 0;position:sticky;top:0;z-index:1000;}
+    .navbar-brand{color:var(--gold)!important;letter-spacing:4px;font-weight:700;text-decoration:none;}
+    .nav-link{color:#fff!important;font-size:12px;letter-spacing:2px;}
+    .user-dropdown{position:relative;z-index:2000;}
+    .dropdown-menu-custom{position:absolute;top:100%;right:0;background:#0a0a0a;border:1px solid #222;min-width:160px;z-index:3000;display:none;box-shadow:0 10px 25px rgba(0,0,0,0.5);}
+    .dropdown-menu-custom.show{display:block;}
+    .dropdown-item-custom{color:#fff;background:none;border:none;text-decoration:none;display:block;padding:10px 15px;width:100%;text-align:left;font-family:var(--font-main);font-size:13px;cursor:pointer;}
+    .dropdown-item-custom:hover{color:var(--gold);background:#111;}
+    .breadcrumb-wrap{background:#080808;border-bottom:1px solid #111;padding:12px 0;}
+    .bc-item{font-size:11px;letter-spacing:2px;color:#555;text-decoration:none;}
+    .bc-item:hover{color:var(--gold);}
+    .bc-sep{color:#333;margin:0 8px;font-size:8px;}
+    .page-header{background:linear-gradient(180deg,#080808 0%,#000 100%);border-bottom:1px solid #111;padding:30px 0 22px;}
+    .gold-line{width:40px;height:2px;background:var(--gold);margin-bottom:10px;}
+    .info-card{background:var(--card-bg);border:1px solid var(--border);padding:24px;margin-bottom:20px;}
+    .card-label{font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:18px;text-transform:uppercase;}
+    .order-item{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #0d0d0d;}
+    .order-item:last-child{border-bottom:none;padding-bottom:0;}
+    .item-img{width:56px;height:62px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;background:#0d0d0d;}
+    .item-name{font-size:13px;font-weight:500;margin-bottom:3px;}
+    .item-meta{font-size:10px;color:#555;letter-spacing:1px;}
+    .item-price{font-size:13px;color:var(--gold);font-weight:600;margin-left:auto;flex-shrink:0;padding-top:2px;}
+    .status-badge{display:inline-flex;align-items:center;gap:5px;font-size:9px;letter-spacing:2px;padding:5px 12px;border:1px solid;font-weight:600;}
+    .s-Pending        {border-color:#555;   color:#888;   background:rgba(85,85,85,0.08);}
+    .s-Processing     {border-color:#4a90d9;color:#4a90d9;background:rgba(74,144,217,0.08);}
+    .s-Shipped        {border-color:#f39c12;color:#f39c12;background:rgba(243,156,18,0.08);}
+    .s-Delivered      {border-color:#27ae60;color:#27ae60;background:rgba(39,174,96,0.08);}
+    .s-Cancelled      {border-color:#c0392b;color:#c0392b;background:rgba(192,57,43,0.08);}
+    .s-Return-Requested{border-color:#9b59b6;color:#9b59b6;background:rgba(155,89,182,0.08);}
+    .timeline{padding:0;}
+    .tl-item{display:flex;gap:16px;padding-bottom:24px;position:relative;}
+    .tl-item:last-child{padding-bottom:0;}
+    .tl-item:not(:last-child)::before{content:'';position:absolute;left:11px;top:24px;bottom:0;width:1px;background:#1a1a1a;}
+    .tl-dot{width:22px;height:22px;border-radius:50%;border:2px solid #2a2a2a;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:8px;color:#444;}
+    .tl-dot.done{border-color:var(--gold);background:var(--gold);color:#000;}
+    .tl-dot.active{border-color:var(--gold);color:var(--gold);}
+    .tl-label{font-size:11px;font-weight:600;letter-spacing:1px;margin-bottom:3px;}
+    .tl-sub{font-size:10px;color:#444;letter-spacing:1px;}
+    .price-row{display:flex;justify-content:space-between;padding:9px 0;font-size:12px;border-bottom:1px solid #0d0d0d;}
+    .price-row:last-child{border-bottom:none;}
+    .price-label{color:#555;letter-spacing:1px;font-size:11px;}
+    .price-value{font-weight:500;}
+    .grand-row{display:flex;justify-content:space-between;align-items:center;padding-top:14px;margin-top:6px;border-top:1px solid #2a2a2a;}
+    .addr-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .addr-field label{font-size:9px;letter-spacing:2px;color:#444;margin-bottom:4px;display:block;}
+    .addr-field span{font-size:12px;color:#ddd;}
+    .btn-invoice{background:var(--gold);color:#000;border:none;font-family:var(--font-main);font-size:10px;letter-spacing:2px;font-weight:700;padding:11px 22px;cursor:pointer;transition:0.2s;text-decoration:none;display:inline-flex;align-items:center;gap:7px;}
+    .btn-invoice:hover{background:#b38f3d;color:#000;}
+    .btn-back{background:transparent;border:1px solid #2a2a2a;color:#666;font-family:var(--font-main);font-size:10px;letter-spacing:2px;padding:11px 22px;cursor:pointer;transition:0.2s;text-decoration:none;display:inline-flex;align-items:center;gap:7px;}
+    .btn-back:hover{border-color:#555;color:#aaa;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2000;align-items:center;justify-content:center;padding:20px;}
+    .modal-overlay.active{display:flex;}
+    .modal-box{background:#0a0a0a;border:1px solid #2a2a2a;padding:32px;width:100%;max-width:440px;animation:modalIn 0.25s ease;}
+    @keyframes modalIn{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .modal-title{font-size:12px;letter-spacing:3px;color:var(--gold);margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #1a1a1a;}
+    .modal-label{font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:8px;display:block;}
+    .modal-select{width:100%;padding:11px 13px;background:#000;border:1px solid #222;color:#fff;font-family:var(--font-main);font-size:13px;outline:none;appearance:none;margin-bottom:16px;transition:border-color 0.2s;}
+    .modal-select:focus{border-color:var(--gold);}
+    .modal-select option{background:#111;}
+    .modal-textarea{width:100%;padding:11px 13px;background:#000;border:1px solid #222;color:#fff;font-family:var(--font-main);font-size:13px;outline:none;resize:vertical;min-height:90px;margin-bottom:20px;transition:border-color 0.2s;}
+    .modal-textarea:focus{border-color:var(--gold);}
+    .modal-textarea::placeholder{color:#333;}
+    .modal-err{font-size:10px;color:#c0392b;letter-spacing:1px;margin-bottom:12px;display:none;}
+    .modal-actions{display:flex;gap:10px;}
+    .modal-confirm{flex:1;padding:12px;background:#9b59b6;color:#fff;border:none;font-family:var(--font-main);font-size:11px;letter-spacing:2px;cursor:pointer;transition:0.2s;}
+    .modal-confirm:hover{background:#8e44ad;}
+    .modal-confirm:disabled{opacity:0.5;cursor:not-allowed;}
+    .modal-cancel-btn{padding:12px 20px;background:transparent;border:1px solid #2a2a2a;color:#555;font-family:var(--font-main);font-size:11px;letter-spacing:2px;cursor:pointer;transition:0.2s;}
+    .modal-cancel-btn:hover{color:#fff;border-color:#555;}
+    .toast-msg{position:fixed;bottom:28px;right:24px;background:#0a0a0a;border:1px solid var(--gold);color:var(--gold);font-size:12px;letter-spacing:1px;padding:12px 20px;z-index:9999;display:none;animation:slideUp 0.3s ease;max-width:calc(100vw - 48px);}
+    .toast-msg.error{border-color:#c0392b;color:#c0392b;}
+    @keyframes slideUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .item-action-btn{background:transparent;font-family:var(--font-main);font-size:9px;letter-spacing:2px;padding:6px 14px;cursor:pointer;margin-top:8px;transition:0.2s;}
+    .item-action-btn.cancel{border:1px solid #3a1a1a;color:#c0392b;}
+    .item-action-btn.cancel:hover{background:rgba(192,57,43,0.1);}
+    .item-action-btn.return{border:1px solid #3a1a4a;color:#9b59b6;}
+    .item-action-btn.return:hover{background:rgba(155,89,182,0.1);}
+    @media(max-width:768px){.addr-grid{grid-template-columns:1fr;}.page-title{font-size:1.2rem;}.info-card{padding:16px;}}
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="/home"><i class="fas fa-gem me-2" style="color:var(--gold)"></i>ROYALMIST</a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"><i class="fas fa-bars text-white"></i></button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link" href="/home">HOME</a></li>
+        <li class="nav-item"><a class="nav-link" href="/shop">SHOP</a></li>
+      </ul>
+      <div class="d-flex gap-3 align-items-center">
+        <a href="/wishlist"><i class="fa-regular fa-heart" style="cursor:pointer;color:#fff"></i></a>
+
+        <!-- FIX 1: cartCount added with safe check -->
+        <a href="/cart" style="position:relative;">
+          <i class="fa-solid fa-bag-shopping" style="color:#fff;font-size:16px;"></i>
+          <% if(typeof cartCount !== 'undefined' && cartCount > 0) { %>
+            <span style="position:absolute;top:-8px;right:-8px;background:var(--gold);color:#000;font-size:9px;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;"><%= cartCount %></span>
+          <% } %>
+        </a>
+
+        <div class="user-dropdown">
+          <% if(user) { %>
+            <span id="userIcon" style="cursor:pointer;color:#fff;font-size:13px;letter-spacing:1px;"><%= user.firstName %> <i class="fa fa-caret-down"></i></span>
+            <div id="dropdownMenu" class="dropdown-menu-custom">
+              <a href="/account" class="dropdown-item-custom">Account</a>
+              <a href="/orders" class="dropdown-item-custom" style="color:var(--gold);">Order History</a>
+              <button id="logoutBtn" class="dropdown-item-custom">Logout</button>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb-wrap">
+  <div class="container d-flex align-items-center">
+    <a href="/home" class="bc-item">HOME</a><span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:8px;"></i></span>
+    <a href="/orders" class="bc-item">MY ORDERS</a><span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:8px;"></i></span>
+    <span class="bc-item active"><%= order.orderId %></span>
+  </div>
+</div>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="container">
+    <div class="gold-line"></div>
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+      <div>
+        <h1 style="font-size:1.4rem;letter-spacing:3px;font-weight:600;">ORDER DETAILS</h1>
+        <p style="font-size:10px;letter-spacing:2px;color:#444;margin-top:6px;">
+          <i class="fas fa-hashtag" style="color:var(--gold);"></i> <%= order.orderId %> &nbsp;·&nbsp;
+          <%= new Date(order.createdAt).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'}) %>
+        </p>
+      </div>
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <span class="status-badge s-<%= order.orderStatus.replace(' ','-') %>">
+          <% if(order.orderStatus==='Pending')         { %><i class="fas fa-hourglass-half"></i><% } %>
+          <% if(order.orderStatus==='Processing')      { %><i class="fas fa-cog"></i><% } %>
+          <% if(order.orderStatus==='Shipped')         { %><i class="fas fa-truck"></i><% } %>
+          <% if(order.orderStatus==='Delivered')       { %><i class="fas fa-check-circle"></i><% } %>
+          <% if(order.orderStatus==='Cancelled')       { %><i class="fas fa-times-circle"></i><% } %>
+          <% if(order.orderStatus==='Return Requested'){ %><i class="fas fa-undo"></i><% } %>
+          <%= order.orderStatus.toUpperCase() %>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container py-4 py-md-5">
+  <div class="row g-4">
+
+    <!-- LEFT -->
+    <div class="col-lg-8">
+
+      <!-- Items -->
+      <div class="info-card">
+        <div class="card-label"><i class="fas fa-box me-2"></i>ITEMS ORDERED</div>
+        <% order.items.forEach(item => { %>
+          <div class="order-item">
+            <img src="<%= item.image || '/images/placeholder.jpg' %>" class="item-img" alt="<%= item.name %>" onerror="this.src='/images/placeholder.jpg'"/>
+            <div class="flex-grow-1">
+              <div class="item-name"><%= item.name %></div>
+              <div class="item-meta"><%= item.size %> &nbsp;·&nbsp; QTY <%= item.quantity %></div>
+
+              <!-- Item status indicators -->
+              <% if(item.itemStatus === 'cancelled') { %>
+                <div style="margin-top:6px;">
+                  <span style="font-size:9px;letter-spacing:1px;color:#c0392b;border:1px solid #3a1a1a;padding:3px 8px;background:rgba(192,57,43,0.08);">
+                    <i class="fas fa-times-circle me-1"></i>CANCELLED
+                  </span>
+                  <% if(item.refundAmount > 0) { %>
+                    <div style="font-size:10px;color:#27ae60;margin-top:4px;letter-spacing:1px;">
+                      <i class="fas fa-wallet me-1"></i>₹<%= item.refundAmount.toLocaleString('en-IN') %> refunded to wallet
+                    </div>
+                  <% } %>
+                </div>
+              <% } else if(item.itemStatus === 'return_requested') { %>
+                <div style="margin-top:6px;">
+                  <span style="font-size:9px;letter-spacing:1px;color:#9b59b6;border:1px solid #3a1a4a;padding:3px 8px;background:rgba(155,89,182,0.08);">
+                    <i class="fas fa-undo me-1"></i>RETURN REQUESTED
+                  </span>
+                </div>
+              <% } else if(item.itemStatus === 'returned') { %>
+                <div style="margin-top:6px;">
+                  <span style="font-size:9px;letter-spacing:1px;color:#27ae60;border:1px solid #1a3a2a;padding:3px 8px;background:rgba(39,174,96,0.08);">
+                    <i class="fas fa-check-circle me-1"></i>RETURNED
+                  </span>
+                </div>
+              <% } %>
+
+              <!-- FIX 2: Cancel item button — item level only -->
+              <% if(['Pending','Processing'].includes(order.orderStatus) && (item.itemStatus === 'active' || !item.itemStatus)) { %>
+                <button class="item-action-btn cancel" onclick="openCancelItemModal('<%= item._id %>', '<%= item.name %>')">
+                  <i class="fas fa-times me-1"></i>CANCEL ITEM
+                </button>
+              <% } %>
+
+              <!-- FIX 2: Return item button — item level only, no duplicate in sidebar -->
+              <% if(order.orderStatus === 'Delivered' && (item.itemStatus === 'active' || !item.itemStatus)) { %>
+                <button class="item-action-btn return" onclick="openReturnItemModal('<%= item._id %>', '<%= item.name %>')">
+                  <i class="fas fa-undo me-1"></i>RETURN ITEM
+                </button>
+              <% } %>
+
+            </div>
+            <div class="item-price">₹<%= (item.price * item.quantity).toLocaleString('en-IN') %></div>
+          </div>
+        <% }) %>
+      </div>
+
+      <!-- Delivery Address -->
+      <div class="info-card">
+        <div class="card-label"><i class="fas fa-map-marker-alt me-2"></i>DELIVERY ADDRESS</div>
+        <div class="addr-grid">
+          <div class="addr-field"><label>FULL NAME</label><span><%= order.shippingAddress.fullName %></span></div>
+          <div class="addr-field"><label>CITY</label><span><%= order.shippingAddress.city %></span></div>
+          <div class="addr-field" style="grid-column:1/-1;"><label>ADDRESS</label>
+            <span><%= order.shippingAddress.addressLine1 %><% if(order.shippingAddress.addressLine2){ %>, <%= order.shippingAddress.addressLine2 %><% } %></span>
+          </div>
+          <div class="addr-field"><label>STATE</label><span><%= order.shippingAddress.state %></span></div>
+          <div class="addr-field"><label>ZIP CODE</label><span><%= order.shippingAddress.zipCode %></span></div>
+        </div>
+      </div>
+
+      <!-- Order Timeline -->
+      <div class="info-card">
+        <div class="card-label"><i class="fas fa-route me-2"></i>ORDER TIMELINE</div>
+        <div class="timeline">
+          <%
+            const statuses = ['Pending','Processing','Shipped','Delivered'];
+            const cancelStatuses = ['Cancelled','Return Requested'];
+            const isCancelFlow = cancelStatuses.includes(order.orderStatus);
+            const currentIdx = statuses.indexOf(order.orderStatus);
+          %>
+          <% statuses.forEach((s, i) => { %>
+            <%
+              let dotClass = '';
+              if(isCancelFlow) { dotClass = i === 0 ? 'done' : ''; }
+              else { dotClass = i < currentIdx ? 'done' : i === currentIdx ? 'active' : ''; }
+            %>
+            <div class="tl-item">
+              <div class="tl-dot <%= dotClass %>">
+                <% if(dotClass==='done') { %><i class="fas fa-check" style="font-size:7px;"></i>
+                <% } else if(dotClass==='active') { %><i class="fas fa-circle" style="font-size:6px;"></i>
+                <% } else { %><i class="fas fa-circle" style="font-size:6px;opacity:0.2;"></i><% } %>
+              </div>
+              <div>
+                <div class="tl-label" style="color:<%= dotClass ? '#fff' : '#333' %>"><%= s.toUpperCase() %></div>
+                <div class="tl-sub">
+                  <% if(s==='Pending')    { %>Order received & confirmed<% } %>
+                  <% if(s==='Processing') { %>Being prepared for shipment<% } %>
+                  <% if(s==='Shipped')    { %>On the way to you<% } %>
+                  <% if(s==='Delivered')  { %>Successfully delivered<% } %>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+          <% if(isCancelFlow) { %>
+            <div class="tl-item">
+              <div class="tl-dot active" style="border-color:<%= order.orderStatus==='Cancelled' ? '#c0392b' : '#9b59b6' %>; color:<%= order.orderStatus==='Cancelled' ? '#c0392b' : '#9b59b6' %>;">
+                <i class="fas fa-times" style="font-size:7px;"></i>
+              </div>
+              <div>
+                <div class="tl-label" style="color:<%= order.orderStatus==='Cancelled' ? '#c0392b' : '#9b59b6' %>;">
+                  <%= order.orderStatus.toUpperCase() %>
+                </div>
+                <div class="tl-sub"><%= order.cancelReason || order.returnReason || '' %></div>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col-lg-4">
+
+      <!-- Price Summary -->
+      <div class="info-card">
+        <div class="card-label"><i class="fas fa-receipt me-2"></i>PRICE DETAILS</div>
+        <div class="price-row"><span class="price-label">SUBTOTAL</span><span class="price-value">₹<%= order.totalAmount.toLocaleString('en-IN') %></span></div>
+        <div class="price-row"><span class="price-label">SERVICE FEE</span><span class="price-value">₹<%= order.serviceFee.toLocaleString('en-IN') %></span></div>
+        <div class="price-row">
+          <span class="price-label">DELIVERY</span>
+          <span class="price-value" style="color:<%= order.deliveryCharge===0 ? '#5cb85c' : '#fff' %>">
+            <%= order.deliveryCharge===0 ? 'FREE' : '₹'+order.deliveryCharge %>
+          </span>
+        </div>
+        <% if(order.discount > 0) { %>
+          <div class="price-row">
+            <span class="price-label">DISCOUNT <% if(order.couponCode){ %><span style="color:var(--gold);font-size:9px;">(<%= order.couponCode %>)</span><% } %></span>
+            <span class="price-value" style="color:#5cb85c;">-₹<%= order.discount.toLocaleString('en-IN') %></span>
+          </div>
+        <% } %>
+        <div class="grand-row">
+          <span style="font-size:11px;letter-spacing:2px;color:#888;">GRAND TOTAL</span>
+          <span style="font-size:22px;font-weight:700;color:var(--gold);">₹<%= order.grandTotal.toLocaleString('en-IN') %></span>
+        </div>
+      </div>
+
+      <!-- Payment Info -->
+      <div class="info-card">
+        <div class="card-label"><i class="fas fa-credit-card me-2"></i>PAYMENT</div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #0d0d0d;">
+          <span style="font-size:10px;color:#555;letter-spacing:1px;">METHOD</span>
+          <span style="font-size:12px;font-weight:600;"><%= order.paymentMethod %></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;">
+          <span style="font-size:10px;color:#555;letter-spacing:1px;">STATUS</span>
+          <span style="font-size:11px;letter-spacing:1px;color:<%= order.paymentStatus==='Paid' ? '#5cb85c' : '#888' %>">
+            <%= order.paymentStatus.toUpperCase() %>
+          </span>
+        </div>
+      </div>
+
+      <!-- Actions — FIX 3: invoice only for Delivered orders -->
+      <div class="d-flex flex-column gap-2">
+
+        <% if(order.returnRequested) { %>
+          <div style="background:#1a0d2a;border:1px solid #9b59b6;padding:12px;font-size:10px;letter-spacing:1px;color:#9b59b6;">
+            <i class="fas fa-info-circle me-2"></i>
+            <%
+              const rs = order.returnStatus;
+              const returnLabel = rs === 'Approved' ? 'RETURN APPROVED' :
+                                  rs === 'Rejected' ? 'RETURN REJECTED' :
+                                  'RETURN REQUESTED';
+            %>
+            <%= returnLabel %>
+          </div>
+        <% } %>
+
+        <!-- FIX 3: Invoice only on Delivered -->
+        <% if(order.orderStatus === 'Delivered') { %>
+          <a href="/orders/invoice/<%= order._id %>" class="btn-invoice">
+            <i class="fas fa-file-pdf"></i>DOWNLOAD INVOICE
+          </a>
+        <% } %>
+
+        <a href="/orders" class="btn-back">
+          <i class="fas fa-arrow-left"></i>BACK TO ORDERS
+        </a>
+        <a href="/shop" style="display:block;text-align:center;color:var(--gold);font-size:10px;letter-spacing:2px;padding:10px 0;text-decoration:none;border:1px solid #1a1a1a;margin-top:4px;">
+          <i class="fas fa-gem me-2"></i>CONTINUE SHOPPING
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer style="border-top:1px solid #222;padding:30px 0 20px;margin-top:20px;">
+  <div class="container text-center">
+    <p class="text-secondary mb-0" style="font-size:11px;letter-spacing:1px;">© 2026 ROYAL MIST FRAGRANCES. ALL RIGHTS RESERVED.</p>
+  </div>
+</footer>
+
+<!-- CANCEL ITEM MODAL -->
+<div class="modal-overlay" id="cancelItemModal">
+  <div class="modal-box">
+    <div class="modal-title"><i class="fas fa-times-circle me-2"></i>CANCEL ITEM</div>
+    <p id="cancelItemName" style="font-size:12px;color:#888;letter-spacing:1px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #111;"></p>
+    <label class="modal-label">REASON <span style="color:#c0392b;">*</span></label>
+    <select class="modal-select" id="cancelItemReason">
+      <option value="">— Select a reason —</option>
+      <option value="Changed my mind">Changed my mind</option>
+      <option value="Ordered by mistake">Ordered by mistake</option>
+      <option value="Found better price">Found better price</option>
+      <option value="Other">Other</option>
+    </select>
+    <div class="modal-err" id="cancelItemErr">Please select a reason.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel-btn" onclick="closeCancelItemModal()">KEEP ITEM</button>
+      <button class="modal-confirm" id="confirmCancelItemBtn" onclick="confirmCancelItem()" style="background:#c0392b;">
+        <i class="fas fa-times me-1"></i>CANCEL ITEM
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- RETURN ITEM MODAL -->
+<div class="modal-overlay" id="returnItemModal">
+  <div class="modal-box">
+    <div class="modal-title"><i class="fas fa-undo me-2"></i>RETURN ITEM</div>
+    <p id="returnItemName" style="font-size:12px;color:#888;letter-spacing:1px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #111;"></p>
+    <label class="modal-label">REASON <span style="color:#c0392b;">*</span></label>
+    <select class="modal-select" id="returnItemReason">
+      <option value="">— Select a reason —</option>
+      <option value="Wrong product received">Wrong product received</option>
+      <option value="Product damaged">Product damaged</option>
+      <option value="Not as described">Not as described</option>
+      <option value="Fragrance not as expected">Fragrance not as expected</option>
+      <option value="Other">Other</option>
+    </select>
+    <div class="modal-err" id="returnItemErr">Please select a reason.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel-btn" onclick="closeReturnItemModal()">CANCEL</button>
+      <button class="modal-confirm" id="confirmReturnItemBtn" onclick="confirmReturnItem()">
+        <i class="fas fa-undo me-1"></i>SUBMIT RETURN
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-msg" id="toastMsg"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ── Navbar dropdown ──
+  const userIcon     = document.getElementById("userIcon");
+  const dropdownMenu = document.getElementById("dropdownMenu");
+  if (userIcon && dropdownMenu) {
+    userIcon.addEventListener("click", e => { e.stopPropagation(); dropdownMenu.classList.toggle("show"); });
+    window.addEventListener("click", () => dropdownMenu.classList.remove("show"));
+  }
+  document.getElementById("logoutBtn")?.addEventListener("click", async () => {
+    await fetch("/logout", { method: "POST" });
+    window.location.href = "/signin";
+  });
+
+  // ── Toast ──
+  function showToast(msg, isError = false) {
+    const t = document.getElementById("toastMsg");
+    t.textContent = msg;
+    t.className = "toast-msg" + (isError ? " error" : "");
+    t.style.display = "block";
+    setTimeout(() => t.style.display = "none", 3500);
+  }
+
+  const orderId = "<%= order._id %>";
+  let pendingCancelItemId = null;
+  let pendingReturnItemId = null;
+
+  // ── Cancel Item ──
+  function openCancelItemModal(itemId, itemName) {
+    pendingCancelItemId = itemId;
+    document.getElementById("cancelItemName").textContent = itemName;
+    document.getElementById("cancelItemReason").value = "";
+    document.getElementById("cancelItemErr").style.display = "none";
+    document.getElementById("cancelItemModal").classList.add("active");
+  }
+  function closeCancelItemModal() {
+    document.getElementById("cancelItemModal").classList.remove("active");
+    pendingCancelItemId = null;
+  }
+  async function confirmCancelItem() {
+    const reason = document.getElementById("cancelItemReason").value;
+    if (!reason) { document.getElementById("cancelItemErr").style.display = "block"; return; }
+    const btn = document.getElementById("confirmCancelItemBtn");
+    btn.disabled = true; btn.textContent = "CANCELLING...";
+    try {
+      const res  = await fetch(`/orders/${orderId}/cancel-item`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemId: pendingCancelItemId, reason }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message || "Item cancelled successfully");
+        closeCancelItemModal();
+        setTimeout(() => location.reload(), 1800);
+      } else {
+        showToast(data.message || "Failed to cancel item", true);
+      }
+    } catch { showToast("Something went wrong", true); }
+    finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-times me-1"></i>CANCEL ITEM'; }
+  }
+  document.getElementById("cancelItemModal").addEventListener("click", function(e) { if (e.target === this) closeCancelItemModal(); });
+
+  // ── Return Item ──
+  function openReturnItemModal(itemId, itemName) {
+    pendingReturnItemId = itemId;
+    document.getElementById("returnItemName").textContent = itemName;
+    document.getElementById("returnItemReason").value = "";
+    document.getElementById("returnItemErr").style.display = "none";
+    document.getElementById("returnItemModal").classList.add("active");
+  }
+  function closeReturnItemModal() {
+    document.getElementById("returnItemModal").classList.remove("active");
+    pendingReturnItemId = null;
+  }
+  async function confirmReturnItem() {
+    const reason = document.getElementById("returnItemReason").value;
+    if (!reason) { document.getElementById("returnItemErr").style.display = "block"; return; }
+    const btn = document.getElementById("confirmReturnItemBtn");
+    btn.disabled = true; btn.textContent = "SUBMITTING...";
+    try {
+      const res  = await fetch(`/orders/${orderId}/return-item`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemId: pendingReturnItemId, reason }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast("Return request submitted successfully");
+        closeReturnItemModal();
+        setTimeout(() => location.reload(), 1800);
+      } else {
+        showToast(data.message || "Failed to submit return", true);
+      }
+    } catch { showToast("Something went wrong", true); }
+    finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-undo me-1"></i>SUBMIT RETURN'; }
+  }
+  document.getElementById("returnItemModal").addEventListener("click", function(e) { if (e.target === this) closeReturnItemModal(); });
+</script>
+</body>
+</html>

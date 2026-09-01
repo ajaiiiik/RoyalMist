@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cart | Royal Mist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root {
+      --gold: #c4a14d;
+      --dark-bg: #000000;
+      --card-bg: #0a0a0a;
+      --font-main: 'Playfair Display', serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--dark-bg); color: #fff; font-family: var(--font-main); overflow-x: hidden; }
+
+    /* ── NAVBAR ── */
+    .navbar { background: rgba(0,0,0,0.97); border-bottom: 1px solid #222; padding: 15px 0; position: sticky; top: 0; z-index: 1000; }
+    .navbar-brand { color: var(--gold) !important; letter-spacing: 4px; font-weight: 700; }
+    .nav-link { color: #fff !important; font-size: 12px; letter-spacing: 2px; }
+    .user-dropdown { position: relative; z-index: 2000; }
+    .dropdown-menu-custom { position: absolute; top: 100%; right: 0; background: #0a0a0a; border: 1px solid #222; min-width: 160px; z-index: 3000; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .dropdown-menu-custom.show { display: block; }
+    .dropdown-item-custom { color: #fff; background: none; border: none; text-decoration: none; display: block; padding: 10px 15px; width: 100%; text-align: left; font-family: var(--font-main); font-size: 13px; cursor: pointer; }
+    .dropdown-item-custom:hover { color: var(--gold); background: #111; }
+
+    /* ── BREADCRUMB ── */
+    .breadcrumb-wrap { background: #080808; border-bottom: 1px solid #111; padding: 12px 0; }
+    .bc-item { font-size: 11px; letter-spacing: 2px; color: #555; text-decoration: none; }
+    .bc-item:hover { color: var(--gold); }
+    .bc-item.active { color: #888; }
+    .bc-sep { color: #333; margin: 0 8px; font-size: 9px; }
+
+    /* ── PAGE HEADER ── */
+    .page-header { background: linear-gradient(180deg,#080808 0%,#000 100%); border-bottom: 1px solid #111; padding: 35px 0 25px; }
+    .gold-line { width: 40px; height: 2px; background: var(--gold); margin-bottom: 10px; }
+
+    /* ── CART ITEM ── */
+    .cart-item { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 20px; margin-bottom: 16px; transition: border-color 0.2s; }
+    .cart-item:hover { border-color: #2a2a2a; }
+    .cart-item.unavailable { opacity: 0.5; border-color: #2a1a1a; }
+    .item-img { width: 90px; height: 100px; object-fit: cover; border: 1px solid #1a1a1a; flex-shrink: 0; }
+    .item-name { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+    .item-meta { font-size: 11px; color: #666; letter-spacing: 1px; margin-bottom: 4px; }
+    .item-size { display: inline-block; border: 1px solid #2a2a2a; color: var(--gold); font-size: 10px; letter-spacing: 1px; padding: 2px 10px; margin-bottom: 8px; }
+    .item-price { font-size: 17px; font-weight: 600; color: #fff; }
+    .item-subtotal { font-size: 12px; color: #666; letter-spacing: 1px; }
+
+    /* Qty controls */
+    .qty-wrap { display: flex; align-items: center; gap: 0; border: 1px solid #2a2a2a; width: fit-content; }
+    .qty-btn { background: none; border: none; color: #888; width: 34px; height: 34px; cursor: pointer; font-size: 14px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .qty-btn:hover { color: var(--gold); background: rgba(196,161,77,0.05); }
+    .qty-btn:disabled { color: #333; cursor: not-allowed; }
+    .qty-display { width: 40px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; border-left: 1px solid #2a2a2a; border-right: 1px solid #2a2a2a; color: #fff; }
+
+    /* Remove btn */
+    .btn-remove { background: none; border: none; color: #444; font-size: 12px; letter-spacing: 1px; cursor: pointer; padding: 4px 0; font-family: var(--font-main); transition: color 0.2s; }
+    .btn-remove:hover { color: #c0392b; }
+
+    /* Unavailable badge */
+    .unavail-badge { background: #1a0a0a; border: 1px solid #3a1a1a; color: #c0392b; font-size: 10px; letter-spacing: 2px; padding: 3px 10px; display: inline-block; margin-bottom: 6px; }
+
+    /* ── ORDER SUMMARY ── */
+    .summary-box { background: #080808; border: 1px solid #1a1a1a; padding: 25px; position: sticky; top: 90px; }
+    .summary-title { font-size: 11px; letter-spacing: 3px; color: var(--gold); margin-bottom: 20px; text-transform: uppercase; }
+    .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #111; font-size: 13px; }
+    .summary-row:last-of-type { border-bottom: none; }
+    .summary-label { color: #666; letter-spacing: 1px; font-size: 11px; }
+    .summary-value { color: #fff; font-weight: 500; }
+    .summary-total { display: flex; justify-content: space-between; align-items: center; padding: 16px 0 20px; border-top: 1px solid #2a2a2a; margin-top: 4px; }
+    .total-label { font-size: 12px; letter-spacing: 2px; color: #888; }
+    .total-amount { font-size: 22px; font-weight: 700; color: var(--gold); }
+
+    /* ── COUPON BOX ── */
+    .coupon-wrap { margin-bottom: 14px; }
+    .coupon-label { font-size: 10px; letter-spacing: 2px; color: #555; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .coupon-input-row { display: flex; gap: 0; }
+    .coupon-input {
+      flex: 1; background: #000; border: 1px solid #222; border-right: none;
+      color: #fff; font-family: var(--font-main); font-size: 13px; letter-spacing: 2px;
+      padding: 10px 14px; outline: none; transition: border-color 0.2s;
+      text-transform: uppercase;
+    }
+    .coupon-input::placeholder { color: #333; text-transform: none; font-size: 12px; }
+    .coupon-input:focus { border-color: var(--gold); }
+    .coupon-input:disabled { color: var(--gold); border-color: #2a2000; background: #0a0800; }
+    .btn-apply-coupon {
+      background: var(--gold); color: #000; border: none;
+      font-family: var(--font-main); font-size: 10px; letter-spacing: 2px;
+      font-weight: 700; padding: 10px 16px; cursor: pointer; transition: 0.2s;
+      white-space: nowrap;
+    }
+    .btn-apply-coupon:hover { background: #b38f3d; }
+    .btn-apply-coupon:disabled { background: #222; color: #555; cursor: not-allowed; }
+    .btn-remove-coupon {
+      background: transparent; border: 1px solid #2a1a1a; color: #c0392b;
+      font-family: var(--font-main); font-size: 10px; letter-spacing: 1px;
+      padding: 10px 14px; cursor: pointer; transition: 0.2s; white-space: nowrap;
+    }
+    .btn-remove-coupon:hover { background: #1a0808; }
+    .coupon-msg { font-size: 11px; letter-spacing: 1px; margin-top: 7px; display: none; }
+    .coupon-msg.success { color: #5cb85c; display: block; }
+    .coupon-msg.error   { color: #c0392b; display: block; }
+
+    /* Discount row */
+    .discount-row { display: none; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #111; }
+    .discount-row.show { display: flex; }
+    .discount-value { color: #5cb85c; font-weight: 500; font-size: 13px; }
+
+    /* Service fee info */
+    .fee-info { font-size: 9px; color: #333; letter-spacing: 1px; margin-top: 2px; }
+
+    /* Checkout btn */
+    .btn-checkout { width: 100%; background: var(--gold); border: none; color: #000; font-family: var(--font-main); font-size: 12px; letter-spacing: 3px; font-weight: 700; padding: 15px; cursor: pointer; transition: all 0.3s; text-decoration: none; display: block; text-align: center; }
+    .btn-checkout:hover { background: #b38f3d; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(196,161,77,0.25); color: #000; }
+    .btn-checkout:disabled, .btn-checkout.disabled { background: #222; color: #555; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-continue { width: 100%; background: transparent; border: 1px solid #2a2a2a; color: #888; font-family: var(--font-main); font-size: 11px; letter-spacing: 2px; padding: 12px; cursor: pointer; transition: all 0.2s; text-decoration: none; display: block; text-align: center; margin-top: 10px; }
+    .btn-continue:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* ── EMPTY CART ── */
+    .empty-cart { text-align: center; padding: 80px 20px; }
+    .empty-cart i { font-size: 50px; color: #1a1a1a; margin-bottom: 20px; }
+    .empty-cart h3 { font-size: 20px; color: #444; margin-bottom: 10px; }
+    .empty-cart p { font-size: 12px; color: #333; letter-spacing: 1px; margin-bottom: 30px; }
+
+    /* ── TOAST ── */
+   .toast-msg { position: fixed; top: 30px; right: 30px;  background: #0a0a0a; border: 1px solid var(--gold); color: var(--gold); font-size: 12px; letter-spacing: 1px; padding: 12px 20px; z-index: 9999; display: none; animation: slideUp 0.3s ease; }
+   @keyframes slideUp { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .toast-msg.error { border-color: #c0392b; color: #c0392b; }
+    .remove-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9998; opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.remove-overlay.show { opacity: 1; pointer-events: all; }
+.remove-box {
+  background: #080808; border: 1px solid #2a2a2a;
+  padding: 36px 32px; max-width: 360px; width: 90%;
+  text-align: center; animation: confirmSlide 0.3s ease;
+}
+@keyframes confirmSlide {
+  from { transform: translateY(28px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.remove-icon {
+  width: 52px; height: 52px; border: 1px solid #c0392b;
+  border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; margin: 0 auto 16px;
+  color: #c0392b; font-size: 18px;
+}
+.remove-title { font-size: 14px; letter-spacing: 3px; color: #fff; font-weight: 600; margin-bottom: 8px; }
+.remove-sub { font-size: 11px; color: #555; letter-spacing: 1px; line-height: 1.7; margin-bottom: 22px; }
+.remove-actions { display: flex; gap: 10px; }
+.btn-remove-yes {
+  flex: 1; background: #c0392b; border: none; color: #fff;
+  font-family: var(--font-main); font-size: 11px; letter-spacing: 2px;
+  font-weight: 700; padding: 14px; cursor: pointer; transition: 0.2s;
+}
+.btn-remove-yes:hover { background: #a93226; }
+.btn-remove-no {
+  flex: 1; background: transparent; border: 1px solid #2a2a2a;
+  color: #666; font-family: var(--font-main); font-size: 11px;
+  letter-spacing: 2px; padding: 14px; cursor: pointer; transition: 0.2s;
+}
+.btn-remove-no:hover { border-color: #555; color: #aaa; }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAVBAR ════════════════════════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="/home"><i class="fas fa-gem me-2" style="color:var(--gold)"></i>ROYALMIST</a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <i class="fas fa-bars text-white"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link" href="/home">HOME</a></li>
+        <li class="nav-item"><a class="nav-link" href="/shop">SHOP</a></li>
+        <li class="nav-item"><a class="nav-link" href="/about">ABOUT</a></li>
+      </ul>
+      <div class="d-flex gap-3 align-items-center">
+        <a href="/wishlist"><i class="fa-regular fa-heart" style="cursor:pointer;color:#fff"></i></a>
+        <a href="/cart" style="position:relative;">
+          <i class="fa-solid fa-bag-shopping" style="color:#fff;font-size:16px;"></i>
+         <% if(locals.cartCount > 0) { %>
+  <span style="position:absolute;top:-8px;right:-8px;background:var(--gold);color:#000;font-size:9px;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;"><%= locals.cartCount %></span>
+<% } %>
+        </a>
+        <div class="user-dropdown">
+          <% if(user) { %>
+            <span id="userIcon" style="cursor:pointer;color:#fff;font-size:13px;letter-spacing:1px;"><%= user.firstName %> <i class="fa fa-caret-down"></i></span>
+            <div id="dropdownMenu" class="dropdown-menu-custom">
+              <a href="/account" class="dropdown-item-custom">Account</a>
+              <button id="logoutBtn" class="dropdown-item-custom">Logout</button>
+            </div>
+          <% } else { %>
+            <a href="/signin"><i class="fa fa-user" style="color:#fff"></i></a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ BREADCRUMB ════════════════════════════════════════════════ -->
+<div class="breadcrumb-wrap">
+  <div class="container d-flex align-items-center">
+    <a href="/home" class="bc-item">HOME</a>
+    <span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:8px;"></i></span>
+    <span class="bc-item active">CART</span>
+  </div>
+</div>
+
+<!-- ══ PAGE HEADER ═══════════════════════════════════════════════ -->
+<div class="page-header">
+  <div class="container">
+    <div class="gold-line"></div>
+    <h1 style="font-size:1.8rem;letter-spacing:4px;font-weight:600;">
+      YOUR CART
+      <% if(totalItems > 0) { %>
+        <span style="font-size:14px;color:#555;letter-spacing:2px;margin-left:10px;">(<%= totalItems %> ITEM<%= totalItems > 1 ? 'S' : '' %>)</span>
+      <% } %>
+    </h1>
+  </div>
+</div>
+
+<!-- ══ MAIN ══════════════════════════════════════════════════════ -->
+<div class="container py-5">
+
+  <% if(cartItems.length === 0) { %>
+  <div class="empty-cart">
+    <i class="fas fa-shopping-bag"></i>
+    <h3>Your Cart Is Empty</h3>
+    <p>Discover our exclusive fragrance collection</p>
+    <a href="/shop" class="btn-checkout" style="width:auto;display:inline-block;padding:14px 40px;">EXPLORE COLLECTION</a>
+  </div>
+
+  <% } else { %>
+
+  <%
+    const serviceFeePercent = 2;
+    const serviceFeeCap     = 99;
+    const rawFee            = Math.round((totalAmount * serviceFeePercent) / 100);
+    const serviceFee        = Math.min(rawFee, serviceFeeCap);
+    const delivery          = totalAmount >= 1999 ? 0 : 99;
+    const grandTotal        = totalAmount + serviceFee + delivery;
+  %>
+
+  <div class="row g-4">
+
+    <!-- ── CART ITEMS ── -->
+    <div class="col-lg-8">
+      <% cartItems.forEach((item, index) => { %>
+        <%
+          const prod      = item.product;
+        const isUnavail = !prod || !prod.isActive || prod.isDeleted || 
+  !prod.volumes || prod.volumes.every(v => v.stock === 0);
+          const itemTotal = item.price * item.quantity;
+        %>
+        <div class="cart-item <%= isUnavail ? 'unavailable' : '' %>" id="cart-item-<%= index %>" data-product="<%= prod._id %>" data-size="<%= item.size %>">
+          <div class="d-flex gap-3 align-items-start">
+            <img src="<%= prod.images && prod.images[0] ? prod.images[0] : '/images/placeholder.jpg' %>" class="item-img" alt="<%= prod.name %>"/>
+            <div class="flex-grow-1">
+              <% if(isUnavail) { %>
+               <span class="unavail-badge"><i class="fas fa-exclamation-triangle me-1"></i><%= (!prod.volumes || prod.volumes.every(v => v.stock === 0)) ? 'OUT OF STOCK' : 'UNAVAILABLE' %></span>
+              <% } %>
+              <div class="item-name"><%= prod.name %></div>
+              <div class="item-meta"><%= prod.category ? prod.category.name : '' %> · <%= prod.fragranceType %></div>
+              <span class="item-size"><%= item.size %></span>
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mt-2">
+                <% if(!isUnavail) { %>
+                  <div>
+                    <div style="font-size:10px;letter-spacing:1px;color:#555;margin-bottom:6px;">QUANTITY</div>
+                    <div class="qty-wrap">
+                      <button class="qty-btn" onclick="updateQty('<%= prod._id %>','<%= item.size %>','decrement',this)"><i class="fas fa-minus" style="font-size:10px;"></i></button>
+                      <div class="qty-display" id="qty-<%= index %>"><%= item.quantity %></div>
+                      <button class="qty-btn" onclick="updateQty('<%= prod._id %>','<%= item.size %>','increment',this)" <%= item.quantity >= 5 ? 'disabled' : '' %>><i class="fas fa-plus" style="font-size:10px;"></i></button>
+                    </div>
+                    <div style="font-size:9px;color:#444;letter-spacing:1px;margin-top:4px;">MAX 5 PER ITEM</div>
+                  </div>
+                <% } %>
+                <div class="text-end">
+                  <div style="font-size:10px;letter-spacing:1px;color:#555;margin-bottom:4px;">PRICE</div>
+                  <div class="item-price">₹<%= item.price.toLocaleString('en-IN') %></div>
+                  <div class="item-subtotal" id="subtotal-<%= index %>">Subtotal: ₹<%= itemTotal.toLocaleString('en-IN') %></div>
+                </div>
+              </div>
+              <button class="btn-remove mt-3" onclick="removeItem('<%= prod._id %>','<%= item.size %>','<%= index %>')"><i class="fas fa-times me-1"></i>REMOVE</button>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <!-- ── ORDER SUMMARY ── -->
+    <div class="col-lg-4">
+      <div class="summary-box">
+        <div class="summary-title"><i class="fas fa-receipt me-2"></i>ORDER SUMMARY</div>
+
+        <!-- Coupon Box -->
+        <div class="coupon-wrap">
+          <div class="coupon-label">
+            <i class="fas fa-tag" style="color:var(--gold);font-size:10px;"></i>
+            PROMO CODE
+          </div>
+          <div class="coupon-input-row">
+            <input
+              type="text"
+              class="coupon-input"
+              id="couponInput"
+              placeholder="Enter coupon code"
+              maxlength="20"
+            />
+            <button class="btn-apply-coupon" id="applyBtn" onclick="applyCoupon()">APPLY</button>
+            <button class="btn-remove-coupon" id="removeCouponBtn" onclick="removeCoupon()" style="display:none;">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="coupon-msg" id="couponMsg"></div>
+        </div>
+
+        <!-- Summary rows -->
+        <div class="summary-row">
+          <span class="summary-label">ITEMS (<%= totalItems %>)</span>
+          <span class="summary-value" id="summaryAmount">₹<%= totalAmount.toLocaleString('en-IN') %></span>
+        </div>
+
+        <div class="summary-row">
+          <span class="summary-label">
+            SERVICE FEE
+            <div class="fee-info">2% OF SUBTOTAL (MAX ₹99)</div>
+          </span>
+          <span class="summary-value" id="serviceFeeDisplay">₹<%= serviceFee.toLocaleString('en-IN') %></span>
+        </div>
+
+        <div class="summary-row">
+          <span class="summary-label">DELIVERY</span>
+          <span class="summary-value" id="deliveryDisplay" style="color:<%= delivery === 0 ? '#5cb85c' : '#fff' %>">
+            <%= delivery === 0 ? 'FREE' : '₹99' %>
+          </span>
+        </div>
+
+        <!-- Discount row (hidden until coupon applied) -->
+        <div class="discount-row" id="discountRow">
+          <span class="summary-label">DISCOUNT</span>
+          <span class="discount-value" id="discountDisplay">-₹0</span>
+        </div>
+
+        <div class="summary-total">
+          <div>
+            <div class="total-label">TOTAL</div>
+            <div style="font-size:10px;color:#444;letter-spacing:1px;">Inc. all taxes</div>
+          </div>
+          <div class="total-amount" id="totalAmount">₹<%= grandTotal.toLocaleString('en-IN') %></div>
+        </div>
+
+        <%
+         const hasUnavail = cartItems.some(item =>
+  !item.product || !item.product.isActive || item.product.isDeleted ||
+  !item.product.volumes || item.product.volumes.every(v => v.stock === 0)
+);
+        %>
+
+        <% if(hasUnavail) { %>
+          <div style="background:#0f0f0f;border:1px solid #2a1a1a;color:#c0392b;font-size:10px;letter-spacing:1px;padding:10px;text-align:center;margin-bottom:12px;">
+            <i class="fas fa-exclamation-triangle me-1"></i>REMOVE UNAVAILABLE ITEMS TO CHECKOUT
+          </div>
+          <button class="btn-checkout disabled" disabled>PROCEED TO CHECKOUT</button>
+        <% } else { %>
+          <a href="/checkout" class="btn-checkout" id="checkoutBtn">
+            <i class="fas fa-lock me-2"></i>PROCEED TO CHECKOUT
+          </a>
+        <% } %>
+
+        <a href="/shop" class="btn-continue"><i class="fas fa-arrow-left me-2"></i>CONTINUE SHOPPING</a>
+
+        <!-- Trust badges -->
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #111;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <i class="fas fa-shield-alt" style="color:var(--gold);font-size:12px;"></i>
+            <span style="font-size:10px;color:#555;letter-spacing:1px;">SECURE CHECKOUT</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <i class="fas fa-undo" style="color:var(--gold);font-size:12px;"></i>
+            <span style="font-size:10px;color:#555;letter-spacing:1px;">7-DAY EASY RETURNS</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-shipping-fast" style="color:var(--gold);font-size:12px;"></i>
+            <span style="font-size:10px;color:#555;letter-spacing:1px;">FREE DELIVERY ABOVE ₹1999</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <% } %>
+</div>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════════ -->
+<footer style="border-top:1px solid #222;padding:50px 0 25px;font-family:var(--font-main);margin-top:40px;">
+  <div class="container">
+    <div style="border-top:1px solid #1a1a1a;padding-top:20px;text-align:center;">
+      <p class="text-secondary mb-0" style="font-size:11px;letter-spacing:1px;">© 2026 ROYAL MIST FRAGRANCES. ALL RIGHTS RESERVED.</p>
+    </div>
+  </div>
+</footer>
+
+
+<div class="remove-overlay" id="removeOverlay">
+  <div class="remove-box">
+    <div class="remove-icon"><i class="fas fa-trash-alt"></i></div>
+    <div class="remove-title">REMOVE ITEM?</div>
+    <div class="remove-sub">Are you sure you want to remove this item from your cart?</div>
+    <div class="remove-actions">
+      <button class="btn-remove-no" onclick="closeRemoveModal()">CANCEL</button>
+      <button class="btn-remove-yes" onclick="confirmRemoveItem()">YES, REMOVE</button>
+    </div>
+  </div>
+</div>
+<div class="toast-msg" id="toastMsg"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ── State ─────────────────────────────────────────────────────
+  let currentSubtotal  = <%= totalAmount %>;
+  let appliedCoupon    = null;
+  let currentDiscount  = 0;
+
+  // ── Toast ──────────────────────────────────────────────────────
+  function showToast(msg, isError = false) {
+    const t = document.getElementById("toastMsg");
+    t.textContent = msg;
+    t.className   = "toast-msg" + (isError ? " error" : "");
+    t.style.display = "block";
+    setTimeout(() => t.style.display = "none", 3000);
+  }
+
+  // ── Navbar dropdown ────────────────────────────────────────────
+  const userIcon     = document.getElementById("userIcon");
+  const dropdownMenu = document.getElementById("dropdownMenu");
+  if (userIcon && dropdownMenu) {
+    userIcon.addEventListener("click", e => { e.stopPropagation(); dropdownMenu.classList.toggle("show"); });
+    window.addEventListener("click", () => dropdownMenu.classList.remove("show"));
+  }
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      await fetch("/logout", { method: "POST" });
+      window.location.href = "/signin";
+    });
+  }
+
+  // ── Apply coupon ───────────────────────────────────────────────
+  async function applyCoupon() {
+    const code = document.getElementById("couponInput").value.trim();
+    if (!code) { setCouponMsg("Enter a coupon code", false); return; }
+
+    const btn = document.getElementById("applyBtn");
+    btn.disabled    = true;
+    btn.textContent = "...";
+
+    try {
+      const res  = await fetch("/cart/apply-coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, subtotal: currentSubtotal }),
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        setCouponMsg(data.message, false);
+        btn.disabled    = false;
+        btn.textContent = "APPLY";
+        return;
+      }
+
+      // Success
+      appliedCoupon   = data.couponCode;
+      currentDiscount = data.discount;
+
+      setCouponMsg(data.message, true);
+      document.getElementById("couponInput").disabled = true;
+      btn.style.display = "none";
+      document.getElementById("removeCouponBtn").style.display = "block";
+
+      // Update discount row
+      document.getElementById("discountRow").classList.add("show");
+      document.getElementById("discountDisplay").textContent = "-₹" + data.discount.toLocaleString("en-IN");
+
+      // Update totals
+      document.getElementById("serviceFeeDisplay").textContent = "₹" + data.serviceFee.toLocaleString("en-IN");
+      updateDeliveryDisplay(data.delivery);
+      document.getElementById("totalAmount").textContent = "₹" + data.grandTotal.toLocaleString("en-IN");
+
+      // Pass coupon to checkout
+      updateCheckoutLink();
+
+    } catch {
+      setCouponMsg("Something went wrong", false);
+      btn.disabled    = false;
+      btn.textContent = "APPLY";
+    }
+  }
+
+  // ── Remove coupon ──────────────────────────────────────────────
+  async function removeCoupon() {
+    try {
+      const res  = await fetch("/cart/remove-coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subtotal: currentSubtotal }),
+      });
+      const data = await res.json();
+
+      if (!data.success) return;
+
+      appliedCoupon   = null;
+      currentDiscount = 0;
+
+      document.getElementById("couponInput").value    = "";
+      document.getElementById("couponInput").disabled = false;
+      document.getElementById("applyBtn").style.display       = "block";
+      document.getElementById("applyBtn").disabled            = false;
+      document.getElementById("applyBtn").textContent         = "APPLY";
+      document.getElementById("removeCouponBtn").style.display = "none";
+
+      setCouponMsg("", null);
+      document.getElementById("discountRow").classList.remove("show");
+
+      document.getElementById("serviceFeeDisplay").textContent = "₹" + data.serviceFee.toLocaleString("en-IN");
+      updateDeliveryDisplay(data.delivery);
+      document.getElementById("totalAmount").textContent = "₹" + data.grandTotal.toLocaleString("en-IN");
+
+      updateCheckoutLink();
+    } catch { /* silent */ }
+  }
+
+  function setCouponMsg(msg, isSuccess) {
+    const el = document.getElementById("couponMsg");
+    el.textContent = msg;
+    el.className   = "coupon-msg" + (isSuccess === true ? " success" : isSuccess === false ? " error" : "");
+  }
+
+  function updateDeliveryDisplay(delivery) {
+    const el = document.getElementById("deliveryDisplay");
+    if (delivery === 0) {
+      el.textContent  = "FREE";
+      el.style.color  = "#5cb85c";
+    } else {
+      el.textContent  = "₹99";
+      el.style.color  = "#fff";
+    }
+  }
+
+  function updateCheckoutLink() {
+    const btn = document.getElementById("checkoutBtn");
+    if (!btn) return;
+    let href = "/checkout";
+    if (appliedCoupon) href += "?coupon=" + encodeURIComponent(appliedCoupon);
+    btn.setAttribute("href", href);
+  }
+
+  // ── Update qty ─────────────────────────────────────────────────
+  async function updateQty(productId, size, action, btn) {
+    try {
+      btn.disabled = true;
+      const res  = await fetch("/cart/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, size, action }),
+      });
+      const data = await res.json();
+      if (!data.success) { showToast(data.message, true); btn.disabled = false; return; }
+
+      if (data.quantity === 0) {
+        const row = btn.closest(".cart-item");
+        if (row) row.remove();
+        currentSubtotal = data.totalAmount;
+        updateSummaryUI(data.totalAmount, data.totalItems);
+        if (data.totalItems === 0) location.reload();
+        return;
+      }
+
+      const row   = btn.closest(".cart-item");
+      const index = row.id.split("-")[2];
+      document.getElementById("qty-" + index).textContent = data.quantity;
+      document.getElementById("subtotal-" + index).textContent = "Subtotal: ₹" + data.itemTotal.toLocaleString("en-IN");
+
+      const incBtn = row.querySelector(".qty-btn:last-child");
+      incBtn.disabled = data.quantity >= 5;
+
+      currentSubtotal = data.totalAmount;
+
+      // If coupon was applied, remove it (subtotal changed)
+      if (appliedCoupon) {
+        await removeCoupon();
+        showToast("Coupon removed — cart updated");
+      } else {
+        updateSummaryUI(data.totalAmount, data.totalItems);
+      }
+
+      btn.disabled = false;
+    } catch { showToast("Something went wrong", true); btn.disabled = false; }
+  }
+
+  // ── Remove item ────────────────────────────────────────────────
+ let _removeProductId, _removeSize, _removeIndex;
+
+function removeItem(productId, size, index) {
+  _removeProductId = productId;
+  _removeSize      = size;
+  _removeIndex     = index;
+  document.getElementById("removeOverlay").classList.add("show");
+}
+
+function closeRemoveModal() {
+  document.getElementById("removeOverlay").classList.remove("show");
+  _removeProductId = _removeSize = _removeIndex = null;
+}
+
+async function confirmRemoveItem() {
+  const productId = _removeProductId;
+  const size      = _removeSize;
+  const index     = _removeIndex;
+  closeRemoveModal();
+  if (!productId || !size) return;
+  try {
+    const res = await fetch("/cart/remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, size }),
+      });
+      const data = await res.json();
+      if (!data.success) { showToast(data.message, true); return; }
+
+      const el = document.getElementById("cart-item-" + index)
+  || document.querySelector(`.cart-item[data-product="${productId}"][data-size="${size}"]`);
+if (el) el.remove();
+      currentSubtotal = data.totalAmount;
+
+      if (appliedCoupon) {
+        await removeCoupon();
+      } else {
+        updateSummaryUI(data.totalAmount, data.totalItems);
+      }
+
+      showToast("✓ Item removed from cart");
+      if (data.totalItems === 0) setTimeout(() => location.reload(), 800);
+    } catch { showToast("Something went wrong", true); }
+  }
+
+  // ── Update summary UI ──────────────────────────────────────────
+  function updateSummaryUI(totalAmount, totalItems) {
+    const serviceFee  = Math.min(Math.round((totalAmount * 2) / 100), 99);
+    const delivery    = totalAmount >= 1999 ? 0 : 99;
+    const grandTotal  = totalAmount + serviceFee + delivery - currentDiscount;
+
+    document.getElementById("summaryAmount").textContent    = "₹" + totalAmount.toLocaleString("en-IN");
+    document.getElementById("serviceFeeDisplay").textContent = "₹" + serviceFee.toLocaleString("en-IN");
+    updateDeliveryDisplay(delivery);
+    document.getElementById("totalAmount").textContent = "₹" + grandTotal.toLocaleString("en-IN");
+  }
+
+  // Enter key on coupon input
+  document.getElementById("couponInput")?.addEventListener("keydown", e => {
+    if (e.key === "Enter") applyCoupon();
+  });
+
+  document.getElementById("removeOverlay").addEventListener("click", function(e) {
+  if (e.target === this) closeRemoveModal();
+});
+</script>
+</body>
+</html>

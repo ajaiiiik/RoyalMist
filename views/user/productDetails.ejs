@@ -1,0 +1,1207 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title><%= product ? product.name : 'Product' %> | Royal Mist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+      :root {
+        --gold: #c4a14d;
+        --dark-bg: #000000;
+        --card-bg: #0a0a0a;
+        --font-main: 'Playfair Display', serif;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        background: var(--dark-bg);
+        color: #fff;
+        font-family: var(--font-main);
+        overflow-x: hidden;
+      }
+
+      /* ── NAVBAR ── */
+      .navbar {
+        background: rgba(0,0,0,0.97);
+        border-bottom: 1px solid #222;
+        padding: 15px 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+      .navbar-brand { color: var(--gold) !important; letter-spacing: 4px; font-weight: 700; }
+      .nav-link { color: #fff !important; font-size: 12px; letter-spacing: 2px; }
+      .user-dropdown { position: relative; z-index: 2000; }
+      .dropdown-menu-custom {
+        position: absolute;
+        top: 100%; right: 0;
+        background: #0a0a0a;
+        border: 1px solid #222;
+        min-width: 160px;
+        z-index: 3000;
+        display: none;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      }
+      .dropdown-menu-custom.show { display: block; }
+      .dropdown-item-custom {
+        color: #fff;
+        background: none;
+        border: none;
+        text-decoration: none;
+        display: block;
+        padding: 10px 15px;
+        width: 100%;
+        text-align: left;
+        font-family: var(--font-main);
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .dropdown-item-custom:hover { color: var(--gold); background: #111; }
+
+      /* ── BREADCRUMB ── */
+      .breadcrumb-wrap {
+        background: #080808;
+        border-bottom: 1px solid #111;
+        padding: 12px 0;
+      }
+      .breadcrumb-item {
+        font-size: 11px;
+        letter-spacing: 2px;
+        color: #555;
+        text-decoration: none;
+      }
+      .breadcrumb-item:hover { color: var(--gold); }
+      .breadcrumb-item.active { color: #888; }
+      .breadcrumb-sep { color: #333; margin: 0 8px; font-size: 10px; }
+
+      /* ── IMAGE SECTION ── */
+      .main-img-wrap {
+        position: relative;
+        overflow: hidden;
+        background: #080808;
+        border: 1px solid #1a1a1a;
+        cursor: zoom-in;
+      }
+      .main-img-wrap img {
+        width: 100%;
+        aspect-ratio: 1/1;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+        transform-origin: center center;
+        display: block;
+      }
+      .main-img-wrap:hover img {
+        transform: scale(1.6);
+      }
+      .main-img-wrap .zoom-hint {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        background: rgba(0,0,0,0.7);
+        color: #888;
+        font-size: 10px;
+        letter-spacing: 1px;
+        padding: 4px 10px;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+      .main-img-wrap:hover .zoom-hint { opacity: 0; }
+
+      /* Thumbnails */
+      .thumb-wrap {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+      }
+      .thumb {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border: 1px solid #222;
+        cursor: pointer;
+        transition: border-color 0.2s;
+        opacity: 0.6;
+      }
+      .thumb:hover, .thumb.active { border-color: var(--gold); opacity: 1; }
+
+      /* ── PRODUCT INFO ── */
+      .gold-line { width: 40px; height: 2px; background: var(--gold); margin-bottom: 12px; }
+      .product-category {
+        font-size: 11px;
+        letter-spacing: 3px;
+        color: var(--gold);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .product-title {
+        font-size: 2rem;
+        font-weight: 600;
+        line-height: 1.2;
+        margin-bottom: 8px;
+      }
+      .fragrance-badge {
+        display: inline-block;
+        border: 1px solid #2a2a2a;
+        color: #888;
+        font-size: 10px;
+        letter-spacing: 2px;
+        padding: 4px 12px;
+        margin-bottom: 20px;
+      }
+
+      /* Stock badge */
+      .stock-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        letter-spacing: 1px;
+        padding: 5px 12px;
+        margin-bottom: 20px;
+      }
+      .stock-badge.in-stock { border: 1px solid #2d6a2d; color: #5cb85c; }
+      .stock-badge.low-stock { border: 1px solid #856404; color: #ffc107; }
+      .stock-badge.out-stock { border: 1px solid #5a1a1a; color: #dc3545; }
+      .stock-dot { width: 6px; height: 6px; border-radius: 50%; }
+      .stock-dot.green { background: #5cb85c; }
+      .stock-dot.yellow { background: #ffc107; }
+      .stock-dot.red { background: #dc3545; }
+
+      /* Divider */
+      .divider { border: none; border-top: 1px solid #1a1a1a; margin: 20px 0; }
+
+      /* Volume selector */
+      .volume-label {
+        font-size: 11px;
+        letter-spacing: 2px;
+        color: #666;
+        margin-bottom: 10px;
+      }
+      .volume-options { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+      .vol-btn {
+        background: none;
+        border: 1px solid #2a2a2a;
+        color: #888;
+        font-family: var(--font-main);
+        font-size: 12px;
+        letter-spacing: 1px;
+        padding: 8px 18px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .vol-btn:hover { border-color: var(--gold); color: var(--gold); }
+      .vol-btn.selected { border-color: var(--gold); color: var(--gold); background: rgba(196,161,77,0.08); }
+      .vol-btn.selected::after {
+        content: ' ✓';
+        font-size: 10px;
+      }
+
+      /* Price */
+      .price-display {
+        margin-bottom: 24px;
+      }
+      .price-label { font-size: 10px; letter-spacing: 2px; color: #555; margin-bottom: 4px; }
+      .price-amount { font-size: 2.2rem; font-weight: 700; color: #fff; line-height: 1; }
+
+      /* Action buttons */
+      .btn-add-cart {
+        width: 100%;
+        background: var(--gold);
+        border: none;
+        color: #000;
+        font-family: var(--font-main);
+        font-size: 12px;
+        letter-spacing: 3px;
+        font-weight: 700;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-bottom: 10px;
+      }
+      .btn-add-cart:hover {
+        background: #b38f3d;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(196,161,77,0.3);
+      }
+      .btn-add-cart:disabled {
+        background: #222;
+        color: #555;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+      .btn-wishlist {
+        width: 100%;
+        background: transparent;
+        border: 1px solid #2a2a2a;
+        color: #888;
+        font-family: var(--font-main);
+        font-size: 11px;
+        letter-spacing: 2px;
+        padding: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-wishlist:hover { border-color: var(--gold); color: var(--gold); }
+
+      /* Highlights */
+      .highlights { margin-top: 24px; }
+      .highlight-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid #0f0f0f;
+        font-size: 12px;
+        color: #888;
+        letter-spacing: 1px;
+      }
+      .highlight-item i { color: var(--gold); font-size: 13px; margin-top: 1px; flex-shrink: 0; }
+
+      /* Description */
+      .desc-section { margin-top: 50px; padding-top: 40px; border-top: 1px solid #111; }
+      .section-title {
+        font-size: 11px;
+        letter-spacing: 4px;
+        color: var(--gold);
+        margin-bottom: 20px;
+        text-transform: uppercase;
+      }
+      .desc-text {
+        color: #888;
+        font-size: 14px;
+        line-height: 1.9;
+        max-width: 700px;
+      }
+
+      /* ── RELATED PRODUCTS ── */
+      .related-section { margin-top: 60px; padding-top: 40px; border-top: 1px solid #111; }
+      .product-card {
+        background: #0a0a0a;
+        border: 1px solid #1a1a1a;
+        padding: 15px;
+        transition: border-color 0.3s, transform 0.2s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .product-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+      .product-card .img-wrap { position: relative; margin-bottom: 12px; overflow: hidden; }
+      .product-card .img-wrap img {
+        width: 100%;
+        aspect-ratio: 1/1.1;
+        object-fit: cover;
+        transition: transform 0.5s;
+      }
+      .product-card:hover .img-wrap img { transform: scale(1.04); }
+      .rel-category { font-size: 10px; color: #555; letter-spacing: 2px; text-transform: uppercase; }
+      .rel-name { font-size: 15px; font-weight: 500; margin: 4px 0 6px; }
+      .rel-frag { font-size: 10px; color: var(--gold); letter-spacing: 1px; }
+      .rel-price { font-size: 16px; font-weight: 600; margin-top: auto; padding-top: 10px; border-top: 1px solid #111; }
+      .view-btn {
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        width: 100%;
+        background: transparent;
+        border: 1px solid #2a2a2a;
+        color: #fff;
+        font-family: var(--font-main);
+        font-size: 10px;
+        letter-spacing: 2px;
+        padding: 10px;
+        margin-top: 10px;
+        transition: all 0.25s;
+      }
+      .view-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(196,161,77,0.05); }
+
+      /* ── OUT OF STOCK OVERLAY ── */
+      .sold-out-banner {
+        background: #0f0f0f;
+        border: 1px solid #2a1a1a;
+        color: #dc3545;
+        text-align: center;
+        padding: 16px;
+        font-size: 12px;
+        letter-spacing: 3px;
+        margin-bottom: 16px;
+      }
+    </style>
+  </head>
+  <body>
+
+  <% if(unavailable || !product) { %>
+  <div style="min-height:80vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:40px;">
+    <i class="fas fa-ban" style="font-size:48px;color:#2a2a2a;"></i>
+    <h2 style="font-size:1.4rem;letter-spacing:3px;color:#444;">PRODUCT UNAVAILABLE</h2>
+    <p style="font-size:12px;color:#333;letter-spacing:1px;">This product has been removed or is no longer available.</p>
+    <a href="/shop" style="background:var(--gold);color:#000;font-family:var(--font-main);font-size:11px;letter-spacing:3px;font-weight:700;padding:13px 32px;text-decoration:none;display:inline-block;">EXPLORE COLLECTION</a>
+  </div>
+<% } else { %>
+
+  <!-- ══ NAVBAR ══════════════════════════════════════════════════ -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="/home">
+        <i class="fas fa-gem me-2" style="color:var(--gold)"></i>ROYALMIST
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <i class="fas fa-bars text-white"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav mx-auto">
+          <li class="nav-item"><a class="nav-link" href="/home">HOME</a></li>
+          <li class="nav-item"><a class="nav-link" href="/shop">SHOP</a></li>
+          <li class="nav-item"><a class="nav-link" href="/about">ABOUT</a></li>
+        </ul>
+        <div class="d-flex gap-3 align-items-center">
+        <a href="/wishlist"><i class="fa-regular fa-heart" style="cursor:pointer;color:#fff"></i></a> 
+          <a href="/cart" style="position:relative;">
+    <i class="fa-solid fa-bag-shopping" style="color:#fff;font-size:16px;"></i>
+    <% if(locals.cartCount > 0) { %>
+      <span style="position:absolute;top:-8px;right:-8px;background:var(--gold);color:#000;font-size:9px;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;"><%= locals.cartCount %></span>
+    <% } %>
+  </a>
+          <div class="user-dropdown">
+            <% if(user) { %>
+              <span id="userIcon" style="cursor:pointer;color:#fff;font-size:13px;letter-spacing:1px;">
+                <%= user.firstName %> <i class="fa fa-caret-down"></i>
+              </span>
+              <div id="dropdownMenu" class="dropdown-menu-custom">
+                <a href="/account" class="dropdown-item-custom">Account</a>
+                <button id="logoutBtn" class="dropdown-item-custom">Logout</button>
+              </div>
+            <% } else { %>
+              <a href="/signin"><i class="fa fa-user" style="color:#fff"></i></a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══ BREADCRUMB ════════════════════════════════════════════════ -->
+  <div class="breadcrumb-wrap">
+    <div class="container d-flex align-items-center">
+      <a href="/home" class="breadcrumb-item">HOME</a>
+      <span class="breadcrumb-sep"><i class="fas fa-chevron-right" style="font-size:8px;"></i></span>
+      <a href="/shop" class="breadcrumb-item">SHOP</a>
+      <span class="breadcrumb-sep"><i class="fas fa-chevron-right" style="font-size:8px;"></i></span>
+      <% if(product.category) { %>
+        <a href="/shop?category=<%= product.category._id %>" class="breadcrumb-item">
+          <%= product.category.name.toUpperCase() %>
+        </a>
+        <span class="breadcrumb-sep"><i class="fas fa-chevron-right" style="font-size:8px;"></i></span>
+      <% } %>
+      <span class="breadcrumb-item active"><%= product.name.toUpperCase() %></span>
+    </div>
+  </div>
+
+  <!-- ══ PRODUCT DETAILS ════════════════════════════════════════════ -->
+  <div class="container py-5">
+    <div class="row g-5">
+
+      <!-- ── LEFT: Images ── -->
+      <div class="col-lg-6">
+
+        <!-- Main image with zoom -->
+        <div class="main-img-wrap" id="mainImgWrap">
+          <img
+            id="mainImg"
+            src="<%= product.images && product.images[0] ? product.images[0] : '/images/placeholder.jpg' %>"
+            alt="<%= product.name %>"
+          />
+          <div class="zoom-hint"><i class="fas fa-search-plus me-1"></i>HOVER TO ZOOM</div>
+        </div>
+
+        <!-- Thumbnails -->
+        <% if(product.images && product.images.length > 1) { %>
+          <div class="thumb-wrap">
+            <% product.images.forEach((img, i) => { %>
+              <img
+                src="<%= img %>"
+                class="thumb <%= i === 0 ? 'active' : '' %>"
+                onclick="changeImage('<%= img %>', this)"
+                alt="View <%= i+1 %>"
+              />
+            <% }) %>
+          </div>
+        <% } %>
+
+      </div>
+
+      <!-- ── RIGHT: Info ── -->
+      <div class="col-lg-6">
+        <div class="gold-line"></div>
+
+        <!-- Category + Title -->
+        <div class="product-category">
+          <%= product.category ? product.category.name : '' %>
+        </div>
+        <h1 class="product-title"><%= product.name %></h1>
+        <span class="fragrance-badge"><%= product.fragranceType %></span>
+
+        <!-- Stock badge -->
+  <%
+    const totalStock = product.volumes 
+      ? product.volumes.reduce((sum, v) => sum + (v.stock || 0), 0) 
+      : 0;
+    const firstVolStock = product.volumes && product.volumes[0] 
+      ? product.volumes[0].stock 
+      : 0;
+  %>
+  <div>
+    <% if(firstVolStock === 0) { %>
+    <span id="stockBadge" class="stock-badge out-stock">
+      <span class="stock-dot red"></span> OUT OF STOCK
+    </span>
+  <% } else if(firstVolStock <= 5) { %>
+    <span id="stockBadge" class="stock-badge low-stock">
+      <span class="stock-dot yellow"></span> ONLY <%= firstVolStock %> LEFT
+    </span>
+  <% } else { %>
+    <span id="stockBadge" class="stock-badge in-stock">
+      <span class="stock-dot green"></span> IN STOCK (<%= firstVolStock %> units)
+    </span>
+  <% } %>
+  </div>
+
+        <hr class="divider"/>
+
+        <!-- Volume selector -->
+        <% if(product.volumes && product.volumes.length > 0) { %>
+          <div class="volume-label">SELECT VARIANTS</div>
+          <div class="volume-options">
+            <% product.volumes.forEach((vol, i) => { %>
+            <button
+    class="vol-btn <%= i === 0 ? 'selected' : '' %>"
+    onclick="selectVolume(this, <%= vol.price %>, '<%= vol.size %>', <%= vol.stock %>)"
+    data-price="<%= vol.price %>"
+    data-size="<%= vol.size %>"
+    data-stock="<%= vol.stock %>"
+  >
+                <%= vol.size %>
+              </button>
+            <% }) %>
+          </div>
+        <% } %>
+
+
+        <!-- Quantity Selector -->
+  <div style="margin-bottom:20px;">
+    <div class="volume-label">QUANTITY</div>
+    <div style="display:flex;align-items:center;border:1px solid #2a2a2a;width:fit-content;">
+      <button
+        onclick="changeQty(-1)"
+        style="background:none;border:none;color:#888;width:38px;height:38px;cursor:pointer;font-size:16px;transition:color 0.2s;"
+        onmouseover="this.style.color='#c4a14d'" onmouseout="this.style.color='#888'"
+      >−</button>
+      <div id="qtyDisplay"
+        style="width:44px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;border-left:1px solid #2a2a2a;border-right:1px solid #2a2a2a;">
+        1
+      </div>
+      <button
+        onclick="changeQty(1)"
+        style="background:none;border:none;color:#888;width:38px;height:38px;cursor:pointer;font-size:16px;transition:color 0.2s;"
+        onmouseover="this.style.color='#c4a14d'" onmouseout="this.style.color='#888'"
+      >+</button>
+    </div>
+    <div style="font-size:9px;color:#444;letter-spacing:1px;margin-top:5px;">MAX 5 PER ITEM</div>
+  </div>
+
+
+        <!-- Price -->
+        <div class="price-display">
+          <div class="price-label">PRICE</div>
+        <% if(product.hasOffer) { %>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div class="price-amount" id="priceDisplay">
+        ₹<%= product.discountedBasePrice.toLocaleString('en-IN') %>
+      </div>
+      <div style="font-size:14px;color:#555;text-decoration:line-through;">
+        ₹<%= product.originalBasePrice.toLocaleString('en-IN') %>
+      </div>
+    </div>
+    <div style="font-size:10px;color:#4caf82;letter-spacing:2px;margin-top:6px;">
+      <i class="fas fa-tag me-1"></i><%= product.offerLabel %>
+    </div>
+  <% } else { %>
+    <div class="price-amount" id="priceDisplay">
+      ₹<%= product.volumes && product.volumes[0] ? product.volumes[0].price.toLocaleString('en-IN') : 'N/A' %>
+    </div>
+  <% } %>
+        </div>
+
+        <!-- Sold out banner or Action buttons -->
+      <% if(totalStock === 0) { %>
+    <div class="sold-out-banner">
+      <i class="fas fa-times-circle me-2"></i>THIS PRODUCT IS CURRENTLY UNAVAILABLE
+    </div>
+    <button class="btn-add-cart" disabled>SOLD OUT</button>
+  <% } else { %>
+    <button class="btn-add-cart" id="addToCartBtn" onclick="addToCart()">
+      <i class="fas fa-shopping-bag me-2"></i>ADD TO CART
+    </button>
+  <% } %>
+  <!-- Wishlist always shown! -->
+  <button class="btn-wishlist" onclick="addToWishlist()">
+    <i class="far fa-heart me-2"></i>ADD TO WISHLIST
+  </button>
+
+        <!-- Highlights -->
+        <div class="highlights">
+          <div class="highlight-item">
+            <i class="fas fa-certificate"></i>
+            <span>100% AUTHENTIC — All fragrances are sourced directly from certified perfumers</span>
+          </div>
+          <div class="highlight-item">
+            <i class="fas fa-shipping-fast"></i>
+            <span>FREE DELIVERY on orders above ₹1999</span>
+          </div>
+          <div class="highlight-item">
+            <i class="fas fa-undo"></i>
+            <span>7-DAY EASY RETURNS — Sealed & unused products only</span>
+          </div>
+          <div class="highlight-item">
+            <i class="fas fa-shield-alt"></i>
+            <span>SECURE PAYMENT — UPI, Cards, Net Banking accepted</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ DESCRIPTION ══════════════════════════════════════════════ -->
+    <div class="desc-section">
+      <div class="section-title">About This Fragrance</div>
+      <p class="desc-text">
+    <%= product.description %>
+  </p>
+
+      <!-- Product details table -->
+      <div class="row mt-4">
+        <div class="col-md-5">
+          <table style="width:100%;border-collapse:collapse;">
+            <% if(product.category) { %>
+            <tr style="border-bottom:1px solid #111;">
+              <td style="padding:10px 0;font-size:11px;letter-spacing:2px;color:#555;width:40%;">CATEGORY</td>
+              <td style="padding:10px 0;font-size:12px;color:#aaa;"><%= product.category.name %></td>
+            </tr>
+            <% } %>
+            <tr style="border-bottom:1px solid #111;">
+              <td style="padding:10px 0;font-size:11px;letter-spacing:2px;color:#555;">TYPE</td>
+              <td style="padding:10px 0;font-size:12px;color:#aaa;"><%= product.fragranceType %></td>
+            </tr>
+            <tr style="border-bottom:1px solid #111;">
+              <td style="padding:10px 0;font-size:11px;letter-spacing:2px;color:#555;">SIZES</td>
+              <td style="padding:10px 0;font-size:12px;color:#aaa;">
+                <%= product.volumes ? product.volumes.map(v => v.size).join(', ') : 'N/A' %>
+              </td>
+            </tr>
+          <tr>
+    <td style="padding:10px 0;font-size:11px;letter-spacing:2px;color:#555;">STOCK</td>
+    <td style="padding:10px 0;font-size:12px;color:#aaa;" id="stockTableCell"><%= firstVolStock %> units</td>
+  </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ RELATED PRODUCTS ══════════════════════════════════════════ -->
+    <% if(relatedProducts && relatedProducts.length > 0) { %>
+    <div class="related-section">
+      <div style="width:40px;height:2px;background:var(--gold);margin-bottom:10px;"></div>
+      <div class="section-title">You May Also Like</div>
+      <div class="row g-4">
+        <% relatedProducts.forEach(rel => { %>
+          <% const relPrice = rel.volumes && rel.volumes[0] ? rel.volumes[0].price : 0; %>
+          <div class="col-6 col-md-3">
+            <div class="product-card">
+              <div class="img-wrap">
+                <img
+                  src="<%= rel.images && rel.images[0] ? rel.images[0] : '/images/placeholder.jpg' %>"
+                  alt="<%= rel.name %>"
+                />
+              </div>
+              <div class="rel-category"><%= rel.category ? rel.category.name : '' %></div>
+              <div class="rel-name"><%= rel.name %></div>
+              <div class="rel-frag"><%= rel.fragranceType %></div>
+              <div class="rel-price">₹<%= relPrice.toLocaleString('en-IN') %></div>
+              <a href="/shop/<%= rel._id %>" class="view-btn">VIEW PRODUCT</a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
+
+
+    <div style="margin-top:60px;padding-top:40px;border-top:1px solid #111;">
+
+    <!-- Section Title -->
+    <div style="width:40px;height:2px;background:var(--gold);margin-bottom:10px;"></div>
+    <div style="font-size:11px;letter-spacing:4px;color:var(--gold);margin-bottom:30px;text-transform:uppercase;">
+      Ratings & Reviews
+    </div>
+
+    <div class="row g-5">
+
+      <!-- ── LEFT: Rating Summary ── -->
+      <div class="col-lg-4">
+        <div style="background:#080808;border:1px solid #1a1a1a;padding:30px;text-align:center;">
+
+          <!-- Average rating number -->
+          <div style="font-size:4rem;font-weight:700;color:#fff;line-height:1;">
+            <%= avgRating || 0 %>
+          </div>
+
+          <!-- Stars -->
+          <div style="margin:10px 0;font-size:20px;">
+            <% for(let i=1; i<=5; i++) { %>
+              <% if(i <= Math.floor(avgRating)) { %>
+                <i class="fas fa-star" style="color:var(--gold);"></i>
+              <% } else if(i - avgRating < 1 && i - avgRating > 0) { %>
+                <i class="fas fa-star-half-alt" style="color:var(--gold);"></i>
+              <% } else { %>
+                <i class="far fa-star" style="color:#333;"></i>
+              <% } %>
+            <% } %>
+          </div>
+
+          <div style="font-size:11px;color:#555;letter-spacing:2px;">
+            <%= totalReviews %> REVIEW<%= totalReviews !== 1 ? 'S' : '' %>
+          </div>
+
+          <!-- Rating breakdown bars -->
+          <% if(totalReviews > 0) { %>
+          <div style="margin-top:20px;text-align:left;">
+            <% [5,4,3,2,1].forEach(star => { %>
+              <% const count = ratingBreakdown[star] || 0; %>
+              <% const pct   = totalReviews > 0 ? Math.round((count/totalReviews)*100) : 0; %>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <span style="font-size:10px;color:#666;width:12px;"><%= star %></span>
+                <i class="fas fa-star" style="color:var(--gold);font-size:9px;"></i>
+                <div style="flex:1;background:#111;height:4px;">
+                  <div style="width:<%= pct %>%;background:var(--gold);height:4px;transition:width 0.5s;"></div>
+                </div>
+                <span style="font-size:10px;color:#555;width:24px;"><%= count %></span>
+              </div>
+            <% }) %>
+          </div>
+          <% } %>
+
+        </div>
+      </div>
+
+      <!-- ── RIGHT: Write Review + Reviews List ── -->
+      <div class="col-lg-8">
+
+        <!-- Write a Review Form -->
+        <% if(user) { %>
+          <% if(userReview) { %>
+            <!-- Already reviewed -->
+            <div style="background:#080808;border:1px solid #1a3a1a;padding:20px;margin-bottom:30px;">
+              <div style="font-size:11px;letter-spacing:2px;color:#5cb85c;margin-bottom:10px;">
+                <i class="fas fa-check-circle me-2"></i>YOUR REVIEW
+              </div>
+              <div style="margin-bottom:8px;">
+                <% for(let i=1;i<=5;i++) { %>
+                  <i class="fas fa-star" style="color:<%= i<=userReview.rating ? 'var(--gold)' : '#333' %>;font-size:14px;"></i>
+                <% } %>
+              </div>
+              <p style="color:#888;font-size:13px;line-height:1.7;margin-bottom:12px;">
+                "<%= userReview.comment %>"
+              </p>
+              <button onclick="deleteReview()" style="background:none;border:none;color:#c0392b;font-size:10px;letter-spacing:2px;cursor:pointer;font-family:var(--font-main);padding:0;">
+                <i class="fas fa-times me-1"></i>DELETE REVIEW
+              </button>
+            </div>
+          <% } else { %>
+            <!-- Review form -->
+            <div style="background:#080808;border:1px solid #1a1a1a;padding:25px;margin-bottom:30px;">
+              <div style="font-size:11px;letter-spacing:3px;color:var(--gold);margin-bottom:20px;">
+                WRITE A REVIEW
+              </div>
+
+              <!-- Star selector -->
+              <div style="margin-bottom:16px;">
+                <div style="font-size:10px;letter-spacing:2px;color:#555;margin-bottom:10px;">YOUR RATING</div>
+                <div id="starSelector" style="display:flex;gap:8px;">
+                  <% for(let i=1;i<=5;i++) { %>
+                    <i class="far fa-star review-star"
+                      data-val="<%= i %>"
+                      onclick="selectStar(<%= i %>)"
+                      style="font-size:24px;color:#333;cursor:pointer;transition:color 0.1s;">
+                    </i>
+                  <% } %>
+                </div>
+                <input type="hidden" id="selectedRating" value="0"/>
+              </div>
+
+              <!-- Comment -->
+              <div style="margin-bottom:16px;">
+                <div style="font-size:10px;letter-spacing:2px;color:#555;margin-bottom:8px;">YOUR REVIEW</div>
+                <textarea
+                  id="reviewComment"
+                  placeholder="Share your experience with this fragrance..."
+                  maxlength="500"
+                  style="width:100%;background:#000;border:1px solid #2a2a2a;color:#fff;font-family:var(--font-main);font-size:13px;padding:12px;resize:vertical;min-height:100px;letter-spacing:0.5px;"
+                ></textarea>
+                <div style="font-size:10px;color:#444;text-align:right;margin-top:4px;">
+                  <span id="charCount">0</span>/500
+                </div>
+              </div>
+
+              <button onclick="submitReview()"
+                style="background:var(--gold);border:none;color:#000;font-family:var(--font-main);font-size:11px;letter-spacing:2px;font-weight:700;padding:12px 28px;cursor:pointer;transition:all 0.2s;"
+                id="submitReviewBtn">
+                SUBMIT REVIEW
+              </button>
+              <div id="reviewMsg" style="margin-top:10px;font-size:11px;letter-spacing:1px;display:none;"></div>
+            </div>
+          <% } %>
+        <% } else { %>
+          <div style="background:#080808;border:1px solid #1a1a1a;padding:20px;margin-bottom:30px;text-align:center;">
+            <p style="color:#555;font-size:12px;letter-spacing:1px;margin-bottom:12px;">
+              LOGIN TO WRITE A REVIEW
+            </p>
+            <a href="/signin" style="color:var(--gold);font-size:11px;letter-spacing:2px;text-decoration:none;border:1px solid var(--gold);padding:8px 20px;">
+              SIGN IN
+            </a>
+          </div>
+        <% } %>
+
+        <!-- Reviews List -->
+        <div id="reviewsList">
+          <% if(reviews.length === 0) { %>
+            <div style="text-align:center;padding:40px;color:#333;">
+              <i class="far fa-comment-alt" style="font-size:36px;margin-bottom:12px;display:block;"></i>
+              <span style="font-size:12px;letter-spacing:2px;">NO REVIEWS YET — BE THE FIRST!</span>
+            </div>
+          <% } else { %>
+            <% reviews.forEach(review => { %>
+              <div class="review-item" style="padding:20px 0;border-bottom:1px solid #0f0f0f;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                  <div>
+                    <!-- Stars -->
+                    <div style="margin-bottom:4px;">
+                      <% for(let i=1;i<=5;i++) { %>
+                        <i class="fas fa-star" style="color:<%= i<=review.rating ? 'var(--gold)' : '#222' %>;font-size:12px;"></i>
+                      <% } %>
+                    </div>
+                    <div style="font-size:13px;font-weight:500;color:#ddd;">
+    <%= review.user ? review.user.firstName : 'Anonymous' %> <%= review.user ? (review.user.lastName || '') : '' %>
+  </div>
+                  </div>
+                  <div style="font-size:10px;color:#444;letter-spacing:1px;">
+                    <%= new Date(review.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %>
+                  </div>
+                </div>
+                <p style="color:#777;font-size:13px;line-height:1.7;margin:0;">
+                  "<%= review.comment %>"
+                </p>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /container -->
+
+  <!-- ══ FOOTER ════════════════════════════════════════════════════ -->
+  <footer style="border-top:1px solid #222;padding:80px 0 30px;font-family:var(--font-main);">
+    <div class="container">
+      <div class="row g-5 align-items-start">
+
+        <!-- Col 1: Brand -->
+        <div class="col-12 col-md-4">
+          <span style="font-family:var(--font-main);color:var(--gold);font-size:24px;margin-bottom:20px;letter-spacing:4px;font-weight:700;display:block;">ROYALMIST</span>
+          <p class="text-secondary small" style="line-height:1.8;">
+            Exquisite fragrances designed for those who command attention and appreciate the finer things in life.
+          </p>
+        </div>
+
+        <!-- Col 2: Contact -->
+        <div class="col-6 col-md-2">
+          <div style="color:#fff;font-size:14px;letter-spacing:1px;margin-bottom:20px;font-weight:600;">CONTACT US</div>
+          <p class="text-secondary small" style="line-height:2;">
+            Other Enquiries<br>
+            +91 98765 43210<br>
+            royalmist@gmail.com
+          </p>
+        </div>
+
+        <!-- Col 3: Support -->
+        <div class="col-6 col-md-2">
+          <div style="color:#fff;font-size:14px;letter-spacing:1px;margin-bottom:20px;font-weight:600;">SUPPORT</div>
+          <a href="#" style="color:#777;text-decoration:none;font-size:13px;display:block;margin-bottom:10px;transition:0.2s;">Newsletter</a>
+          <a href="#" style="color:#777;text-decoration:none;font-size:13px;display:block;margin-bottom:10px;">Community Guidelines</a>
+          <a href="#" style="color:#777;text-decoration:none;font-size:13px;display:block;margin-bottom:10px;">Terms & Conditions</a>
+        </div>
+
+        <!-- Col 4: Social -->
+        <div class="col-12 col-md-4">
+          <div style="color:#fff;font-size:14px;letter-spacing:1px;margin-bottom:20px;font-weight:600;">FOLLOW US</div>
+          <div style="margin-bottom:15px;">
+            <i class="fab fa-instagram" style="color:#fff;margin-right:20px;font-size:18px;cursor:pointer;"></i>
+            <i class="fab fa-youtube"   style="color:#fff;margin-right:20px;font-size:18px;cursor:pointer;"></i>
+            <i class="fab fa-twitter"   style="color:#fff;font-size:18px;cursor:pointer;"></i>
+          </div>
+          <p class="text-secondary" style="font-size:11px;margin-bottom:0;">
+            Stay connected for exclusive launches, behind-the-scenes stories, and member-only offers.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Footer Bottom -->
+      <div style="border-top:1px solid #1a1a1a;margin-top:50px;padding-top:25px;text-align:center;">
+        <p class="text-secondary mb-0" style="font-size:11px;letter-spacing:1px;">
+          © 2026 ROYAL MIST FRAGRANCES. ALL RIGHTS RESERVED.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast-msg" id="toastMsg" style="position:fixed;top:30px;right:30px;background:#0a0a0a;border:1px solid var(--gold);color:var(--gold);font-size:12px;letter-spacing:1px;padding:12px 20px;z-index:9999;display:none;font-family:var(--font-main);"></div>
+
+<!-- ── CONFIRM MODAL (for delete review) ── -->
+<div class="confirm-overlay" id="confirmOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:9998;opacity:0;pointer-events:none;transition:opacity 0.25s ease;">
+  <div class="confirm-box" style="background:#0a0a0a;border:1px solid #2a2a2a;padding:36px 32px;max-width:360px;width:90%;text-align:center;">
+    <div class="confirm-icon" style="width:52px;height:52px;border:1px solid #c0392b;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#c0392b;font-size:18px;">
+      <i class="fas fa-trash-alt"></i>
+    </div>
+    <div class="confirm-title" style="font-size:14px;letter-spacing:3px;color:#fff;font-weight:600;margin-bottom:8px;">DELETE REVIEW?</div>
+    <div class="confirm-sub" style="font-size:11px;color:#555;letter-spacing:1px;line-height:1.7;margin-bottom:22px;">Are you sure you want to delete your review? This action cannot be undone.</div>
+    <div class="confirm-actions" style="display:flex;gap:10px;">
+      <button onclick="closeConfirmModal()" style="flex:1;background:transparent;border:1px solid #2a2a2a;color:#666;font-family:var(--font-main);font-size:11px;letter-spacing:2px;padding:14px;cursor:pointer;transition:0.2s;">CANCEL</button>
+      <button id="confirmDeleteReviewBtn" style="flex:1;background:#c0392b;border:none;color:#fff;font-family:var(--font-main);font-size:11px;letter-spacing:2px;font-weight:700;padding:14px;cursor:pointer;transition:0.2s;">YES, DELETE</button>
+    </div>
+  </div>
+</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+  // ── Selected state ───────────────────────────────────────────────
+  let selectedPrice = <%= product.volumes && product.volumes[0] ? product.volumes[0].price : 0 %>;
+  let selectedSize  = "<%= product.volumes && product.volumes[0] ? product.volumes[0].size : '' %>";
+  const productId   = "<%= product._id %>";
+
+  // ── Image zoom (mouse position based) ───────────────────────────
+  const mainWrap = document.getElementById("mainImgWrap");
+  const mainImg  = document.getElementById("mainImg");
+  if (mainWrap && mainImg) {
+    mainWrap.addEventListener("mousemove", (e) => {
+      const rect = mainWrap.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width)  * 100;
+      const y = ((e.clientY - rect.top)  / rect.height) * 100;
+      mainImg.style.transformOrigin = `${x}% ${y}%`;
+    });
+    mainWrap.addEventListener("mouseleave", () => {
+      mainImg.style.transformOrigin = "center center";
+    });
+  }
+
+  // ── Thumbnail switch ─────────────────────────────────────────────
+  function changeImage(src, el) {
+    mainImg.src = src;
+    document.querySelectorAll(".thumb").forEach(t => t.classList.remove("active"));
+    el.classList.add("active");
+  }
+
+  // ── Volume select ────────────────────────────────────────────────
+  const hasOffer     = <%= product.hasOffer ? 'true' : 'false' %>;
+  const offerDiscount = <%= product.hasOffer ? (product.originalBasePrice - product.discountedBasePrice) : 0 %>;
+
+  function selectVolume(btn, price, size, stock) {
+    document.querySelectorAll(".vol-btn").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    selectedSize = size;
+
+    // Stock badge update
+    const badge = document.getElementById("stockBadge");
+    if(stock === 0) {
+      badge.className = "stock-badge out-stock";
+      badge.innerHTML = '<span class="stock-dot red"></span> OUT OF STOCK';
+      const cartBtn = document.getElementById("addToCartBtn");
+      if(cartBtn) cartBtn.disabled = true;
+    } else if(stock <= 5) {
+      badge.className = "stock-badge low-stock";
+      badge.innerHTML = '<span class="stock-dot yellow"></span> ONLY ' + stock + ' LEFT';
+      const cartBtn = document.getElementById("addToCartBtn");
+      if(cartBtn) cartBtn.disabled = false;
+    } else {
+      badge.className = "stock-badge in-stock";
+    badge.innerHTML = '<span class="stock-dot green"></span> IN STOCK (' + stock + ' units)';
+      const cartBtn = document.getElementById("addToCartBtn");
+      if(cartBtn) cartBtn.disabled = false;
+    }
+  // Stock table update
+    const tableCell = document.getElementById("stockTableCell");
+    if(tableCell) tableCell.textContent = stock + " units";
+    // Price update
+    if(hasOffer) {
+      const discounted = Math.max(0, price - offerDiscount);
+      selectedPrice = discounted;
+      document.getElementById("priceDisplay").innerHTML =
+        "₹" + discounted.toLocaleString("en-IN") +
+        ' <span style="font-size:16px;color:#555;text-decoration:line-through;margin-left:8px;">₹' +
+        price.toLocaleString("en-IN") + '</span>';
+    } else {
+      selectedPrice = price;
+      document.getElementById("priceDisplay").textContent =
+        "₹" + price.toLocaleString("en-IN");
+    }
+  }
+
+  // ── Navbar dropdown ──────────────────────────────────────────────
+  const userIcon     = document.getElementById("userIcon");
+  const dropdownMenu = document.getElementById("dropdownMenu");
+  if (userIcon && dropdownMenu) {
+    userIcon.addEventListener("click", e => {
+      e.stopPropagation();
+      dropdownMenu.classList.toggle("show");
+    });
+    window.addEventListener("click", () => dropdownMenu.classList.remove("show"));
+  }
+
+  // ── Logout ───────────────────────────────────────────────────────
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      await fetch("/logout", { method: "POST" });
+      window.location.href = "/signin";
+    });
+  }
+
+  // ── Add to Cart ──────────────────────────────────────────────────
+  let selectedQty = 1;
+
+  function changeQty(delta) {
+    selectedQty = Math.min(5, Math.max(1, selectedQty + delta));
+    document.getElementById("qtyDisplay").textContent = selectedQty;
+  }
+
+  async function addToCart() {
+    const btn = document.getElementById("addToCartBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>ADDING...';
+
+    try {
+      const res = await fetch("/cart/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId,
+          quantity: selectedQty,
+          size: selectedSize,
+          price: selectedPrice
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        btn.innerHTML = '<i class="fas fa-check me-2"></i>ADDED TO CART!';
+        btn.style.background = "#2d6a2d";
+        btn.style.color = "#fff";
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-shopping-bag me-2"></i>ADD TO CART';
+          btn.style.background = "";
+          btn.style.color = "";
+        }, 2000);
+           } else {
+        showToast(data.message || "Failed to add to cart", true);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-shopping-bag me-2"></i>ADD TO CART';
+      }
+    } catch (err) {
+      showToast("Something went wrong", true);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-shopping-bag me-2"></i>ADD TO CART';
+    }
+  }
+
+  // ── Add to Wishlist ──────────────────────────────────────────────
+  async function addToWishlist() {
+    try {
+      const res  = await fetch("/wishlist/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId })
+      });
+      const data = await res.json();
+      const btn  = document.querySelector(".btn-wishlist");
+
+      if (data.success) {
+        btn.innerHTML     = '<i class="fas fa-heart me-2" style="color:var(--gold)"></i>ADDED TO WISHLIST';
+        btn.style.borderColor = "var(--gold)";
+        btn.style.color       = "var(--gold)";
+      } else {
+        // Already in wishlist or any error
+        btn.innerHTML     = '<i class="fas fa-heart me-2" style="color:var(--gold)"></i>ALREADY IN WISHLIST';
+        btn.style.borderColor = "var(--gold)";
+        btn.style.color       = "var(--gold)";
+        btn.disabled          = true;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  // ── Star selector ────────────────────────────────────────────────
+  function selectStar(val) {
+    document.getElementById("selectedRating").value = val;
+    document.querySelectorAll(".review-star").forEach((star, i) => {
+      star.className = i < val ? "fas fa-star review-star" : "far fa-star review-star";
+      star.style.color = i < val ? "var(--gold)" : "#333";
+    });
+  }
+
+  // Hover effect
+  document.querySelectorAll(".review-star").forEach((star, i) => {
+    star.addEventListener("mouseenter", () => {
+      document.querySelectorAll(".review-star").forEach((s, j) => {
+        s.style.color = j <= i ? "var(--gold)" : "#333";
+      });
+    });
+    star.addEventListener("mouseleave", () => {
+      const selected = parseInt(document.getElementById("selectedRating").value) || 0;
+      document.querySelectorAll(".review-star").forEach((s, j) => {
+        s.style.color = j < selected ? "var(--gold)" : "#333";
+      });
+    });
+  });
+
+  // Char count
+  const commentEl = document.getElementById("reviewComment");
+  if (commentEl) {
+    commentEl.addEventListener("input", () => {
+      document.getElementById("charCount").textContent = commentEl.value.length;
+    });
+  }
+
+  // ── Submit review ────────────────────────────────────────────────
+  async function submitReview() {
+    const rating  = parseInt(document.getElementById("selectedRating").value);
+    const comment = document.getElementById("reviewComment")?.value?.trim();
+    const msgEl   = document.getElementById("reviewMsg");
+    const btn     = document.getElementById("submitReviewBtn");
+
+    if (!rating || rating < 1) {
+      showMsg("Please select a star rating", true);
+      return;
+    }
+    if (!comment || comment.length < 5) {
+      showMsg("Review must be at least 5 characters", true);
+      return;
+    }
+
+    btn.disabled    = true;
+    btn.textContent = "SUBMITTING...";
+
+    try {
+      const res  = await fetch(`/shop/${productId}/review`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ rating, comment }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Add review to list immediately
+        const listEl = document.getElementById("reviewsList");
+        const noMsg  = listEl.querySelector("div[style*='text-align:center']");
+        if (noMsg) noMsg.remove();
+
+        const newReview = document.createElement("div");
+        newReview.className = "review-item";
+        newReview.style = "padding:20px 0;border-bottom:1px solid #0f0f0f;";
+        newReview.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+            <div>
+              <div style="margin-bottom:4px;">
+                ${'<i class="fas fa-star" style="color:var(--gold);font-size:12px;"></i>'.repeat(data.review.rating)}
+                ${'<i class="fas fa-star" style="color:#222;font-size:12px;"></i>'.repeat(5 - data.review.rating)}
+              </div>
+              <div style="font-size:13px;font-weight:500;color:#ddd;">${data.review.userName}</div>
+            </div>
+            <div style="font-size:10px;color:#444;letter-spacing:1px;">${data.review.createdAt}</div>
+          </div>
+          <p style="color:#777;font-size:13px;line-height:1.7;margin:0;">"${data.review.comment}"</p>
+        `;
+        listEl.prepend(newReview);
+
+        // Reload page to show "Your Review" section
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        showMsg(data.message, true);
+        btn.disabled    = false;
+        btn.textContent = "SUBMIT REVIEW";
+      }
+    } catch (err) {
+      showMsg("Something went wrong", true);
+      btn.disabled    = false;
+      btn.textContent = "SUBMIT REVIEW";
+    }
+  }
+
+   // ── Delete review ────────────────────────────────────────────────
+  function deleteReview() {
+    document.getElementById("confirmOverlay").style.opacity = "1";
+    document.getElementById("confirmOverlay").style.pointerEvents = "all";
+  }
+
+  function closeConfirmModal() {
+    document.getElementById("confirmOverlay").style.opacity = "0";
+    document.getElementById("confirmOverlay").style.pointerEvents = "none";
+  }
+
+  document.getElementById("confirmDeleteReviewBtn").addEventListener("click", async () => {
+    closeConfirmModal();
+    try {
+      const res  = await fetch(`/shop/${productId}/review`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showToast("Review deleted successfully");
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        showToast(data.message, true);
+      }
+    } catch (err) {
+      showToast("Something went wrong", true);
+    }
+  });
+
+  document.getElementById("confirmOverlay").addEventListener("click", function(e) {
+    if (e.target === this) closeConfirmModal();
+  });
+
+  function showMsg(msg, isError) {
+    const el = document.getElementById("reviewMsg");
+    if (!el) return;
+    el.textContent   = msg;
+    el.style.color   = isError ? "#c0392b" : "#5cb85c";
+    el.style.display = "block";
+    setTimeout(() => { el.style.display = "none"; }, 3000);
+  }
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById("toastMsg");
+    t.textContent = msg;
+    t.style.borderColor = isError ? "#c0392b" : "var(--gold)";
+    t.style.color = isError ? "#c0392b" : "var(--gold)";
+    t.style.display = "block";
+    setTimeout(() => t.style.display = "none", 3000);
+  }
+
+
+
+  </script>
+  <% } %>
+  </body>
+  </html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Management — RoyalMist Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --gold: #c4a14d;
+  --gold-light: #d4b05d;
+  --bg: #000;
+  --sidebar-bg: #050505;
+  --card: #0a0a0a;
+  --border: #1a1a1a;
+  --border-dim: #111;
+  --text: #fff;
+  --text-muted: #888;
+  --sidebar-width: 240px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Playfair Display', serif; min-height: 100vh; display: flex; }
+
+/* SIDEBAR */
+.sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; transition: transform 0.3s ease; }
+.sidebar-logo { padding: 28px 24px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+.logo-icon { width: 36px; height: 36px; background: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 18px; clip-path: polygon(0 0, 70% 0, 100% 30%, 100% 100%, 30% 100%, 0 70%); flex-shrink: 0; }
+.logo-text { color: var(--gold); font-size: 13px; letter-spacing: 4px; font-weight: 700; }
+.sidebar-nav { flex: 1; padding: 20px 0; overflow-y: auto; }
+.nav-item { display: flex; align-items: center; gap: 14px; padding: 13px 24px; color: #666; text-decoration: none; font-size: 13px; letter-spacing: 1px; transition: all 0.2s; cursor: pointer; border-left: 3px solid transparent; }
+.nav-item:hover { color: var(--gold); background: rgba(196,161,77,0.15); }
+.nav-item.active { color: var(--gold); border-left-color: var(--gold); background: rgba(196,161,77,0.05); }
+.nav-item i { width: 18px; font-size: 14px; text-align: center; }
+.sidebar-footer { padding: 20px 24px; border-top: 1px solid var(--border); font-size: 10px; letter-spacing: 2px; color: #333; text-align: center; }
+
+/* MAIN */
+.main-content { margin-left: var(--sidebar-width); flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+.top-bar { border-bottom: 1px solid var(--border); padding: 20px 36px; display: flex; align-items: center; justify-content: space-between; gap: 16px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; }
+.page-heading { font-size: 28px; font-weight: 700; letter-spacing: 2px; }
+.btn-add { border: 1px solid var(--gold); color: #000; background: var(--gold); padding: 10px 22px; font-size: 11px; letter-spacing: 2px; font-family: 'Playfair Display', serif; font-weight: 700; cursor: pointer; transition: 0.3s; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+.btn-add:hover { background: var(--gold-light); }
+
+.content-wrap { padding: 36px; flex: 1; }
+.table-card { border: 1px solid var(--border); background: var(--card); }
+.table-header { padding: 28px 32px 20px; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; border-bottom: 1px solid var(--border-dim); }
+.table-title { font-size: 13px; letter-spacing: 4px; color: var(--gold); font-weight: 600; }
+.table-subtitle { font-size: 12px; color: var(--text-muted); letter-spacing: 1px; margin-top: 6px; }
+
+/* SEARCH */
+.search-wrap { position: relative; display: flex; align-items: center; }
+.search-wrap input { background: #050505; border: 1px solid #2a2a2a; color: #fff; padding: 11px 40px 11px 42px; font-family: 'Playfair Display', serif; font-size: 12px; letter-spacing: 1px; outline: none; width: 280px; transition: border-color 0.2s; }
+.search-wrap input:focus { border-color: var(--gold); }
+.search-wrap input::placeholder { color: #444; }
+.search-icon { position: absolute; left: 14px; color: #444; font-size: 13px; pointer-events: none; transition: color 0.2s; }
+.search-wrap:focus-within .search-icon { color: var(--gold); }
+.search-clear { position: absolute; right: 12px; background: none; border: none; color: #555; font-size: 14px; cursor: pointer; display: none; line-height: 1; transition: color 0.2s; padding: 2px 4px; }
+.search-clear:hover { color: var(--gold); }
+.search-clear.visible { display: flex; align-items: center; }
+
+/* TABLE */
+.products-table { width: 100%; border-collapse: collapse; }
+.products-table thead tr { border-bottom: 1px solid var(--border-dim); }
+.products-table th { padding: 16px 20px; text-align: left; font-size: 10px; letter-spacing: 3px; color: var(--gold); font-weight: 700; }
+.products-table tbody tr { border-bottom: 1px solid #0d0d0d; transition: background 0.2s; }
+.products-table tbody tr:hover { background: #0d0d0d; }
+.products-table td { padding: 16px 20px; font-size: 13px; vertical-align: middle; }
+.td-no { color: var(--text-muted); font-size: 11px; letter-spacing: 2px; width: 55px; }
+
+/* PRODUCT CELL */
+.prod-cell { display: flex; align-items: center; gap: 14px; }
+.prod-thumb { width: 52px; height: 52px; object-fit: cover; border: 1px solid #2a2a2a; flex-shrink: 0; }
+.prod-thumb-placeholder { width: 52px; height: 52px; background: #111; border: 1px solid #2a2a2a; display: flex; align-items: center; justify-content: center; color: #333; flex-shrink: 0; }
+.prod-name { font-size: 14px; letter-spacing: 1px; font-weight: 600; }
+.prod-frag { font-size: 11px; color: var(--gold); letter-spacing: 1px; margin-top: 3px; }
+.prod-cat { font-size: 11px; color: #666; letter-spacing: 1px; }
+.prod-stock { font-size: 13px; letter-spacing: 1px; }
+.stock-low { color: #e74c3c; }
+.stock-ok { color: #2ecc71; }
+.prod-price { font-size: 13px; color: var(--gold); letter-spacing: 1px; }
+.prod-date { font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; white-space: nowrap; }
+
+/* STATUS */
+.status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; font-size: 9px; letter-spacing: 2px; font-weight: 700; border: 1px solid; }
+.status-active { border-color: #2ecc71; color: #2ecc71; }
+.status-inactive { border-color: #666; color: #666; }
+
+/* ACTIONS */
+.action-cell { display: flex; gap: 8px; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
+.btn-action { padding: 8px 14px; border: 1px solid; font-family: 'Playfair Display', serif; font-size: 10px; letter-spacing: 2px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; background: transparent; }
+.btn-edit { border-color: #2a2a2a; color: #888; }
+.btn-edit:hover { border-color: var(--gold); color: var(--gold); }
+.btn-delete { border-color: #2a2a2a; color: #888; }
+.btn-delete:hover { border-color: #c0392b; color: #c0392b; }
+
+/* EMPTY */
+.empty-state { padding: 60px 20px; text-align: center; color: var(--text-muted); }
+.empty-state i { font-size: 36px; color: #2a2a2a; margin-bottom: 16px; display: block; }
+.empty-state p { font-size: 12px; letter-spacing: 2px; }
+
+/* FOOTER / PAGINATION */
+.table-footer { padding: 22px 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; border-top: 1px solid var(--border-dim); }
+.count-text { font-size: 10px; letter-spacing: 3px; color: var(--text-muted); }
+.pagination { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.page-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid #2a2a2a; color: #666; font-family: 'Playfair Display', serif; font-size: 12px; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+.page-btn:hover { border-color: var(--gold); color: var(--gold); }
+.page-btn.active { background: var(--gold); border-color: var(--gold); color: #000; font-weight: 700; }
+.page-btn.disabled { opacity: 0.3; pointer-events: none; }
+
+/* STATS */
+.stats-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1px solid var(--border); border-top: none; }
+.stat-box { padding: 28px 36px; border-right: 1px solid var(--border); }
+.stat-box:last-child { border-right: none; }
+.stat-label { font-size: 10px; letter-spacing: 3px; color: var(--text-muted); margin-bottom: 10px; }
+.stat-value { font-size: 32px; font-weight: 700; color: var(--gold); letter-spacing: 2px; }
+
+/* CONFIRM MODAL */
+.confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 8888; align-items: center; justify-content: center; }
+.confirm-overlay.active { display: flex; }
+.confirm-box { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 40px 44px; max-width: 420px; width: 90%; text-align: center; }
+.confirm-icon { font-size: 36px; color: #c0392b; margin-bottom: 18px; }
+.confirm-title { font-size: 14px; letter-spacing: 3px; color: var(--gold); margin-bottom: 10px; }
+.confirm-msg { font-size: 12px; color: #888; letter-spacing: 1px; margin-bottom: 28px; line-height: 1.7; }
+.confirm-actions { display: flex; gap: 12px; justify-content: center; }
+.btn-cancel-confirm { padding: 10px 24px; border: 1px solid #2a2a2a; color: #888; background: transparent; font-family: 'Playfair Display', serif; font-size: 10px; letter-spacing: 2px; cursor: pointer; transition: 0.2s; }
+.btn-cancel-confirm:hover { border-color: var(--gold); color: var(--gold); }
+.btn-confirm-delete { padding: 10px 24px; border: 1px solid #c0392b; color: #c0392b; background: transparent; font-family: 'Playfair Display', serif; font-size: 10px; letter-spacing: 2px; cursor: pointer; transition: 0.2s; }
+.btn-confirm-delete:hover { background: #c0392b; color: #fff; }
+.btn-list { border-color: #2a2a2a; color: #888; }
+.btn-list:hover { border-color: #2ecc71; color: #2ecc71; }
+.btn-unlist { border-color: #2a2a2a; color: #888; }
+.btn-unlist:hover { border-color: #e67e22; color: #e67e22; }
+
+/* TOAST */
+#toast { display: none; position: fixed; top: 24px; left: 50%; transform: translateX(-50%); background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 14px 28px; font-family: 'Playfair Display', serif; font-size: 12px; letter-spacing: 2px; z-index: 9999; max-width: 90vw; text-align: center; }
+
+/* HAMBURGER */
+.hamburger { display: none; background: none; border: 1px solid #2a2a2a; color: var(--gold); width: 38px; height: 38px; cursor: pointer; align-items: center; justify-content: center; font-size: 16px; transition: 0.2s; flex-shrink: 0; }
+.hamburger:hover { border-color: var(--gold); }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 99; }
+.admin-footer { padding: 24px 36px; border-top: 1px solid var(--border-dim); text-align: center; font-size: 10px; letter-spacing: 3px; color: #2a2a2a; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.active { display: block; }
+  .main-content { margin-left: 0; }
+  .hamburger { display: flex; }
+  .top-bar { padding: 16px 20px; }
+  .content-wrap { padding: 20px 16px; }
+  .table-header { padding: 20px 20px 16px; flex-direction: column; }
+  .search-wrap, .search-wrap input { width: 100%; }
+  .products-table th:nth-child(4), .products-table td:nth-child(4) { display: none; }
+  .products-table th:nth-child(5), .products-table td:nth-child(5) { display: none; }
+  .stats-strip { grid-template-columns: 1fr; }
+  .stat-box { border-right: none; border-bottom: 1px solid var(--border); }
+}
+@media (max-width: 600px) {
+  .products-table th:nth-child(1), .products-table td:nth-child(1) { display: none; }
+  .products-table th:nth-child(3), .products-table td:nth-child(3) { display: none; }
+  .btn-action { padding: 6px 8px; font-size: 8px; letter-spacing: 1px; gap: 4px; }
+  .btn-action i { display: none; }
+  .page-heading { font-size: 20px; }
+  .action-cell { flex-direction: column; align-items: flex-end; gap: 5px; }
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+        <span class="logo-text"><i class="fas fa-gem me-2" style="color:var(--gold)"></i>ROYALMIST</span>
+    </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item" href="/admin/dashboard"><i class="fa-solid fa-border-all"></i>Dashboard</a>
+    <a class="nav-item active" href="/admin/products"><i class="fa-solid fa-box-open"></i>Products</a>
+    <a class="nav-item" href="/admin/categories"><i class="fa-solid fa-tag"></i>Categories</a>
+    <a class="nav-item" href="/admin/coupons"><i class="fa-solid fa-ticket"></i>Coupons</a>
+    <a class="nav-item" href="/admin/customers"><i class="fa-solid fa-users"></i>Customers</a>
+    <a class="nav-item" href="/admin/orders"><i class="fa-solid fa-bag-shopping"></i>Orders</a>
+    <a class="nav-item" href="/admin/inventory"><i class="fa-solid fa-warehouse"></i>Inventory</a>
+    <a class="nav-item" href="/admin/product-offer"><i class="fa-solid fa-percent"></i>Product Offer</a>
+    <a class="nav-item" href="/admin/category-offer"><i class="fa-solid fa-layer-group"></i>Category Offer</a>
+    <a class="nav-item" href="/admin/sales-report"><i class="fa-solid fa-chart-bar"></i>Sales Report</a>
+    <a class="nav-item" href="/admin/logout"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+</nav>
+  <div class="sidebar-footer">ROYALMIST ADMIN v2.0</div>
+</aside>
+
+<div class="main-content">
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+      <h1 class="page-heading">Products</h1>
+    </div>
+    <a href="/admin/products/add" class="btn-add">
+      <i class="fa-solid fa-plus" style="font-size:10px;"></i> ADD PRODUCT
+    </a>
+  </div>
+
+  <div class="content-wrap">
+    <div class="table-card">
+      <div class="table-header">
+        <div>
+          <div class="table-title">PRODUCT MANAGEMENT</div>
+          <div class="table-subtitle">Manage your perfume collection and inventory.</div>
+        </div>
+        <form method="GET" action="/admin/products" id="searchForm">
+          <div class="search-wrap">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" name="search" id="searchInput"
+              placeholder="Search products..." value="<%= search %>" autocomplete="off">
+            <button type="button" class="search-clear <%= search ? 'visible' : '' %>" id="clearBtn">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <% if (products.length === 0) { %>
+          <div class="empty-state">
+            <i class="fa-solid fa-box-open"></i>
+            <p>NO PRODUCTS FOUND</p>
+          </div>
+        <% } else { %>
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Stock</th>
+              <th>Price From</th>
+              <th>Status</th>
+              <th style="text-align:right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% products.forEach(function(product, i) { %>
+              <% const no = String((currentPage - 1) * pageSize + i + 1).padStart(2, '0'); %>
+              <% const minPrice = product.volumes && product.volumes.length
+                  ? Math.min(...product.volumes.map(v => v.price))
+                  : 0; %>
+              <tr>
+                <td class="td-no"><%= no %></td>
+                <td>
+                  <div class="prod-cell">
+                    <% if (product.images && product.images.length > 0) { %>
+                      <img src="<%= product.images[0] %>" class="prod-thumb" alt="<%= product.name %>">
+                    <% } else { %>
+                      <div class="prod-thumb-placeholder">
+                        <i class="fa-solid fa-image" style="font-size:18px;"></i>
+                      </div>
+                    <% } %>
+                    <div>
+                      <div class="prod-name"><%= product.name %></div>
+                      <div class="prod-frag"><%= product.fragranceType %></div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="prod-cat"><%= product.category ? product.category.name : '—' %></div>
+                </td>
+                <td>
+  <%
+    const totalVolStock = product.volumes 
+      ? product.volumes.reduce((sum, v) => sum + (v.stock || 0), 0) 
+      : 0;
+  %>
+  <div class="prod-stock <%= totalVolStock <= 5 ? 'stock-low' : 'stock-ok' %>">
+    <%= totalVolStock %>
+    <% if(totalVolStock <= 5) { %><span style="font-size:10px;"> LOW</span><% } %>
+  </div>
+</td>
+                <td>
+                  <div class="prod-price">₹<%= minPrice.toLocaleString('en-IN') %></div>
+                </td>
+                <td>
+                  <span class="status-badge <%= product.isActive ? 'status-active' : 'status-inactive' %>">
+                    <i class="fa-solid fa-circle" style="font-size:6px;"></i>
+                    <%= product.isActive ? 'ACTIVE' : 'INACTIVE' %>
+                  </span>
+                </td>
+                <td>
+                  <div class="action-cell">
+                    <a href="/admin/products/edit/<%= product._id %>" class="btn-action btn-edit">
+  <i class="fa-solid fa-pen" style="font-size:9px;"></i> EDIT
+</a>
+<button class="btn-action <%= product.isActive ? 'btn-unlist' : 'btn-list' %>"
+  onclick="confirmToggle('<%= product._id %>', '<%= product.name %>', <%= product.isActive %>)">
+  <i class="fa-solid <%= product.isActive ? 'fa-eye-slash' : 'fa-eye' %>" style="font-size:9px;"></i>
+  <%= product.isActive ? 'UNLIST' : 'LIST' %>
+</button>
+<button class="btn-action btn-delete"
+  onclick="confirmDelete('<%= product._id %>', '<%= product.name %>')">
+  <i class="fa-solid fa-trash" style="font-size:9px;"></i> DELETE
+</button>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+
+      <div class="table-footer">
+        <div class="count-text">SHOWING <%= products.length %> OF <%= total %> PRODUCTS</div>
+        <div class="pagination">
+          <% if (currentPage > 1) { %>
+            <a class="page-btn" href="/admin/products?page=<%= currentPage-1 %>&search=<%= search %>">
+              <i class="fa-solid fa-chevron-left" style="font-size:10px;"></i>
+            </a>
+          <% } else { %>
+            <span class="page-btn disabled"><i class="fa-solid fa-chevron-left" style="font-size:10px;"></i></span>
+          <% } %>
+          <% for (let p = 1; p <= totalPages; p++) { %>
+            <a class="page-btn <%= p === currentPage ? 'active' : '' %>"
+               href="/admin/products?page=<%= p %>&search=<%= search %>"><%= p %></a>
+          <% } %>
+          <% if (currentPage < totalPages) { %>
+            <a class="page-btn" href="/admin/products?page=<%= currentPage+1 %>&search=<%= search %>">
+              <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
+            </a>
+          <% } else { %>
+            <span class="page-btn disabled"><i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></span>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-strip">
+      <div class="stat-box">
+        <div class="stat-label">TOTAL PRODUCTS</div>
+        <div class="stat-value"><%= total %></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">ACTIVE PRODUCTS</div>
+        <div class="stat-value"><%= activeCount %></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">LOW STOCK</div>
+        <div class="stat-value"><%= lowStockCount %></div>
+      </div>
+    </div>
+  </div>
+  <div class="admin-footer">ROYALMIST PREMIUM ADMIN INTERFACE</div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <div class="confirm-title">DELETE PRODUCT</div>
+    <p class="confirm-msg" id="confirmMsg"></p>
+    <div class="confirm-actions">
+      <button class="btn-cancel-confirm" onclick="closeConfirm()">CANCEL</button>
+      <button class="btn-confirm-delete" id="confirmDeleteBtn">DELETE</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM TOGGLE -->
+<div class="confirm-overlay" id="toggleOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="toggleIcon"><i class="fa-solid fa-eye-slash"></i></div>
+    <div class="confirm-title" id="toggleTitle">UNLIST PRODUCT</div>
+    <p class="confirm-msg" id="toggleMsg"></p>
+    <div class="confirm-actions">
+      <button class="btn-cancel-confirm" onclick="closeToggle()">CANCEL</button>
+      <button class="btn-confirm-delete" id="confirmToggleBtn" style="border-color:#e67e22;color:#e67e22;">CONFIRM</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="toast"></div>
+
+<script>
+// SIDEBAR
+document.getElementById('hamburger').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('active');
+});
+document.getElementById('sidebarOverlay').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('active');
+});
+
+// SEARCH
+const searchInput = document.getElementById('searchInput');
+const clearBtn    = document.getElementById('clearBtn');
+const searchForm  = document.getElementById('searchForm');
+let searchTimer;
+searchInput.addEventListener('input', function() {
+  clearBtn.classList.toggle('visible', this.value.length > 0);
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => searchForm.submit(), 500);
+});
+clearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  clearBtn.classList.remove('visible');
+  window.location.href = '/admin/products?page=1&search=';
+});
+
+// TOAST
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.style.color = type === 'fail' ? '#e74c3c' : 'var(--gold)';
+  t.style.borderColor = type === 'fail' ? '#e74c3c' : 'var(--gold)';
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// DELETE
+let pendingDeleteId = null;
+function confirmDelete(id, name) {
+  pendingDeleteId = id;
+  document.getElementById('confirmMsg').innerHTML =
+    `Are you sure you want to delete <strong style="color:var(--gold)">${name}</strong>?<br>This action soft-deletes the product.`;
+  document.getElementById('confirmOverlay').classList.add('active');
+}
+function closeConfirm() {
+  pendingDeleteId = null;
+  document.getElementById('confirmOverlay').classList.remove('active');
+}
+document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+  if (!pendingDeleteId) return;
+  this.textContent = 'DELETING...';
+  this.disabled = true;
+  try {
+    const res  = await fetch(`/admin/products/delete/${pendingDeleteId}`, { method: 'POST' });
+    const data = await res.json();
+    closeConfirm();
+    this.textContent = 'DELETE';
+    this.disabled = false;
+    if (data.success) {
+      showToast('✓ ' + data.message);
+      setTimeout(() => location.reload(), 1200);
+    } else {
+      showToast('✗ ' + (data.message || 'Delete failed.'), 'fail');
+    }
+  } catch(e) {
+    closeConfirm();
+    this.textContent = 'DELETE';
+    this.disabled = false;
+    showToast('✗ Server error.', 'fail');
+  }
+});
+document.getElementById('confirmOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirm();
+});
+
+
+// TOGGLE LIST/UNLIST
+let pendingToggleId = null;
+let pendingToggleStatus = null;
+
+function confirmToggle(id, name, isActive) {
+  pendingToggleId = id;
+  pendingToggleStatus = isActive;
+
+  const icon = document.getElementById('toggleIcon');
+  const title = document.getElementById('toggleTitle');
+  const msg = document.getElementById('toggleMsg');
+  const btn = document.getElementById('confirmToggleBtn');
+
+  if (isActive) {
+    icon.innerHTML = '<i class="fa-solid fa-eye-slash" style="color:#e67e22;"></i>';
+    title.textContent = 'UNLIST THIS PRODUCT';
+    msg.innerHTML = `<strong style="color:var(--gold)">${name}</strong> will be hidden from users.<br>Users cannot purchase this product.`;
+    btn.style.borderColor = '#e67e22';
+    btn.style.color = '#e67e22';
+    btn.textContent = 'UNLIST';
+  } else {
+    icon.innerHTML = '<i class="fa-solid fa-eye" style="color:#2ecc71;"></i>';
+    title.textContent = 'LIST THIS PRODUCT';
+    msg.innerHTML = `<strong style="color:var(--gold)">${name}</strong> will be visible to users.<br>Users can purchase this product.`;
+    btn.style.borderColor = '#2ecc71';
+    btn.style.color = '#2ecc71';
+    btn.textContent = 'LIST';
+  }
+
+  document.getElementById('toggleOverlay').classList.add('active');
+}
+
+function closeToggle() {
+  pendingToggleId = null;
+  pendingToggleStatus = null;
+  document.getElementById('toggleOverlay').classList.remove('active');
+}
+
+document.getElementById('confirmToggleBtn').addEventListener('click', async function() {
+  if (!pendingToggleId) return;
+  this.textContent = 'PROCESSING...';
+  this.disabled = true;
+  try {
+    const res  = await fetch(`/admin/products/toggle/${pendingToggleId}`, { method: 'PATCH' });
+    const data = await res.json();
+    closeToggle();
+    this.disabled = false;
+    if (data.success) {
+      showToast('✓ ' + data.message);
+      setTimeout(() => location.reload(), 1200);
+    } else {
+      showToast('✗ ' + (data.message || 'Failed.'), 'fail');
+    }
+  } catch(e) {
+    closeToggle();
+    this.disabled = false;
+    showToast('✗ Server error.', 'fail');
+  }
+});
+
+document.getElementById('toggleOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeToggle();
+});
+
+
+
+
+
+</script>
+</body>
+</html>

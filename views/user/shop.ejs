@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shop | Royal Mist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root {
+      --gold: #c4a14d;
+      --dark-bg: #000000;
+      --card-bg: #0a0a0a;
+      --border: #1a1a1a;
+      --font-main: 'Playfair Display', serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--dark-bg); color: #fff; font-family: var(--font-main); overflow-x: hidden; }
+
+    /* ── NAVBAR ── */
+    .navbar { background: rgba(0,0,0,0.97); border-bottom: 1px solid #222; padding: 15px 0; position: sticky; top: 0; z-index: 1000; }
+    .navbar-brand { color: var(--gold) !important; letter-spacing: 4px; font-weight: 700; }
+    .nav-link { color: #fff !important; font-size: 12px; letter-spacing: 2px; }
+    .nav-link.active-link { color: var(--gold) !important; }
+
+    /* Nav Dropdown */
+    .dropdown-nav { position: relative; }
+    .nav-dropdown { display: none; position: absolute; top: 100%; left: 0; background: #0a0a0a; border: 1px solid #222; min-width: 140px; z-index: 2000; }
+    .dropdown-nav:hover .nav-dropdown { display: block; }
+    .nav-drop-item { display: block; padding: 10px 16px; color: #aaa; text-decoration: none; font-size: 12px; letter-spacing: 2px; transition: 0.2s; }
+    .nav-drop-item:hover { color: var(--gold); background: #111; }
+    .nav-drop-item.active { color: var(--gold); }
+
+    /* ── PAGE HEADER ── */
+    .shop-header { border-bottom: 1px solid #1a1a1a; padding: 40px 0 30px; background: linear-gradient(180deg, #080808 0%, #000 100%); }
+    .shop-header h1 { font-size: 2rem; letter-spacing: 4px; font-weight: 600; }
+    .gold-line { width: 50px; height: 2px; background: var(--gold); margin-bottom: 10px; }
+
+    /* ── SEARCH BAR ── */
+    .search-wrap { position: relative; max-width: 480px; }
+    .search-wrap input { width: 100%; background: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 0; color: #fff; font-family: var(--font-main); font-size: 13px; padding: 10px 80px 10px 16px; letter-spacing: 1px; transition: border-color 0.3s; }
+    .search-wrap input:focus { outline: none; border-color: var(--gold); }
+    .search-wrap input::placeholder { color: #555; }
+    .search-wrap .btn-search { position: absolute; right: 0; top: 0; bottom: 0; background: var(--gold); border: none; color: #000; padding: 0 16px; font-size: 13px; cursor: pointer; transition: background 0.2s; }
+    .search-wrap .btn-search:hover { background: #b38f3d; }
+    .btn-clear-search { position: absolute; right: 48px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #666; font-size: 14px; cursor: pointer; display: none; padding: 0 6px; }
+    .btn-clear-search:hover { color: #fff; }
+
+    /* ── SORT BAR ── */
+    .sort-bar { background: #080808; border-bottom: 1px solid #111; padding: 10px 0; }
+    .sort-label { font-size: 11px; letter-spacing: 2px; color: #666; margin-right: 10px; }
+    .sort-select { background: #0a0a0a; border: 1px solid #2a2a2a; color: #fff; font-family: var(--font-main); font-size: 12px; padding: 6px 30px 6px 12px; letter-spacing: 1px; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23c4a14d'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+    .sort-select:focus { outline: none; border-color: var(--gold); }
+    .results-count { font-size: 12px; color: #555; letter-spacing: 1px; }
+
+    /* ── FILTER SIDEBAR ── */
+    .filter-sidebar { background: #080808; border: 1px solid #1a1a1a; padding: 25px; position: sticky; top: 80px; }
+    .filter-title { font-size: 11px; letter-spacing: 3px; color: var(--gold); margin-bottom: 20px; text-transform: uppercase; }
+    .filter-section { margin-bottom: 28px; }
+    .filter-section-title { font-size: 11px; letter-spacing: 2px; color: #888; margin-bottom: 14px; text-transform: uppercase; border-bottom: 1px solid #1a1a1a; padding-bottom: 8px; }
+    .cat-pill { display: block; width: 100%; text-align: left; background: none; border: 1px solid transparent; color: #aaa; font-family: var(--font-main); font-size: 12px; letter-spacing: 1px; padding: 7px 10px; margin-bottom: 4px; cursor: pointer; transition: all 0.2s; }
+    .cat-pill:hover { color: var(--gold); border-color: #2a2a2a; }
+    .cat-pill.active { color: var(--gold); border-color: var(--gold); background: rgba(196,161,77,0.05); }
+    .price-input { flex: 1; background: #0a0a0a; border: 1px solid #2a2a2a; color: #fff; font-family: var(--font-main); font-size: 12px; padding: 7px 10px; }
+    .price-input:focus { outline: none; border-color: var(--gold); }
+    .price-input::placeholder { color: #444; }
+    .btn-apply-price { width: 100%; margin-top: 10px; background: transparent; border: 1px solid var(--gold); color: var(--gold); font-family: var(--font-main); font-size: 11px; letter-spacing: 2px; padding: 8px; cursor: pointer; transition: all 0.2s; }
+    .btn-apply-price:hover { background: var(--gold); color: #000; }
+    .frag-pill { display: inline-block; background: none; border: 1px solid #2a2a2a; color: #888; font-family: var(--font-main); font-size: 10px; letter-spacing: 1px; padding: 5px 10px; margin: 3px 3px 3px 0; cursor: pointer; transition: all 0.2s; }
+    .frag-pill:hover { border-color: var(--gold); color: var(--gold); }
+    .frag-pill.active { border-color: var(--gold); color: var(--gold); background: rgba(196,161,77,0.08); }
+    .btn-clear-filters { width: 100%; background: none; border: 1px solid #333; color: #666; font-family: var(--font-main); font-size: 10px; letter-spacing: 2px; padding: 8px; cursor: pointer; transition: all 0.2s; margin-top: 5px; text-decoration: none; display: block; text-align: center; }
+    .btn-clear-filters:hover { border-color: #c0392b; color: #c0392b; }
+
+    /* ── PRODUCT CARD ── */
+    .product-card { background: var(--card-bg); border: 1px solid #1a1a1a; padding: 15px; transition: border-color 0.3s, transform 0.2s; height: 100%; display: flex; flex-direction: column; }
+    .product-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .img-wrapper { position: relative; margin-bottom: 15px; overflow: hidden; }
+    .img-wrapper img { width: 100%; aspect-ratio: 1/1.1; object-fit: cover; transition: transform 0.5s; }
+    .product-card:hover .img-wrapper img { transform: scale(1.04); }
+    .out-of-stock-tag { position: absolute; top: 10px; left: 10px; background: #333; color: #999; font-size: 9px; padding: 2px 8px; font-weight: 700; letter-spacing: 1px; z-index: 1; }
+    .product-body { display: flex; flex-direction: column; flex: 1; }
+    .category-label { font-size: 10px; color: #666; letter-spacing: 2px; text-transform: uppercase; }
+    .product-name { font-size: 16px; font-weight: 500; margin: 4px 0 8px; }
+    .fragrance-type { font-size: 10px; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; }
+    .price-row { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; margin-top: auto; border-top: 1px solid #111; }
+    .price { font-size: 17px; font-weight: 600; color: #fff; }
+    .price-from { font-size: 10px; color: #555; letter-spacing: 1px; }
+    .view-btn { width: 100%; background: transparent; border: 1px solid #2a2a2a; color: #fff; padding: 10px; font-size: 10px; letter-spacing: 2px; margin-top: 12px; cursor: pointer; font-family: var(--font-main); transition: all 0.25s; text-decoration: none; display: block; text-align: center; }
+    .view-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(196,161,77,0.05); }
+    .product-card.out-of-stock .img-wrapper img { filter: grayscale(60%) brightness(0.6); }
+    
+
+    /* ── FILTER CHIPS ── */
+    .filter-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .filter-chip { background: rgba(196,161,77,0.1); border: 1px solid var(--gold); color: var(--gold); font-size: 10px; letter-spacing: 1px; padding: 4px 10px; display: flex; align-items: center; gap: 6px; }
+    .chip-remove { background: none; border: none; color: var(--gold); cursor: pointer; font-size: 11px; padding: 0; line-height: 1; }
+    .chip-remove:hover { color: #fff; }
+
+    /* ── PAGINATION ── */
+    .pagination-wrap { margin-top: 50px; }
+    .page-btn { background: none; border: 1px solid #2a2a2a; color: #666; font-family: var(--font-main); font-size: 12px; padding: 8px 14px; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-block; }
+    .page-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .page-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(196,161,77,0.1); }
+    .page-btn.disabled { opacity: 0.3; pointer-events: none; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state { text-align: center; padding: 80px 20px; color: #444; }
+    .empty-state i { font-size: 48px; margin-bottom: 20px; color: #222; }
+    .empty-state h3 { font-size: 20px; margin-bottom: 10px; color: #555; }
+    .empty-state p { font-size: 13px; letter-spacing: 1px; }
+
+    /* ── OFFCANVAS ── */
+    .offcanvas { background: #080808 !important; border-right: 1px solid #2a2a2a !important; }
+    .offcanvas-header { border-bottom: 1px solid #1a1a1a; }
+    .offcanvas-title { color: var(--gold); letter-spacing: 3px; font-size: 14px; }
+    .btn-close-white { filter: invert(1); }
+
+    /* ── USER DROPDOWN ── */
+    .user-dropdown { position: relative; z-index: 2000; }
+    .dropdown-menu-custom { position: absolute; top: 100%; right: 0; background: #0a0a0a; border: 1px solid #222; min-width: 160px; z-index: 3000; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .dropdown-menu-custom.show { display: block; }
+    .dropdown-item-custom { color: #fff; background: none; border: none; text-decoration: none; display: block; padding: 10px 15px; width: 100%; text-align: left; font-family: var(--font-main); font-size: 13px; cursor: pointer; }
+    .dropdown-item-custom:hover { color: var(--gold); background: #111; }
+
+    @media (max-width: 991px) { .filter-sidebar { display: none; } }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAVBAR ════════════════════════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="/home">
+      <i class="fas fa-gem me-2" style="color:var(--gold)"></i>ROYALMIST
+    </a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <i class="fas fa-bars text-white"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link" href="/home">HOME</a></li>
+        <li class="nav-item dropdown-nav" style="position:relative;">
+          <a class="nav-link active-link" href="/shop">SHOP</a>
+          <div class="nav-dropdown">
+            <a href="/shop"               class="nav-drop-item <%= !filters.gender ? 'active' : '' %>">ALL</a>
+            <a href="/shop?gender=men"    class="nav-drop-item <%= filters.gender==='men'    ? 'active' : '' %>">MEN</a>
+            <a href="/shop?gender=women"  class="nav-drop-item <%= filters.gender==='women'  ? 'active' : '' %>">WOMEN</a>
+            <a href="/shop?gender=unisex" class="nav-drop-item <%= filters.gender==='unisex' ? 'active' : '' %>">UNISEX</a>
+          </div>
+        </li>
+        <li class="nav-item"><a class="nav-link" href="/about">ABOUT</a></li>
+      </ul>
+      <div class="d-flex gap-3 align-items-center">
+       <a href="/wishlist"><i class="fa-regular fa-heart" style="cursor:pointer;color:#fff"></i></a> 
+       <a href="/cart" style="position:relative;">
+  <i class="fa-solid fa-bag-shopping" style="cursor:pointer;color:#fff;font-size:16px;"></i>
+  <% if(typeof cartCount !== 'undefined' && cartCount > 0) { %>
+    <span style="position:absolute;top:-8px;right:-8px;background:var(--gold);color:#000;font-size:9px;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;"><%= cartCount %></span>
+  <% } %>
+</a>
+        <div class="user-dropdown">
+          <% if(user) { %>
+            <span id="userIcon" style="cursor:pointer;color:#fff;font-size:13px;letter-spacing:1px;">
+              <%= user.firstName %> <i class="fa fa-caret-down"></i>
+            </span>
+            <div id="dropdownMenu" class="dropdown-menu-custom">
+              <a href="/account" class="dropdown-item-custom">Account</a>
+              <button id="logoutBtn" class="dropdown-item-custom">Logout</button>
+            </div>
+          <% } else { %>
+            <a href="/signin"><i class="fa fa-user" style="color:#fff"></i></a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ PAGE HEADER ════════════════════════════════════════════════ -->
+<section class="shop-header">
+  <div class="container">
+    <div class="gold-line"></div>
+    <h1 class="mb-4">
+      <% if(filters.gender === 'men') { %>MEN'S COLLECTION
+      <% } else if(filters.gender === 'women') { %>WOMEN'S COLLECTION
+      <% } else if(filters.gender === 'unisex') { %>UNISEX COLLECTION
+      <% } else { %>THE COLLECTION<% } %>
+    </h1>
+
+    <!-- Search -->
+    <form method="GET" action="/shop" id="searchForm">
+      <% if(filters.gender)        { %><input type="hidden" name="gender"        value="<%= filters.gender %>"><% } %>
+      <% if(filters.category)      { %><input type="hidden" name="category"      value="<%= filters.category %>"><% } %>
+      <% if(filters.fragranceType) { %><input type="hidden" name="fragranceType" value="<%= filters.fragranceType %>"><% } %>
+      <% if(filters.minPrice)      { %><input type="hidden" name="minPrice"      value="<%= filters.minPrice %>"><% } %>
+      <% if(filters.maxPrice)      { %><input type="hidden" name="maxPrice"      value="<%= filters.maxPrice %>"><% } %>
+      <% if(filters.sort)          { %><input type="hidden" name="sort"          value="<%= filters.sort %>"><% } %>
+      <div class="search-wrap">
+        <input type="text" name="search" id="searchInput" value="<%= filters.search %>" placeholder="SEARCH FRAGRANCES..." autocomplete="off"/>
+        <button type="button" class="btn-clear-search" id="clearSearchBtn" <%= filters.search ? 'style="display:block;"' : '' %>>
+          <i class="fas fa-times"></i>
+        </button>
+        <button type="submit" class="btn-search"><i class="fas fa-search"></i></button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ══ SORT BAR ═══════════════════════════════════════════════════ -->
+<div class="sort-bar">
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn-apply-price d-lg-none" style="width:auto;padding:6px 16px;margin:0;"
+              data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas">
+        <i class="fas fa-sliders-h me-1"></i> FILTERS
+      </button>
+      <span class="results-count">
+        <% if(totalProducts > 0) { %>
+          Showing <%= (currentPage-1)*9 + 1 %>–<%= Math.min(currentPage*9, totalProducts) %> of <%= totalProducts %> products
+        <% } else { %>
+          No products found
+        <% } %>
+      </span>
+    </div>
+    <form method="GET" action="/shop" id="sortForm">
+      <% if(filters.search)        { %><input type="hidden" name="search"        value="<%= filters.search %>"><% } %>
+      <% if(filters.gender)        { %><input type="hidden" name="gender"        value="<%= filters.gender %>"><% } %>
+      <% if(filters.category)      { %><input type="hidden" name="category"      value="<%= filters.category %>"><% } %>
+      <% if(filters.fragranceType) { %><input type="hidden" name="fragranceType" value="<%= filters.fragranceType %>"><% } %>
+      <% if(filters.minPrice)      { %><input type="hidden" name="minPrice"      value="<%= filters.minPrice %>"><% } %>
+      <% if(filters.maxPrice)      { %><input type="hidden" name="maxPrice"      value="<%= filters.maxPrice %>"><% } %>
+      <div class="d-flex align-items-center">
+        <span class="sort-label">SORT BY</span>
+        <select class="sort-select" name="sort" onchange="document.getElementById('sortForm').submit()">
+          <option value=""           <%= filters.sort===''           ?'selected':'' %>>Featured</option>
+          <option value="price_asc"  <%= filters.sort==='price_asc'  ?'selected':'' %>>Price: Low to High</option>
+          <option value="price_desc" <%= filters.sort==='price_desc' ?'selected':'' %>>Price: High to Low</option>
+          <option value="name_asc"   <%= filters.sort==='name_asc'   ?'selected':'' %>>Name: A to Z</option>
+          <option value="name_desc"  <%= filters.sort==='name_desc'  ?'selected':'' %>>Name: Z to A</option>
+          <option value="newest"     <%= filters.sort==='newest'     ?'selected':'' %>>Newest First</option>
+        </select>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══ ACTIVE FILTER CHIPS ════════════════════════════════════════ -->
+<% const hasFilters = filters.search || filters.gender || filters.category || filters.fragranceType || filters.minPrice || filters.maxPrice; %>
+<% if(hasFilters) { %>
+<div style="background:#050505;border-bottom:1px solid #111;padding:10px 0;">
+  <div class="container filter-chips">
+    <span style="font-size:10px;color:#555;letter-spacing:2px;">ACTIVE:</span>
+    <% if(filters.search) { %>
+      <span class="filter-chip">SEARCH: "<%= filters.search %>"
+        <button class="chip-remove" onclick="removeFilter('search')"><i class="fas fa-times"></i></button>
+      </span>
+    <% } %>
+    <% if(filters.gender) { %>
+      <span class="filter-chip"><%= filters.gender.toUpperCase() %>
+        <button class="chip-remove" onclick="removeFilter('gender')"><i class="fas fa-times"></i></button>
+      </span>
+    <% } %>
+    <% if(filters.category) { %>
+      <span class="filter-chip">CATEGORY
+        <button class="chip-remove" onclick="removeFilter('category')"><i class="fas fa-times"></i></button>
+      </span>
+    <% } %>
+    <% if(filters.fragranceType) { %>
+      <span class="filter-chip"><%= filters.fragranceType.toUpperCase() %>
+        <button class="chip-remove" onclick="removeFilter('fragranceType')"><i class="fas fa-times"></i></button>
+      </span>
+    <% } %>
+    <% if(filters.minPrice || filters.maxPrice) { %>
+      <span class="filter-chip">₹<%= filters.minPrice||'0' %> – ₹<%= filters.maxPrice||'∞' %>
+        <button class="chip-remove" onclick="removeFilter('price')"><i class="fas fa-times"></i></button>
+      </span>
+    <% } %>
+    <a href="/shop" style="font-size:10px;color:#666;letter-spacing:2px;text-decoration:none;margin-left:5px;">CLEAR ALL</a>
+  </div>
+</div>
+<% } %>
+
+<!-- ══ MAIN CONTENT ═══════════════════════════════════════════════ -->
+<div class="container py-5">
+  <div class="row g-4">
+
+    <!-- Filter Sidebar -->
+    <div class="col-lg-3">
+      <div class="filter-sidebar">
+        <%- include('partials/filterSidebar', { categories, fragranceTypes, filters }) %>
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="col-lg-9">
+      <% if(products.length === 0) { %>
+        <div class="empty-state">
+          <i class="fas fa-search"></i>
+          <h3>No Products Found</h3>
+          <% if(filters.search) { %>
+            <p>"<%= filters.search %>" க்கு எந்த product-உம் இல்லை</p>
+          <% } else { %>
+            <p>Try adjusting your filters</p>
+          <% } %>
+          <a href="/shop" class="view-btn d-inline-block mt-3" style="width:auto;padding:10px 30px;">CLEAR FILTERS</a>
+        </div>
+      <% } else { %>
+
+        <div class="row g-4">
+          <% products.forEach(product => { %>
+          <% const basePrice = product.volumes && product.volumes.length ? product.volumes[0].price : 0; %>
+<%
+  const allOutOfStock = !product.volumes || product.volumes.length === 0 || 
+    product.volumes.every(v => v.stock === 0);
+  const isOutOfStock = allOutOfStock;
+%>
+            <div class="col-6 col-md-4">
+              <div class="product-card <%= isOutOfStock ? 'out-of-stock' : '' %>">
+                <div class="img-wrapper">
+                  <% if(isOutOfStock) { %><span class="out-of-stock-tag">OUT OF STOCK</span><% } %>
+                  <img src="<%= product.images && product.images[0] ? product.images[0] : '/images/placeholder.jpg' %>"
+                       alt="<%= product.name %>" loading="lazy"/>
+                </div>
+                <div class="product-body">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                    <div>
+                      <span class="category-label"><%= product.category ? product.category.name : '' %></span>
+                      <h3 class="product-name"><%= product.name %></h3>
+                    </div>
+                    <span class="fragrance-type"><%= product.fragranceType %></span>
+                  </div>
+                  <div class="price-row">
+                    <div>
+                     <div class="price-from">FROM</div>
+<% if(product.hasOffer) { %>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div class="price">₹<%= product.discountedBasePrice.toLocaleString('en-IN') %></div>
+    <div style="font-size:11px;color:#555;text-decoration:line-through;">₹<%= product.originalBasePrice.toLocaleString('en-IN') %></div>
+  </div>
+  <div style="font-size:9px;color:#4caf82;letter-spacing:1px;margin-top:3px;"><%= product.offerLabel %></div>
+<% } else { %>
+  <div class="price">₹<%= basePrice.toLocaleString('en-IN') %></div>
+<% } %>
+                    </div>
+                    <% if(product.volumes && product.volumes.length > 1) { %>
+                      <span style="font-size:10px;color:#555;"><%= product.volumes.length %> Variants</span>
+                    <% } %>
+                  </div>
+                 <a href="/shop/<%= product._id %>" class="view-btn">VIEW PRODUCT</a>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+
+        <!-- ── PAGINATION ── -->
+        <% if(totalPages > 1) { %>
+        <div class="pagination-wrap d-flex justify-content-center align-items-center gap-2 flex-wrap">
+
+          <a href="?<%= new URLSearchParams({...filters, page: currentPage-1}).toString() %>"
+             class="page-btn <%= !hasPrevPage ? 'disabled' : '' %>">
+            <i class="fas fa-chevron-left" style="font-size:10px;"></i>
+          </a>
+
+          <% if(pageNumbers[0] > 1) { %>
+            <a href="?<%= new URLSearchParams({...filters, page:1}).toString() %>" class="page-btn">1</a>
+            <% if(pageNumbers[0] > 2) { %><span style="color:#444;padding:0 5px;">···</span><% } %>
+          <% } %>
+
+          <% pageNumbers.forEach(p => { %>
+            <a href="?<%= new URLSearchParams({...filters, page:p}).toString() %>"
+               class="page-btn <%= p === currentPage ? 'active' : '' %>"><%= p %></a>
+          <% }) %>
+
+          <% if(pageNumbers[pageNumbers.length-1] < totalPages) { %>
+            <% if(pageNumbers[pageNumbers.length-1] < totalPages-1) { %>
+              <span style="color:#444;padding:0 5px;">···</span>
+            <% } %>
+            <a href="?<%= new URLSearchParams({...filters, page:totalPages}).toString() %>" class="page-btn"><%= totalPages %></a>
+          <% } %>
+
+          <a href="?<%= new URLSearchParams({...filters, page: currentPage+1}).toString() %>"
+             class="page-btn <%= !hasNextPage ? 'disabled' : '' %>">
+            <i class="fas fa-chevron-right" style="font-size:10px;"></i>
+          </a>
+
+        </div>
+        <% } %>
+
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MOBILE OFFCANVAS ═══════════════════════════════════════════ -->
+<div class="offcanvas offcanvas-start" id="filterOffcanvas">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">FILTERS</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <%- include('partials/filterSidebar', { categories, fragranceTypes, filters }) %>
+  </div>
+</div>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════════ -->
+<footer style="border-top:1px solid #222;padding:80px 0 30px;font-family:var(--font-main);">
+  <div class="container">
+    <div class="row g-5 align-items-start">
+
+      <!-- Col 1: Brand -->
+      <div class="col-12 col-md-4">
+        <span style="font-family:var(--font-main);color:var(--gold);font-size:24px;margin-bottom:20px;letter-spacing:4px;font-weight:700;display:block;">ROYALMIST</span>
+        <p class="text-secondary small" style="line-height:1.8;">
+          Exquisite fragrances designed for those who command attention and appreciate the finer things in life.
+        </p>
+      </div>
+
+      <!-- Col 2: Contact -->
+      <div class="col-6 col-md-2">
+        <div style="color:#fff;font-size:14px;letter-spacing:1px;margin-bottom:20px;font-weight:600;">CONTACT US</div>
+        <p class="text-secondary small" style="line-height:2;">
+          Other Enquiries<br>
+          +91 98765 43210<br>
+          royalmist@gmail.com
+        </p>
+      </div>
+
+      <!-- Col 3: Support -->
+      <div class="col-6 col-md-2">
+        <div style="color:#fff;font-size:14px;letter-spacing:1px;margin-bottom:20px;font-weight:600;">SUPPORT</div>
+        <a href="#" style="color:#777;text-decoration:none;font-size:13px;display:block;margin-bottom:10px;transition:0.2s;">Newsletter</a>
+        <a href="#" style="color:#777;text-decoration:none;font-size:13px;display:block;margin-bottom:10px;">Community Guidelines</a>
+        <a href="#" style="color:#777;text-decoration:none;font-size:13px;display:block;margin-bottom:10px;">Terms & Conditions</a>
+      </div>
+
+      <!-- Col 4: Social -->
+      <div class="col-12 col-md-4">
+        <div style="color:#fff;font-size:14px;letter-spacing:1px;margin-bottom:20px;font-weight:600;">FOLLOW US</div>
+        <div style="margin-bottom:15px;">
+          <i class="fab fa-instagram" style="color:#fff;margin-right:20px;font-size:18px;cursor:pointer;"></i>
+          <i class="fab fa-youtube"   style="color:#fff;margin-right:20px;font-size:18px;cursor:pointer;"></i>
+          <i class="fab fa-twitter"   style="color:#fff;font-size:18px;cursor:pointer;"></i>
+        </div>
+        <p class="text-secondary" style="font-size:11px;margin-bottom:0;">
+          Stay connected for exclusive launches, behind-the-scenes stories, and member-only offers.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Footer Bottom -->
+    <div style="border-top:1px solid #1a1a1a;margin-top:50px;padding-top:25px;text-align:center;">
+      <p class="text-secondary mb-0" style="font-size:11px;letter-spacing:1px;">
+        © 2026 ROYAL MIST FRAGRANCES. ALL RIGHTS RESERVED.
+      </p>
+    </div>
+  </div>
+</footer>
+
+<div id="logoutConfirmOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:9998;opacity:0;pointer-events:none;transition:opacity 0.25s ease;">
+  <div style="background:#0a0a0a;border:1px solid #2a2a2a;padding:36px 32px;max-width:360px;width:90%;text-align:center;">
+    <div style="width:52px;height:52px;border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--gold);font-size:18px;">
+      <i class="fas fa-sign-out-alt"></i>
+    </div>
+    <div style="font-size:14px;letter-spacing:3px;color:#fff;font-weight:600;margin-bottom:8px;">LOGOUT?</div>
+    <div style="font-size:11px;color:#555;letter-spacing:1px;line-height:1.7;margin-bottom:22px;">Are you sure you want to logout of your account?</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeLogoutModal()" style="flex:1;background:transparent;border:1px solid #2a2a2a;color:#666;font-family:var(--font-main);font-size:11px;letter-spacing:2px;padding:14px;cursor:pointer;transition:0.2s;">CANCEL</button>
+      <button id="confirmLogoutBtn" style="flex:1;background:var(--gold);border:none;color:#000;font-family:var(--font-main);font-size:11px;letter-spacing:2px;font-weight:700;padding:14px;cursor:pointer;transition:0.2s;">YES, LOGOUT</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// User dropdown
+const userIcon     = document.getElementById("userIcon");
+const dropdownMenu = document.getElementById("dropdownMenu");
+if (userIcon && dropdownMenu) {
+  userIcon.addEventListener("click", e => { e.stopPropagation(); dropdownMenu.classList.toggle("show"); });
+  window.addEventListener("click", () => dropdownMenu.classList.remove("show"));
+}
+
+// Logout — show confirm modal first
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    document.getElementById("logoutConfirmOverlay").style.opacity = "1";
+    document.getElementById("logoutConfirmOverlay").style.pointerEvents = "all";
+  });
+}
+
+function closeLogoutModal() {
+  document.getElementById("logoutConfirmOverlay").style.opacity = "0";
+  document.getElementById("logoutConfirmOverlay").style.pointerEvents = "none";
+}
+
+document.getElementById("confirmLogoutBtn").addEventListener("click", async () => {
+  await fetch("/logout", { method: "POST" });
+  window.location.href = "/signin";
+});+
+
+document.getElementById("logoutConfirmOverlay").addEventListener("click", function(e) {
+  if (e.target === this) closeLogoutModal();
+});
+
+// Search clear
+const searchInput    = document.getElementById("searchInput");
+const clearSearchBtn = document.getElementById("clearSearchBtn");
+if (searchInput && clearSearchBtn) {
+  searchInput.addEventListener("input", () => {
+    clearSearchBtn.style.display = searchInput.value.trim() ? "block" : "none";
+  });
+  clearSearchBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    clearSearchBtn.style.display = "none";
+    document.getElementById("searchForm").submit();
+  });
+}
+
+// Remove filter chip
+function removeFilter(type) {
+  const params = new URLSearchParams(window.location.search);
+  if (type === "search")        params.delete("search");
+  if (type === "gender")        params.delete("gender");
+  if (type === "category")      params.delete("category");
+  if (type === "fragranceType") params.delete("fragranceType");
+  if (type === "price") {
+    params.delete("minPrice");
+    params.delete("maxPrice");
+  }
+  params.delete("page");
+  window.location.href = "/shop?" + params.toString();
+}
+</script>
+</body>
+</html>

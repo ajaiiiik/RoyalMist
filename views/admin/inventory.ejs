@@ -1,0 +1,363 @@
+<%# views/admin/inventory.ejs — Stock Management %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inventory | Royal Mist Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root{--gold:#c4a14d;--gold-dim:rgba(196,161,77,0.12);--bg:#000;--sidebar-bg:#050505;--card:#0a0a0a;--border:#1a1a1a;--text:#fff;--muted:#888;--dim:#555;--sidebar-w:220px;--green:#4caf82;--red:#e05252;--orange:#f39c12;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Playfair Display',serif;min-height:100vh;display:flex;}
+    .sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--sidebar-bg);border-right:1px solid #111;display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;transition:transform 0.3s;}
+    .sidebar-logo{display:flex;align-items:center;gap:10px;padding:22px 20px 26px;border-bottom:1px solid #111;}
+    .logo-icon{width:30px;height:30px;background:var(--gold);clip-path:polygon(0 0,55% 0,100% 45%,100% 100%,45% 100%,0 55%);}
+    .logo-text{font-size:15px;font-weight:700;letter-spacing:3px;color:var(--gold);}
+    .nav-menu{flex:1;padding:20px 0;}
+    .nav-item{display:flex;align-items:center;gap:14px;padding:13px 24px;color:#666;text-decoration:none;font-size:13px;letter-spacing:1px;transition:all 0.2s;border-left:3px solid transparent;}
+    .nav-item:hover{color:var(--gold);background:var(--gold-dim);}
+    .nav-item.active{color:var(--gold);border-left-color:var(--gold);background:var(--gold-dim);}
+    .nav-item i{width:18px;text-align:center;font-size:13px;}
+    .main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;border-bottom:1px solid #111;background:var(--bg);position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:12px;}
+    .topbar-title{font-size:22px;font-weight:700;}
+    .hamburger{display:none;background:none;border:1px solid #222;color:var(--muted);padding:7px 10px;cursor:pointer;font-size:16px;}
+    .content{padding:24px 28px;flex:1;}
+    /* STAT CARDS */
+    .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+    .stat-card{background:var(--card);border:1px solid var(--border);padding:18px 16px;}
+    .stat-icon{width:34px;height:34px;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:14px;margin-bottom:12px;}
+    .stat-label{font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;}
+    .stat-value{font-size:22px;font-weight:700;}
+    /* FILTER */
+    .filter-bar{background:var(--card);border:1px solid var(--border);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+    .filter-grp{display:flex;flex-direction:column;gap:6px;}
+    .filter-label{font-size:9px;letter-spacing:2px;color:var(--gold);}
+    .filter-input,.filter-select{background:#000;border:1px solid #222;color:#fff;font-family:'Playfair Display',serif;font-size:12px;padding:8px 12px;outline:none;transition:border-color 0.2s;}
+    .filter-input:focus,.filter-select:focus{border-color:var(--gold);}
+    .filter-input::placeholder{color:#444;}
+    .filter-select option{background:#111;}
+    .btn-search{background:var(--gold);border:none;color:#000;font-family:'Playfair Display',serif;font-size:10px;letter-spacing:2px;font-weight:700;padding:8px 18px;cursor:pointer;transition:0.2s;align-self:flex-end;}
+    .btn-search:hover{background:#b38f3d;}
+    .btn-clear{background:transparent;border:1px solid #333;color:#666;font-family:'Playfair Display',serif;font-size:10px;letter-spacing:2px;padding:8px 14px;cursor:pointer;transition:0.2s;align-self:flex-end;text-decoration:none;display:inline-flex;align-items:center;}
+    .btn-clear:hover{border-color:#c0392b;color:#c0392b;}
+    /* QUICK FILTERS */
+    .quick-filters{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+    .qf-btn{background:transparent;border:1px solid #222;color:#666;font-family:'Playfair Display',serif;font-size:10px;letter-spacing:2px;padding:7px 16px;cursor:pointer;transition:0.2s;text-decoration:none;display:inline-block;}
+    .qf-btn:hover{border-color:var(--gold);color:var(--gold);}
+    .qf-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);}
+    /* TABLE */
+    .table-wrap{background:var(--card);border:1px solid var(--border);overflow:hidden;}
+    .table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+    .table-title{font-size:11px;letter-spacing:2px;color:var(--gold);}
+    table{width:100%;border-collapse:collapse;}
+    thead tr{background:#050505;border-bottom:1px solid var(--border);}
+    th{padding:12px 16px;font-size:9px;letter-spacing:2px;color:var(--muted);text-align:left;white-space:nowrap;}
+    tbody tr{border-bottom:1px solid #0d0d0d;transition:background 0.15s;}
+    tbody tr:hover{background:#0f0f0f;}
+    tbody tr:last-child{border-bottom:none;}
+    td{padding:14px 16px;font-size:12px;vertical-align:middle;}
+    /* product cell */
+    .prod-img{width:44px;height:44px;object-fit:cover;border:1px solid var(--border);background:#0d0d0d;}
+    .prod-name{font-size:13px;font-weight:600;margin-bottom:3px;}
+    .prod-cat{font-size:10px;color:var(--dim);letter-spacing:1px;}
+    /* stock status */
+    .stock-chip{display:inline-flex;align-items:center;gap:5px;font-size:9px;letter-spacing:1px;padding:4px 10px;border:1px solid;font-weight:600;}
+    .stock-in    {border-color:#1a3a2a;color:var(--green);background:rgba(76,175,130,0.06);}
+    .stock-low   {border-color:#3a2a00;color:var(--orange);background:rgba(243,156,18,0.06);}
+    .stock-out   {border-color:#3a1a1a;color:var(--red);background:rgba(224,82,82,0.06);}
+    /* inline edit */
+    .stock-edit-wrap{display:flex;align-items:center;gap:8px;}
+    .stock-num{font-size:16px;font-weight:700;min-width:40px;}
+    .stock-num.low  {color:var(--orange);}
+    .stock-num.out  {color:var(--red);}
+    .stock-num.good {color:#fff;}
+    .edit-input{background:#000;border:1px solid #333;color:#fff;font-family:'Playfair Display',serif;font-size:13px;font-weight:700;padding:6px 10px;width:80px;outline:none;display:none;transition:border-color 0.2s;}
+    .edit-input:focus{border-color:var(--gold);}
+    .btn-edit{background:transparent;border:1px solid #2a2a2a;color:#555;font-family:'Playfair Display',serif;font-size:9px;letter-spacing:1px;padding:5px 10px;cursor:pointer;transition:0.2s;}
+    .btn-edit:hover{border-color:var(--gold);color:var(--gold);}
+    .btn-save{background:var(--gold);border:none;color:#000;font-family:'Playfair Display',serif;font-size:9px;letter-spacing:1px;font-weight:700;padding:5px 10px;cursor:pointer;transition:0.2s;display:none;}
+    .btn-save:hover{background:#b38f3d;}
+    .btn-cancel-edit{background:transparent;border:1px solid #333;color:#555;font-family:'Playfair Display',serif;font-size:9px;padding:5px 10px;cursor:pointer;display:none;}
+    /* pagination */
+    .pagination-wrap{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px;}
+    .page-info{font-size:11px;color:var(--muted);}
+    .page-btns{display:flex;gap:6px;}
+    .page-btn{background:transparent;border:1px solid #2a2a2a;color:#666;font-family:'Playfair Display',serif;font-size:11px;padding:6px 12px;cursor:pointer;transition:0.2s;text-decoration:none;display:inline-block;}
+    .page-btn:hover{border-color:var(--gold);color:var(--gold);}
+    .page-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);}
+    .page-btn.disabled{opacity:0.3;pointer-events:none;}
+    /* toast */
+    .toast-msg{position:fixed;bottom:28px;right:24px;background:#0a0a0a;border:1px solid var(--gold);color:var(--gold);font-size:12px;letter-spacing:1px;padding:12px 20px;z-index:9999;display:none;}
+    .toast-msg.error{border-color:var(--red);color:var(--red);}
+    /* overlay */
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99;}
+    .sidebar-overlay.active{display:block;}
+    @media(max-width:900px){.main{margin-left:0;}.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}.hamburger{display:flex;align-items:center;}.content{padding:16px;}.stat-row{grid-template-columns:1fr 1fr;}}
+    @media(max-width:500px){.stat-row{grid-template-columns:1fr;}.filter-bar{flex-direction:column;}}
+  </style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebar">
+   <div class="sidebar-logo">
+        <span class="logo-text"><i class="fas fa-gem me-2" style="color:var(--gold)"></i>ROYALMIST</span>
+    </div>
+    <nav class="nav-menu">
+        <a class="nav-item" href="/admin/dashboard">
+            <i class="fas fa-th-large"></i>
+            <span>Dashboard</span>
+        </a>
+        <a class="nav-item" href="/admin/products">
+            <i class="fas fa-box"></i>
+            <span>Products</span>
+        </a>
+        <a class="nav-item" href="/admin/categories">
+            <i class="fas fa-tag"></i>
+            <span>Categories</span>
+        </a>
+        <a class="nav-item" href="/admin/coupons">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Coupons</span>
+        </a>
+        <a class="nav-item" href="/admin/customers">
+            <i class="fas fa-users"></i>
+            <span>Customers</span>
+        </a>
+        <a class="nav-item" href="/admin/orders">
+            <i class="fas fa-shopping-bag"></i>
+            <span>Orders</span>
+        </a>
+        <a class="nav-item active" href="/admin/inventory">
+            <i class="fas fa-warehouse"></i>
+            <span>Inventory</span>
+        </a>
+        <a class="nav-item" href="/admin/product-offer">
+            <i class="fas fa-percent"></i>
+            <span>Product Offer</span>
+        </a>
+        <a class="nav-item" href="/admin/category-offer">
+            <i class="fas fa-layer-group"></i>
+            <span>Category Offer</span>
+        </a>
+        <a class="nav-item" href="/admin/sales-report">
+            <i class="fas fa-chart-bar"></i>
+            <span>Sales Report</span>
+        </a>
+        <a class="nav-item" href="/admin/logout">
+            <i class="fas fa-right-from-bracket"></i>
+            <span>Logout</span>
+        </a>
+    </nav>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button>
+      <h1 class="topbar-title">Inventory / Stock</h1>
+    </div>
+    <div style="font-size:11px;color:var(--muted);">LOW STOCK THRESHOLD: <%= LOW_STOCK_THRESHOLD %> UNITS</div>
+  </div>
+
+  <div class="content">
+
+    <!-- STAT CARDS -->
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-boxes"></i></div><div class="stat-label">Total Products</div><div class="stat-value"><%= stats.totalProducts %></div></div>
+      <div class="stat-card" style="border-color:#1a3a2a;"><div class="stat-icon" style="background:rgba(76,175,130,0.1);color:var(--green);"><i class="fas fa-check"></i></div><div class="stat-label">In Stock</div><div class="stat-value" style="color:var(--green);"><%= stats.inStock %></div></div>
+      <div class="stat-card" style="border-color:#3a2a00;"><div class="stat-icon" style="background:rgba(243,156,18,0.1);color:var(--orange);"><i class="fas fa-exclamation-triangle"></i></div><div class="stat-label">Low Stock</div><div class="stat-value" style="color:var(--orange);"><%= stats.lowStock %></div></div>
+      <div class="stat-card" style="border-color:#3a1a1a;"><div class="stat-icon" style="background:rgba(224,82,82,0.1);color:var(--red);"><i class="fas fa-times-circle"></i></div><div class="stat-label">Out of Stock</div><div class="stat-value" style="color:var(--red);"><%= stats.outOfStock %></div></div>
+    </div>
+
+    <!-- QUICK FILTERS -->
+    <div class="quick-filters">
+      <a href="/admin/inventory?filter=all&sort=<%= filters.sort %>" class="qf-btn <%= filters.filter==='all'||!filters.filter?'active':'' %>">ALL PRODUCTS</a>
+      <a href="/admin/inventory?filter=low&sort=<%= filters.sort %>" class="qf-btn <%= filters.filter==='low'?'active':'' %>" style="<%= filters.filter==='low'?'border-color:var(--orange);color:var(--orange);':'' %>"><i class="fas fa-exclamation-triangle me-1"></i>LOW STOCK</a>
+      <a href="/admin/inventory?filter=out&sort=<%= filters.sort %>" class="qf-btn <%= filters.filter==='out'?'active':'' %>" style="<%= filters.filter==='out'?'border-color:var(--red);color:var(--red);':'' %>"><i class="fas fa-times-circle me-1"></i>OUT OF STOCK</a>
+    </div>
+
+    <!-- SEARCH + SORT -->
+    <form method="GET" action="/admin/inventory">
+      <input type="hidden" name="filter" value="<%= filters.filter %>"/>
+      <div class="filter-bar">
+        <div class="filter-grp">
+          <span class="filter-label">Search Product</span>
+          <input class="filter-input" name="search" value="<%= filters.search %>" placeholder="Product name..." style="width:220px;"/>
+        </div>
+        <div class="filter-grp">
+          <span class="filter-label">Sort By</span>
+          <select class="filter-select" name="sort">
+            <option value="stock_asc"  <%= filters.sort==='stock_asc' ?'selected':'' %>>Stock: Low to High</option>
+            <option value="stock_desc" <%= filters.sort==='stock_desc'?'selected':'' %>>Stock: High to Low</option>
+            <option value="name_asc"   <%= filters.sort==='name_asc'  ?'selected':'' %>>Name: A to Z</option>
+            <option value="name_desc"  <%= filters.sort==='name_desc' ?'selected':'' %>>Name: Z to A</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-search"><i class="fas fa-search me-1"></i>SEARCH</button>
+        <% if(filters.search) { %><a href="/admin/inventory?filter=<%= filters.filter %>" class="btn-clear"><i class="fas fa-times me-1"></i>CLEAR</a><% } %>
+      </div>
+    </form>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <span class="table-title"><i class="fas fa-warehouse me-2"></i>STOCK LEVELS</span>
+        <span style="font-size:11px;color:var(--muted);"><%= total %> PRODUCTS</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>PRODUCT</th>
+              <th>CATEGORY</th>
+              <th>VARIANTS</th>
+              <th>CURRENT STOCK</th>
+              <th>STATUS</th>
+              <th>UPDATE STOCK</th>
+            </tr>
+          </thead>
+        <tbody>
+  <% products.forEach(product => { %>
+    <%
+      const totalStock = (product.volumes || []).reduce((s, v) => s + v.stock, 0);
+      const hasLow     = (product.volumes || []).some(v => v.stock > 0 && v.stock <= LOW_STOCK_THRESHOLD);
+      const allOut     = (product.volumes || []).every(v => v.stock === 0);
+      const chipClass  = allOut ? 'stock-out' : hasLow ? 'stock-low' : 'stock-in';
+      const chipLabel  = allOut ? 'OUT OF STOCK' : hasLow ? 'LOW STOCK' : 'IN STOCK';
+    %>
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <img src="<%= product.images&&product.images[0]?product.images[0]:'/images/placeholder.jpg' %>" class="prod-img" alt="" onerror="this.style.display='none'"/>
+          <div>
+            <div class="prod-name"><%= product.name %></div>
+            <div class="prod-cat"><%= product.fragranceType %></div>
+          </div>
+        </div>
+      </td>
+      <td style="font-size:11px;color:var(--muted);letter-spacing:1px;"><%= product.category ? product.category.name : '—' %></td>
+      <td style="font-size:11px;color:#aaa;"><%= totalStock %> units total</td>
+      <td>
+        <!-- Per variant stock -->
+        <% (product.volumes || []).forEach(vol => { %>
+          <%
+            const vClass = vol.stock === 0 ? 'out' : vol.stock <= LOW_STOCK_THRESHOLD ? 'low' : 'good';
+          %>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;" id="vol-row-<%= product._id %>-<%= vol.size %>">
+            <span style="font-size:10px;letter-spacing:1px;color:#666;min-width:40px;"><%= vol.size %></span>
+            <span class="stock-num <%= vClass %>" id="stock-num-<%= product._id %>-<%= vol.size %>"><%= vol.stock %></span>
+            <input type="number" class="edit-input" id="edit-input-<%= product._id %>-<%= vol.size %>" min="0" value="<%= vol.stock %>" style="width:70px;"/>
+            <button class="btn-edit" id="editbtn-<%= product._id %>-<%= vol.size %>"
+              onclick="startEdit('<%= product._id %>', '<%= vol.size %>', <%= vol.stock %>)">
+              <i class="fas fa-pen"></i>
+            </button>
+            <button class="btn-save" id="savebtn-<%= product._id %>-<%= vol.size %>"
+              onclick="saveStock('<%= product._id %>', '<%= vol.size %>')">
+              <i class="fas fa-check"></i>
+            </button>
+            <button class="btn-cancel-edit" id="cancelbtn-<%= product._id %>-<%= vol.size %>"
+              onclick="cancelEdit('<%= product._id %>', '<%= vol.size %>', <%= vol.stock %>)">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        <% }) %>
+      </td>
+      <td>
+        <span class="stock-chip <%= chipClass %>" id="chip-<%= product._id %>">
+          <% if(allOut)       { %><i class="fas fa-times-circle" style="font-size:8px;"></i>
+          <% } else if(hasLow){ %><i class="fas fa-exclamation-triangle" style="font-size:8px;"></i>
+          <% } else           { %><i class="fas fa-check-circle" style="font-size:8px;"></i><% } %>
+          <%= chipLabel %>
+        </span>
+      </td>
+      <td style="font-size:10px;color:#444;letter-spacing:1px;">Edit per variant →</td>
+    </tr>
+  <% }) %>
+</tbody>
+
+        </table>
+      </div>
+
+      <!-- PAGINATION -->
+      <% if(totalPages > 1) { %>
+        <div class="pagination-wrap">
+          <span class="page-info">Page <%= currentPage %> of <%= totalPages %></span>
+          <div class="page-btns">
+            <a href="?<%= new URLSearchParams({...filters, page: currentPage-1}).toString() %>" class="page-btn <%= currentPage<=1?'disabled':'' %>"><i class="fas fa-chevron-left" style="font-size:9px;"></i></a>
+            <% for(let p=Math.max(1,currentPage-2);p<=Math.min(totalPages,currentPage+2);p++){ %>
+              <a href="?<%= new URLSearchParams({...filters,page:p}).toString() %>" class="page-btn <%= p===currentPage?'active':'' %>"><%= p %></a>
+            <% } %>
+            <a href="?<%= new URLSearchParams({...filters, page: currentPage+1}).toString() %>" class="page-btn <%= currentPage>=totalPages?'disabled':'' %>"><i class="fas fa-chevron-right" style="font-size:9px;"></i></a>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-msg" id="toastMsg"></div>
+
+<script>
+  const hamburger=document.getElementById('hamburger'),sidebar=document.getElementById('sidebar'),overlay=document.getElementById('sidebarOverlay');
+  hamburger?.addEventListener('click',()=>{sidebar.classList.toggle('open');overlay.classList.toggle('active');});
+  overlay?.addEventListener('click',()=>{sidebar.classList.remove('open');overlay.classList.remove('active');});
+
+  function showToast(msg,isError=false){const t=document.getElementById('toastMsg');t.textContent=msg;t.className='toast-msg'+(isError?' error':'');t.style.display='block';setTimeout(()=>t.style.display='none',3000);}
+
+  const LOW = <%= LOW_STOCK_THRESHOLD %>;
+
+function startEdit(id, size, current) {
+  const key = id + '-' + size;
+  document.getElementById('stock-num-' + key).style.display  = 'none';
+  const inp = document.getElementById('edit-input-' + key);
+  inp.style.display = 'inline-block'; inp.value = current; inp.focus();
+  document.getElementById('editbtn-'  + key).style.display = 'none';
+  document.getElementById('savebtn-'  + key).style.display = 'inline-block';
+  document.getElementById('cancelbtn-'+ key).style.display = 'inline-block';
+}
+
+function cancelEdit(id, size, original) {
+  const key = id + '-' + size;
+  document.getElementById('stock-num-' + key).style.display  = 'inline-block';
+  document.getElementById('edit-input-'+ key).style.display  = 'none';
+  document.getElementById('editbtn-'  + key).style.display   = 'inline-block';
+  document.getElementById('savebtn-'  + key).style.display   = 'none';
+  document.getElementById('cancelbtn-'+ key).style.display   = 'none';
+}
+
+async function saveStock(id, size) {
+  const key   = id + '-' + size;
+  const inp   = document.getElementById('edit-input-' + key);
+  const stock = parseInt(inp.value);
+  if (isNaN(stock) || stock < 0) { showToast('Invalid stock value', true); return; }
+
+  const btn = document.getElementById('savebtn-' + key);
+  btn.disabled = true;
+
+  try {
+    const res  = await fetch(`/admin/inventory/${id}/stock`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ size, stock })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      const numEl = document.getElementById('stock-num-' + key);
+      numEl.textContent = data.stock;
+      numEl.className   = 'stock-num ' + (data.stock === 0 ? 'out' : data.stock <= LOW ? 'low' : 'good');
+      cancelEdit(id, size, data.stock);
+      showToast(data.message);
+    } else {
+      showToast(data.message || 'Failed', true);
+    }
+  } catch { showToast('Something went wrong', true); }
+  finally { btn.disabled = false; }
+}
+</script>
+</body>
+</html>
