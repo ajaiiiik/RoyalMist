@@ -73,7 +73,9 @@ const { getWalletController, createWalletOrderController, verifyWalletPaymentCon
 
 
 
-
+router.get("/", (req, res) => {
+  res.redirect("/signup");
+});
 
 
 // signup page
